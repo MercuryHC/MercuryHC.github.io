@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客 - 现代开发者博客</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html" class="brand-link">现代开发者博客</a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html#home" class="nav-link">首页</a>
+                <a href="index.html#about" class="nav-link">关于</a>
+                <a href="blog.html" class="nav-link active">博客</a>
+                <a href="tags.html" class="nav-link">标签</a>
+                <a href="index.html#projects" class="nav-link">项目</a>
+                <a href="index.html#contact" class="nav-link">联系</a>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <svg class="theme-icon sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="blog-page">
+            <header class="page-header">
+                <div class="container">
+                    <h1 class="page-title">博客</h1>
+                    <p class="page-subtitle">关于现代Web开发的思考、教程和见解</p>
+                </div>
+            </header>
+
+            <div class="blog-content">
+                <div class="container">
+                    <div class="blog-grid" id="blog-grid">
+                        <!-- 博客文章将通过JavaScript动态加载 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="assets/js/main.js"></script>
+    <script>
+        // 博客文章数据
+        const blogPosts = [
+            {
+                title: "Building Modern Web Applications with AI Integration",
+                titleCn: "使用 AI 构建现代 Web 应用",
+                date: "2024-12-15",
+                dateFormatted: "2024年12月15日",
+                categories: ["Development", "AI"],
+                tags: ["javascript", "ai", "web-development", "machine-learning"],
+                readingTime: 8,
+                file: "_posts/2024-12-15-building-modern-web-apps-with-ai.md",
+                excerpt: "探索如何将人工智能技术集成到现代 Web 应用中，提升用户体验和功能性。从机器学习模型的部署到智能交互设计，全面解析AI驱动的Web开发。"
+            },
+            {
+                title: "React Performance Optimization Best Practices",
+                titleCn: "React 性能优化最佳实践",
+                date: "2024-12-05",
+                dateFormatted: "2024年12月5日",
+                categories: ["Frontend", "React"],
+                tags: ["react", "performance", "optimization", "frontend"],
+                readingTime: 6,
+                file: "_posts/2024-12-05-react-performance-optimization.md",
+                excerpt: "深入探讨 React 应用的性能优化技巧，包括组件优化、状态管理和渲染优化等方面。通过实际案例展示如何将应用性能提升50%以上。"
+            },
+            {
+                title: "The Future of UI Design: Trends and Predictions",
+                titleCn: "UI 设计的未来趋势",
+                date: "2024-12-10",
+                dateFormatted: "2024年12月10日",
+                categories: ["Design", "UI/UX"],
+                tags: ["ui-design", "trends", "user-experience", "design"],
+                readingTime: 5,
+                file: "_posts/2024-12-10-future-of-ui-design.md",
+                excerpt: "分析当前 UI 设计的发展趋势，探讨新兴技术对用户界面设计的影响。从神经形态设计到空间计算界面，预见设计的未来方向。"
+            }
+        ];
+
+        // 渲染博客文章列表
+        function renderBlogPosts() {
+            const blogGrid = document.getElementById('blog-grid');
+            
+            blogPosts.forEach(post => {
+                const article = document.createElement('article');
+                article.className = 'blog-card';
+                
+                article.innerHTML = `
+                    <div class="blog-meta">
+                        <time class="blog-date" datetime="${post.date}">${post.dateFormatted}</time>
+                        ${post.categories.length > 0 ? `<span class="blog-category">${post.categories[0]}</span>` : ''}
+                        <span class="reading-time">${post.readingTime} 分钟阅读</span>
+                    </div>
+                    <h2 class="blog-title">
+                        <a href="#" onclick="openMarkdownViewer('${post.file}', '${post.titleCn}')">${post.titleCn}</a>
+                    </h2>
+                    <p class="blog-excerpt">${post.excerpt}</p>
+                    <div class="blog-tags">
+                        ${post.tags.slice(0, 3).map(tag => `<span class="blog-tag">#${tag}</span>`).join('')}
+                    </div>
+                    <a href="#" onclick="openMarkdownViewer('${post.file}', '${post.titleCn}')" class="blog-link">阅读更多 →</a>
+                `;
+                
+                blogGrid.appendChild(article);
+            });
+        }
+
+        // 打开Markdown查看器
+        function openMarkdownViewer(file, title) {
+            // 创建模态框
+            const modal = document.createElement('div');
+            modal.className = 'markdown-modal';
+            modal.innerHTML = `
+                <div class="markdown-modal-content">
+                    <div class="markdown-modal-header">
+                        <h2>${title}</h2>
+                        <button class="close-btn" onclick="closeMarkdownViewer()">&times;</button>
+                    </div>
+                    <div class="markdown-modal-body" id="markdown-content">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 加载并渲染Markdown文件
+            fetch(file)
+                .then(response => response.text())
+                .then(markdown => {
+                    // 移除front matter
+                    const content = markdown.replace(/^---[\s\S]*?---\n/, '');
+                    const html = marked.parse(content);
+                    document.getElementById('markdown-content').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('markdown-content').innerHTML = '<p>加载文章失败，请稍后重试。</p>';
+                });
+        }
+
+        // 关闭Markdown查看器
+        function closeMarkdownViewer() {
+            const modal = document.querySelector('.markdown-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            initializeSmoothScrolling();
+            initializeNavbarScrollEffect();
+            renderBlogPosts();
+        });
+    </script>
+
+    <style>
+        /* 博客页面样式 */
+        .blog-page {
+            padding-top: 80px;
+        }
+        
+        .page-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .blog-content {
+            padding: 4rem 0;
+        }
+        
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .blog-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-card);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .blog-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .blog-category {
+            background: var(--accent-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .blog-title {
+            margin-bottom: 1rem;
+        }
+        
+        .blog-title a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .blog-title a:hover {
+            color: var(--primary-color);
+        }
+        
+        .blog-excerpt {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .blog-tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .blog-tag {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+        
+        .blog-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .blog-link:hover {
+            color: var(--accent-color);
+        }
+        
+        /* Markdown模态框样式 */
+        .markdown-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 2rem;
+        }
+        
+        .markdown-modal-content {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .markdown-modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .markdown-modal-header h2 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        .markdown-modal-body {
+            padding: 2rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .markdown-modal-body h1,
+        .markdown-modal-body h2,
+        .markdown-modal-body h3 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-modal-body p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-modal-body pre {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .markdown-modal-body code {
+            background: var(--bg-secondary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .loading {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+        }
+        
+        .nav-link.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,216 @@
+---
+layout: default
+---
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                欢迎来到我的<span class="gradient-text">开发者博客</span>
+            </h1>
+            <p class="hero-description">
+                分享现代Web开发、AI集成和创新解决方案的见解、教程和思考。
+            </p>
+            <div class="hero-actions">
+                <a href="{{ '/blog' | relative_url }}" class="btn btn-primary">阅读最新文章</a>
+                <a href="{{ '/about' | relative_url }}" class="btn btn-secondary">关于我</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="code-preview">
+                <div class="code-header">
+                    <div class="code-dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <span class="code-title">blog.js</span>
+                </div>
+                <div class="code-content">
+                    <div class="code-line"><span class="keyword">const</span> <span class="variable">passion</span> = <span class="string">"分享知识"</span>;</div>
+                    <div class="code-line"><span class="keyword">const</span> <span class="variable">topics</span> = [<span class="string">"React"</span>, <span class="string">"AI"</span>, <span class="string">"Web开发"</span>];</div>
+                    <div class="code-line"></div>
+                    <div class="code-line"><span class="keyword">function</span> <span class="function">createContent</span>() {</div>
+                    <div class="code-line">  <span class="keyword">return</span> <span class="variable">passion</span> + <span class="variable">experience</span>;</div>
+                    <div class="code-line">}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <div class="container">
+            <h2 class="section-title">About Me</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p class="about-description">
+                        I'm a passionate developer with a love for creating innovative solutions 
+                        and sharing knowledge with the community. With expertise in modern web 
+                        technologies and a keen eye for design, I strive to build applications 
+                        that are both functional and beautiful.
+                    </p>
+                    <div class="skills-grid">
+                        <div class="skill-item">
+                            <h3>Frontend</h3>
+                            <p>React, Vue, TypeScript, CSS</p>
+                        </div>
+                        <div class="skill-item">
+                            <h3>Backend</h3>
+                            <p>Node.js, Python, PostgreSQL</p>
+                        </div>
+                        <div class="skill-item">
+                            <h3>Tools</h3>
+                            <p>Git, Docker, AWS, Figma</p>
+                        </div>
+                        <div class="skill-item">
+                            <h3>AI/ML</h3>
+                            <p>TensorFlow, OpenAI, LangChain</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Featured Projects</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-header">
+                        <h3 class="project-title">AI Code Assistant</h3>
+                        <div class="project-links">
+                            <a href="#" class="project-link">Live Demo</a>
+                            <a href="#" class="project-link">GitHub</a>
+                        </div>
+                    </div>
+                    <p class="project-description">
+                        An intelligent code assistant powered by AI that helps developers 
+                        write better code faster with real-time suggestions and explanations.
+                    </p>
+                    <div class="project-tech">
+                        <span class="tech-tag">React</span>
+                        <span class="tech-tag">OpenAI</span>
+                        <span class="tech-tag">Node.js</span>
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <h3 class="project-title">Design System</h3>
+                        <div class="project-links">
+                            <a href="#" class="project-link">Live Demo</a>
+                            <a href="#" class="project-link">GitHub</a>
+                        </div>
+                    </div>
+                    <p class="project-description">
+                        A comprehensive design system with reusable components, 
+                        design tokens, and documentation for consistent UI development.
+                    </p>
+                    <div class="project-tech">
+                        <span class="tech-tag">Storybook</span>
+                        <span class="tech-tag">CSS</span>
+                        <span class="tech-tag">TypeScript</span>
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <h3 class="project-title">Performance Monitor</h3>
+                        <div class="project-links">
+                            <a href="#" class="project-link">Live Demo</a>
+                            <a href="#" class="project-link">GitHub</a>
+                        </div>
+                    </div>
+                    <p class="project-description">
+                        Real-time application performance monitoring dashboard 
+                        with advanced analytics and alerting capabilities.
+                    </p>
+                    <div class="project-tech">
+                        <span class="tech-tag">Vue.js</span>
+                        <span class="tech-tag">D3.js</span>
+                        <span class="tech-tag">WebSocket</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Blog Posts -->
+    <section id="latest-posts" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">最新文章</h2>
+            
+            <div class="blog-grid">
+                {% for post in site.posts limit: 3 %}
+                <article class="blog-card">
+                    <div class="blog-meta">
+                        <time class="blog-date" datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%Y年%m月%d日" }}</time>
+                        {% if post.categories.size > 0 %}
+                        <span class="blog-category">{{ post.categories | first }}</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="blog-title">
+                        <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+                    </h3>
+                    <p class="blog-excerpt">
+                        {{ post.excerpt | strip_html | truncate: 150 }}
+                    </p>
+                    <a href="{{ post.url | relative_url }}" class="blog-link">阅读更多 →</a>
+                </article>
+                {% endfor %}
+                
+                {% if site.posts.size == 0 %}
+                <div class="no-posts">
+                    <h3>暂无文章</h3>
+                    <p>敬请期待新内容！</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if site.posts.size > 3 %}
+            <div class="section-cta">
+                <a href="{{ '/blog' | relative_url }}" class="btn btn-primary">查看所有文章</a>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Let's Connect</h2>
+            <div class="contact-content">
+                <p class="contact-description">
+                    Interested in collaborating or have a project in mind? 
+                    I'd love to hear from you.
+                </p>
+                <div class="contact-links">
+                    <a href="mailto:your.email@example.com" class="contact-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        your.email@example.com
+                    </a>
+                    <a href="https://github.com/yourusername" class="contact-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                        </svg>
+                        GitHub
+                    </a>
+                    <a href="https://linkedin.com/in/yourusername" class="contact-link">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                        LinkedIn
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>

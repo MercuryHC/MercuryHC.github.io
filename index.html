@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>现代开发者博客 - 首页</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="/" class="brand-link">现代开发者博客</a>
+            </div>
+            <div class="nav-links">
+                <a href="#home" class="nav-link">首页</a>
+                <a href="#about" class="nav-link">关于</a>
+                <a href="blog.html" class="nav-link">博客</a>
+                <a href="tags.html" class="nav-link">标签</a>
+                <a href="#projects" class="nav-link">项目</a>
+                <a href="#contact" class="nav-link">联系</a>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <svg class="theme-icon sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <section id="home" class="hero section">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        欢迎来到 <span class="gradient-text">现代开发者博客</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        探索前沿技术，分享开发经验，构建更美好的数字世界
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#" class="btn btn-primary">开始阅读</a>
+                        <a href="#" class="btn btn-secondary">了解更多</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 热门文章部分 -->
+        <section class="section section-alt">
+            <div class="container">
+                <h2 class="section-title">热门文章</h2>
+                <p class="section-subtitle">阅读量最高的精选文章</p>
+                <div class="blog-grid">
+                    <article class="blog-card">
+                        <div class="blog-meta">
+                            <span class="blog-date">2024年12月15日</span>
+                            <span class="blog-views">🔥 15,234 阅读</span>
+                        </div>
+                        <h3><a href="_posts/2024-12-15-building-modern-web-apps-with-ai.md">使用 AI 构建现代 Web 应用</a></h3>
+                        <p>探索如何将人工智能技术集成到现代 Web 应用中，提升用户体验和功能性。从机器学习模型的部署到智能交互设计，全面解析AI驱动的Web开发。</p>
+                        <div class="blog-tags">
+                            <span class="tag">AI</span>
+                            <span class="tag">Web开发</span>
+                            <span class="tag">机器学习</span>
+                        </div>
+                        <a href="_posts/2024-12-15-building-modern-web-apps-with-ai.md" class="read-more">阅读全文 →</a>
+                    </article>
+                    
+                    <article class="blog-card">
+                        <div class="blog-meta">
+                            <span class="blog-date">2024年12月5日</span>
+                            <span class="blog-views">🔥 12,891 阅读</span>
+                        </div>
+                        <h3><a href="_posts/2024-12-05-react-performance-optimization.md">React 性能优化最佳实践</a></h3>
+                        <p>深入探讨 React 应用的性能优化技巧，包括组件优化、状态管理和渲染优化等方面。通过实际案例展示如何将应用性能提升50%以上。</p>
+                        <div class="blog-tags">
+                            <span class="tag">React</span>
+                            <span class="tag">性能优化</span>
+                            <span class="tag">前端</span>
+                        </div>
+                        <a href="_posts/2024-12-05-react-performance-optimization.md" class="read-more">阅读全文 →</a>
+                    </article>
+                    
+                    <article class="blog-card">
+                        <div class="blog-meta">
+                            <span class="blog-date">2024年12月10日</span>
+                            <span class="blog-views">🔥 9,567 阅读</span>
+                        </div>
+                        <h3><a href="_posts/2024-12-10-future-of-ui-design.md">UI 设计的未来趋势</a></h3>
+                        <p>分析当前 UI 设计的发展趋势，探讨新兴技术对用户界面设计的影响。从神经形态设计到空间计算界面，预见设计的未来方向。</p>
+                        <div class="blog-tags">
+                            <span class="tag">UI设计</span>
+                            <span class="tag">趋势</span>
+                            <span class="tag">用户体验</span>
+                        </div>
+                        <a href="_posts/2024-12-10-future-of-ui-design.md" class="read-more">阅读全文 →</a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于部分 -->
+        <section id="about" class="section">
+            <div class="container">
+                <h2 class="section-title">关于我</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>我是一名热爱技术的全栈开发者，专注于现代Web技术和用户体验设计。在这里，我分享我的学习心得、项目经验和对技术发展的思考。</p>
+                        <p>我相信技术应该服务于人，让生活变得更美好。通过不断学习和实践，我致力于创造有价值的数字产品。</p>
+                    </div>
+                    <div class="skills-grid">
+                        <div class="skill-item">JavaScript</div>
+                        <div class="skill-item">React</div>
+                        <div class="skill-item">Vue.js</div>
+                        <div class="skill-item">Node.js</div>
+                        <div class="skill-item">Python</div>
+                        <div class="skill-item">AI/ML</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 项目展示部分 -->
+        <section id="projects" class="section section-alt">
+            <div class="container">
+                <h2 class="section-title">精选项目</h2>
+                <p class="section-subtitle">一些我参与开发的有趣项目</p>
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h3>现代博客主题</h3>
+                            <div class="project-status">已完成</div>
+                        </div>
+                        <p>一个支持明暗主题切换的现代化博客主题，具有响应式设计和流畅的动画效果。</p>
+                        <div class="project-tech">
+                            <span>HTML5</span>
+                            <span>CSS3</span>
+                            <span>JavaScript</span>
+                            <span>Jekyll</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="project-link">查看演示</a>
+                            <a href="#" class="project-link">源代码</a>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h3>AI 助手应用</h3>
+                            <div class="project-status">开发中</div>
+                        </div>
+                        <p>基于最新AI技术的智能助手应用，提供自然语言交互和个性化服务。</p>
+                        <div class="project-tech">
+                            <span>React</span>
+                            <span>Node.js</span>
+                            <span>OpenAI API</span>
+                            <span>MongoDB</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="project-link">了解更多</a>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h3>数据可视化平台</h3>
+                            <div class="project-status">已完成</div>
+                        </div>
+                        <p>企业级数据可视化平台，支持多种图表类型和实时数据更新。</p>
+                        <div class="project-tech">
+                            <span>Vue.js</span>
+                            <span>D3.js</span>
+                            <span>Python</span>
+                            <span>FastAPI</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="#" class="project-link">查看演示</a>
+                            <a href="#" class="project-link">案例研究</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系部分 -->
+        <section id="contact" class="section">
+            <div class="container">
+                <h2 class="section-title">联系我</h2>
+                <p class="section-subtitle">有想法？让我们一起聊聊</p>
+                <div class="contact-content">
+                    <div class="contact-info">
+                        <div class="contact-method">
+                            <div class="contact-icon">📧</div>
+                            <div>
+                                <h4>邮箱</h4>
+                                <p>hello@example.com</p>
+                            </div>
+                        </div>
+                        <div class="contact-method">
+                            <div class="contact-icon">💼</div>
+                            <div>
+                                <h4>LinkedIn</h4>
+                                <p>@username</p>
+                            </div>
+                        </div>
+                        <div class="contact-method">
+                            <div class="contact-icon">🐙</div>
+                            <div>
+                                <h4>GitHub</h4>
+                                <p>@username</p>
+                            </div>
+                        </div>
+                        <div class="contact-method">
+                            <div class="contact-icon">🐦</div>
+                            <div>
+                                <h4>Twitter</h4>
+                                <p>@username</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form class="contact-form">
+                        <div class="form-group">
+                            <label for="name">姓名</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">邮箱</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">主题</label>
+                            <input type="text" id="subject" name="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">消息</label>
+                            <textarea id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">发送消息</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Initialize all features when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            initializeSmoothScrolling();
+            initializeNavbarScrollEffect();
+            initializeScrollAnimations();
+        });
+    </script>
+</body>
+</html>
