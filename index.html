@@ -1744,6 +1744,64 @@
           font-size: 10px;
         }
       }
+
+      .task-datetime-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 16px;
+        row-gap: 0;
+        align-items: start;
+      }
+      .datetime-field {
+        min-width: 0;
+      }
+      .datetime-field label {
+        display: block;
+        margin: 16px 0 6px;
+        line-height: 18px;
+      }
+      .datetime-field input {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        height: 40px;
+      }
+      .datetime-hint {
+        font-size: 11px;
+        line-height: 1.7;
+        margin: 7px 0 0;
+        color: #929bad;
+      }
+      .task-datetime-cell {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum";
+      }
+      .task-datetime-cell .task-date {
+        display: inline-block;
+        width: 10ch;
+      }
+      .task-datetime-cell .task-clock {
+        display: inline-block;
+        min-width: 5ch;
+        margin-left: 10px;
+      }
+      .table-wrap table {
+        min-width: 960px;
+      }
+      .table-wrap th:nth-last-child(-n + 2) {
+        white-space: nowrap;
+        min-width: 170px;
+      }
+      @media (max-width: 440px) {
+        .task-datetime-grid {
+          column-gap: 10px;
+        }
+        .datetime-field label {
+          font-size: 11px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1974,23 +2032,30 @@
           placeholder="准备完成什么？"
         /><label>所属项目</label
         ><select name="project"></select>
-        <div class="row">
-          <div style="flex: 1">
-            <label>开始日期</label><input name="start" type="date" required />
-            <label for="task-start-time">开始时间（本机时区，可留空）</label
-            ><input id="task-start-time" name="startTime" type="time" />
-            <p class="sub" style="margin-top: 6px">留空按当天 00:00 计算。</p>
+        <div class="task-datetime-grid">
+          <div class="datetime-field">
+            <label for="task-start-date">开始日期</label
+            ><input id="task-start-date" name="start" type="date" required />
           </div>
-          <div style="flex: 1">
-            <label>截止日期</label><input name="due" type="date" required />
-            <label for="task-due-time">截止时间（本机时区，可留空）</label
+          <div class="datetime-field">
+            <label for="task-due-date">截止日期</label
+            ><input id="task-due-date" name="due" type="date" required />
+          </div>
+          <div class="datetime-field">
+            <label for="task-start-time">开始时间（可留空）</label
+            ><input id="task-start-time" name="startTime" type="time" />
+          </div>
+          <div class="datetime-field">
+            <label for="task-due-time">截止时间（可留空）</label
             ><input id="task-due-time" name="dueTime" type="time" />
-            <p style="font-size: 11px; margin-top: 6px">
-              留空按当天
-              23:59；仅高和加急⚡任务提醒：不足6小时黄色，不足1小时红色。跨度超过1天的任务从截止前一天12:00起绿色预告。
-            </p>
           </div>
         </div>
+        <p class="datetime-hint">
+          按本机时区计算；开始时间留空按 00:00，截止时间留空按 23:59。
+        </p>
+        <p class="datetime-hint">
+          仅高和加急⚡任务提醒：跨天长任务从截止前一天12:00起绿色预告，不足6小时黄色，不足1小时红色。
+        </p>
         <div class="row">
           <div style="flex: 1">
             <label>状态</label
@@ -2560,7 +2625,7 @@
         }
         if (view === "list") {
           $("#task-content").innerHTML =
-            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>开始时间</th><th>截止时间</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td class="sub">${esc(t.start.slice(5))}${t.startTime ? " " + esc(t.startTime) : ""}</td><td style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}">${t.due === today ? "今天" : esc(t.due.slice(5).replace("-", " / "))}${t.dueTime ? " " + esc(t.dueTime) : ""}</td></tr>`).join("")}</tbody></table></div>`;
+            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>开始时间</th><th>截止时间</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td class="task-datetime-cell sub"><span class="task-date">${esc(t.start.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.startTime || "—")}</span></td><td class="task-datetime-cell" style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}"><span class="task-date">${esc(t.due.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.dueTime || "—")}</span></td></tr>`).join("")}</tbody></table></div>`;
         } else if (view === "board") {
           $("#task-content").innerHTML =
             '<div class="board">' +
