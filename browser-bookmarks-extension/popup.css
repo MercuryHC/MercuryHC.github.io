@@ -1,0 +1,65 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  width: 320px;
+  padding: 22px;
+  margin: 0;
+  background: #f4f6fb;
+  color: #34425a;
+  font: 13px system-ui;
+}
+h1 {
+  font-size: 21px;
+  margin: 9px 0 10px;
+}
+.eyebrow {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #8895af;
+}
+p {
+  line-height: 1.7;
+  color: #7b889d;
+}
+label {
+  display: block;
+  margin: 17px 0 8px;
+}
+input:not([type="checkbox"]) {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid #dce2ee;
+  border-radius: 8px;
+  padding: 10px;
+}
+.check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.hint {
+  font-size: 11px;
+}
+button {
+  cursor: pointer;
+  width: 100%;
+  padding: 11px;
+  border: 0;
+  border-radius: 8px;
+  background: #647ae4;
+  color: white;
+  margin-top: 8px;
+}
+.secondary {
+  background: #e5eaf5;
+  color: #536488;
+}
+button:disabled {
+  opacity: 0.5;
+}
+#status {
+  font-size: 11px;
+  margin-bottom: 0;
+}

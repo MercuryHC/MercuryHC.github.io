@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "个人工作站 · 浏览器书签同步",
+  "version": "1.0.0",
+  "description": "只读同步当前浏览器的书签到 MercuryHC 个人工作站的本机存储。自动同步默认关闭。",
+  "permissions": ["bookmarks", "storage"],
+  "host_permissions": ["https://mercuryhc.github.io/*"],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "同步书签到个人工作站"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mercuryhc.github.io/*"],
+      "js": ["bridge.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ]
+}

@@ -385,7 +385,13 @@
     }),
   };
   function app(name) {
-    name = ["notion", "obsidian", "notion-cloud", "bookmarks"].includes(name)
+    name = [
+      "notion",
+      "obsidian",
+      "notion-cloud",
+      "bookmarks",
+      "browser-bookmarks",
+    ].includes(name)
       ? name
       : "task";
     document.body.dataset.workspace = name;
@@ -400,6 +406,8 @@
     $("notion-cloud-sidebar").hidden = name !== "notion-cloud";
     $("bookmarks-workspace").hidden = name !== "bookmarks";
     $("bookmarks-sidebar").hidden = name !== "bookmarks";
+    $("browser-bookmarks-workspace").hidden = name !== "browser-bookmarks";
+    $("browser-bookmarks-sidebar").hidden = name !== "browser-bookmarks";
     applyCollapse(name);
     $("gh-read").textContent =
       name === "bookmarks"

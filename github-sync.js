@@ -33,6 +33,14 @@
     localStorage.setItem("taskspace-local-dirty", String(dirty));
   }
   function updateDockState() {
+    if (document.body?.dataset.workspace === "browser-bookmarks") {
+      const chip = el("gh-dock-state");
+      chip.textContent = "书签本机保存";
+      chip.dataset.state = "offline";
+      chip.title = "浏览器快照保存在本机，可导出备份或将单条收藏加入主页。";
+      chip.setAttribute("aria-label", chip.title);
+      return;
+    }
     if (
       document.body?.dataset.workspace === "bookmarks" &&
       window.BookmarksWorkspace?.state
@@ -425,7 +433,10 @@
     notebookOperation(() => withUpload("保存到 GitHub", fn));
   async function rawApi(url, options = {}) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 25000);
+    const timer = setTimeout(
+      () => controller.abort(),
+      options.timeoutMs || 25000,
+    );
     try {
       let response;
       window.GitHubUpload?.request(url, options.method || "GET");
@@ -1463,6 +1474,54 @@
     baseUrl() +
     "/contents/" +
     path.split("/").map(encodeURIComponent).join("/");
+  window.WallpaperGitHub = {
+    context: noteContext,
+    sync: (catalog, progress) =>
+      uploadOperation(() => {
+        if (!token) throw Error("请先在顶部 GitHub 菜单连接私有数据仓库。");
+        const resumeKey =
+          "workstation-wallpaper-resume:" +
+          JSON.stringify([config.owner, config.repo, config.branch]);
+        let uploaded;
+        try {
+          uploaded = new Set(
+            JSON.parse(localStorage.getItem(resumeKey) || "[]"),
+          );
+        } catch {
+          uploaded = new Set();
+        }
+        const resume = {
+          has: (sha) => uploaded.has(sha),
+          save: (sha) => {
+            uploaded.add(sha);
+            try {
+              localStorage.setItem(resumeKey, JSON.stringify([...uploaded]));
+            } catch {}
+          },
+        };
+        return window.WallpaperLibrary.create({
+          resume,
+          request: (path, options) => rawApi(baseUrl() + path, options),
+          branch: config.branch,
+        }).sync(catalog, progress);
+      }),
+    read: async (sha) => {
+      if (!token) return null;
+      if (!/^[a-f0-9]{40}$/.test(sha)) throw Error("背景图片校验值无效。");
+      const file = await rawApi(baseUrl() + "/git/blobs/" + sha, {
+        missingOK: true,
+        timeoutMs: 60000,
+      });
+      if (!file) return null;
+      if (file.encoding !== "base64" || file.size > 20 * 1024 * 1024)
+        throw Error("背景图片格式或大小无效。");
+      const bytes = Uint8Array.from(
+        atob(file.content.replace(/\s/g, "")),
+        (c) => c.charCodeAt(0),
+      );
+      return new Blob([bytes], { type: "image/png" });
+    },
+  };
   window.ObsidianGitHub = {
     upload: (prefix, files, baselines = {}, force = {}) =>
       uploadOperation(() =>

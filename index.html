@@ -2061,7 +2061,8 @@
     <link rel="stylesheet" href="./workstation.css?v=progress-1" />
     <link rel="stylesheet" href="./theme.css?v=1" />
     <link rel="stylesheet" href="./code-highlight.css?v=1" />
-    <link rel="stylesheet" href="./workspace-apps.css?v=icons-sync-1" />
+    <link rel="stylesheet" href="./workspace-apps.css?v=reader-background-1" />
+    <link rel="stylesheet" href="./backgrounds.css?v=1" />
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2126,6 +2127,15 @@
       >
         <span class="station-icon station-notion-icon">N</span
         ><span>Notion</span>
+      </button>
+      <button
+        type="button"
+        data-app="browser-bookmarks"
+        class="station-app"
+        aria-pressed="false"
+        title="浏览器书签 · 搜索与同步"
+      >
+        <span class="station-icon">▣</span><span>书签</span>
       </button>
       <span class="station-dock-foot">个人<br />工作站</span>
     </nav>
@@ -2232,6 +2242,11 @@
       <button id="bm-group-new" class="secondary">＋ 新建分组</button
       ><button id="bm-group-delete" class="sidebar-quiet">删除当前分组</button>
     </aside>
+    <aside id="browser-bookmarks-sidebar" class="extension-sidebar" hidden>
+      <div class="brand"><b>▣</b> 书签</div>
+      <div class="small">浏览器与目录</div>
+      <div id="br-tree"></div>
+    </aside>
     <main>
       <header class="workspace-header">
         <button
@@ -2244,6 +2259,7 @@
           ◧
         </button>
         <div class="header-context">
+          <div class="reader-crumb">个人工作站 / 浏览器书签</div>
           <div class="cloud-crumb">个人工作站 / Notion · 云端知识库</div>
           <div class="bookmarks-crumb">
             个人工作站 / 主页 · 网页搜索与常用网站
@@ -2376,6 +2392,26 @@
                 </p>
               </div>
             </details>
+            <button
+              id="background-toggle" aria-haspopup="dialog"
+              class="theme-toggle"
+              title="页面背景"
+              aria-label="设置页面背景"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="16" rx="3" />
+                <circle cx="8" cy="9" r="1.5" />
+                <path d="m3 17 6-5 4 4 4-6 4 7" />
+              </svg>
+            </button>
             <button
               id="theme-toggle"
               class="theme-toggle"
@@ -2816,7 +2852,204 @@
         </p>
         <div id="bm-grid" class="bookmark-grid"></div>
       </section>
+      <section
+        id="browser-bookmarks-workspace"
+        class="extension-workspace"
+        hidden
+      >
+        <div class="notebook-heading">
+          <div>
+            <h1>浏览器书签</h1>
+            <p>把散落在不同浏览器里的链接，整理成可搜索的知识入口。</p>
+          </div>
+          <div class="notebook-actions">
+            <button class="secondary" id="br-connect">连接浏览器</button
+            ><button class="primary" id="br-import">导入书签文件</button
+            ><input type="file" id="br-file" hidden />
+          </div>
+        </div>
+        <div class="br-overview">
+          <div><strong id="br-total">0</strong><span>条书签</span></div>
+          <div><strong id="br-source-count">0</strong><span>个来源</span></div>
+          <div><strong id="br-folder-count">0</strong><span>个目录</span></div>
+          <div>
+            <strong id="br-extension-state">未连接</strong><span>扩展同步</span>
+          </div>
+        </div>
+        <div class="br-toolbar">
+          <input
+            id="br-search"
+            type="search"
+            placeholder="搜索标题、网址、目录、描述…多个关键词以空格分隔"
+            aria-label="搜索浏览器书签"
+          /><select id="br-source" aria-label="筛选书签来源">
+            <option value="">全部来源</option></select
+          ><select id="br-sort" aria-label="书签排序">
+            <option value="title">标题排序</option>
+            <option value="domain">网站排序</option>
+            <option value="date">最近添加</option>
+          </select>
+        </div>
+        <div class="bookmark-section-heading">
+          <h2 id="br-result-count">尚未导入书签</h2>
+          <div class="notebook-actions">
+            <button class="sidebar-quiet" id="br-read-now">立即同步</button
+            ><button class="sidebar-quiet" id="br-undo">撤销最近导入</button
+            ><button class="sidebar-quiet" id="br-export">导出备份</button
+            ><button class="sidebar-quiet" id="br-remove">移除此来源</button>
+          </div>
+        </div>
+        <p
+          class="extension-status"
+          id="br-status"
+          role="status"
+          aria-live="polite"
+        >
+          导入 HTML、本地 Chrome/Edge Bookmarks
+          JSON，或安装扩展读取浏览器书签。数据保存在本机，不修改浏览器原书签。
+        </p>
+        <div id="br-results" class="br-results"></div>
+        <div class="br-pagination">
+          <button class="secondary" id="br-prev">上一页</button
+          ><span id="br-page"></span
+          ><button class="secondary" id="br-next">下一页</button>
+        </div>
+      </section>
     </main>
+    <dialog id="background-dialog" aria-labelledby="bg-heading">
+      <div class="row">
+        <div>
+          <p class="bg-eyebrow">MAKE IT YOUR SPACE</p>
+          <h2 id="bg-heading">页面背景</h2>
+        </div>
+        <button id="bg-close" type="button" aria-label="关闭背景设置">×</button>
+      </div>
+      <div id="bg-preview" class="bg-preview">
+        <span>你的工作站，你的风景</span>
+      </div>
+      <div id="bg-presets" class="bg-presets" aria-label="背景预设"></div>
+      <div class="bg-library-heading">
+        <h3>自带图片库</h3>
+        <button id="bg-sync" class="secondary">同步到数据仓库</button>
+      </div>
+      <p class="connection-guide">
+        来自你的 wallpaper 仓库 · 118
+        张图片。缩略图按需加载，选中后才读取原图。同步将复制原图到当前连接的私有数据仓库。
+      </p>
+      <div id="bg-gallery" class="bg-gallery"></div>
+      <div class="br-pagination">
+        <button id="bg-prev" type="button">上一页</button
+        ><span id="bg-page"></span
+        ><button id="bg-next" type="button">下一页</button>
+      </div>
+      <div class="bg-upload-row">
+        <button id="bg-upload" type="button" class="secondary">
+          上传本地图片</button
+        ><span id="bg-selected">默认背景</span
+        ><input
+          id="bg-file"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          hidden
+        />
+      </div>
+      <div class="bg-controls">
+        <label
+          >应用范围<select id="bg-scope">
+            <option value="home">仅主页</option>
+            <option value="all">全部工作区</option>
+          </select></label
+        ><label
+          >背景模糊 <output id="bg-blur-value">0px</output
+          ><input id="bg-blur" type="range" min="0" max="20" value="0" /></label
+        ><label
+          >柔化遮罩 <output id="bg-mask-value">25%</output
+          ><input id="bg-mask" type="range" min="0" max="85" value="25"
+        /></label>
+      </div>
+      <p
+        id="bg-status"
+        class="extension-status"
+        role="status"
+        aria-live="polite"
+      >
+        背景设置保存在此浏览器。本地图片不会自动上传。
+      </p>
+      <progress id="bg-progress" max="118" value="0" hidden></progress>
+      <div class="dialog-actions">
+        <button id="bg-reset" type="button" class="secondary">恢复默认</button
+        ><button id="bg-apply" type="button" class="primary">应用背景</button>
+      </div>
+    </dialog>
+    <dialog id="br-import-dialog">
+      <form id="br-import-form">
+        <div class="row">
+          <h2>导入书签快照</h2>
+          <button type="button" id="br-import-close">×</button>
+        </div>
+        <p id="br-preview" class="connection-guide"></p>
+        <label
+          >来源名称<input
+            id="br-import-name"
+            maxlength="100"
+            required
+            placeholder="例如：公司 Chrome" /></label
+        ><label
+          >浏览器<select id="br-import-browser">
+            <option>Chrome</option>
+            <option>Edge</option>
+            <option>Firefox</option>
+            <option>Safari</option>
+            <option>其他</option>
+          </select></label
+        ><label
+          >更新方式<select id="br-import-target">
+            <option value="">新增独立来源</option>
+          </select></label
+        >
+        <p class="connection-guide">
+          选择已有来源时会替换该来源的快照，新增、移动与删除都会反映在页面中。其他来源不受影响，可撤销。
+        </p>
+        <div class="dialog-actions">
+          <button class="primary">确认导入</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="br-help-dialog">
+      <div class="row">
+        <h2>连接浏览器书签</h2>
+        <button id="br-help-close">×</button>
+      </div>
+      <p class="connection-guide">
+        网页不能直接读取浏览器内部书签。可安装本站提供的 Chrome / Edge
+        扩展，或使用书签文件导入。
+      </p>
+      <ol class="connection-guide">
+        <li>下载并解压下方扩展包。</li>
+        <li>
+          打开浏览器扩展管理页，开启开发者模式，选择「加载已解压的扩展程序」。
+        </li>
+        <li>选择含 manifest.json 的文件夹，刷新工作站。</li>
+        <li>
+          点击扩展图标，可「立即同步」或开启「自动同步」。自动同步默认关闭。
+        </li>
+      </ol>
+      <p class="connection-guide">
+        开启自动同步后，新增、修改、移动、删除会更新本站本机快照；关闭页面期间的更改会在下次打开时读取。扩展只调用书签读取
+        API，不上传到第三方，不修改原书签。
+      </p>
+      <a
+        class="primary"
+        href="./downloads/browser-bookmarks-extension.zip"
+        download
+        >下载 Chrome / Edge 扩展包</a
+      >
+      <p class="connection-guide">
+        不安装扩展：从浏览器书签管理器导出
+        HTML，再点击「导入书签文件」。支持保留目录层级、多个来源与搜索。Firefox
+        / Safari 请使用此方式。
+      </p>
+    </dialog>
     <dialog id="nr-dialog">
       <form id="nr-form">
         <div class="row">
@@ -3919,17 +4152,22 @@
     <script src="./project-store.js?v=1"></script>
     <script src="./vault-sync.js?v=1"></script>
     <script src="./upload-progress.js?v=diff-1"></script>
-    <script src="./github-sync.js?v=bookmark-sync-1"></script>
+    <script src="./wallpaper-library.js?v=1"></script>
+    <script src="./github-sync.js?v=reader-1"></script>
     <script src="./notion-client.js?v=1"></script>
     <script src="./bookmarks-core.js?v=merge-1"></script>
     <script src="./theme.js?v=1"></script>
     <script src="./directory-tree.js?v=1"></script>
-    <script src="./workstation.js?v=bookmark-sync-1"></script>
+    <script src="./workstation.js?v=reader-1"></script>
     <script src="./obsidian-core.js?v=folders-1"></script>
     <script src="./obsidian.js?v=diff-1"></script>
     <script src="./notion-workspace.js?v=1"></script>
     <script src="./web-search.js?v=icons-1"></script>
-    <script src="./bookmarks.js?v=sync-1"></script>
+    <script src="./bookmarks.js?v=reader-1"></script>
+    <script src="./browser-bookmarks-core.js?v=1"></script>
+    <script src="./browser-bookmarks-store.js?v=1"></script>
+    <script src="./browser-bookmarks.js?v=1"></script>
+    <script src="./backgrounds.js?v=1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>

@@ -1,0 +1,210 @@
+body {
+  isolation: isolate;
+}
+#workspace-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+#workspace-background[hidden] {
+  display: none;
+}
+.bg-paint,
+.bg-mask {
+  position: absolute;
+  inset: -35px;
+}
+.bg-mask {
+  background: #f3f5fa;
+}
+html[data-theme="dark"] .bg-mask {
+  background: #10151e;
+}
+body[data-background-active="true"] {
+  background: transparent !important;
+}
+#background-dialog {
+  width: min(780px, 94vw);
+  max-width: 780px;
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--app-surface);
+  color: var(--app-text);
+  padding: 25px;
+}
+#background-dialog h2 {
+  margin: 3px 0 10px;
+}
+.bg-eyebrow {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--app-soft);
+  margin: 0;
+}
+.bg-preview {
+  height: 135px;
+  border: 1px solid var(--app-border);
+  border-radius: 13px;
+  margin: 14px 0;
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--app-hover);
+  color: #fff;
+  text-shadow: 0 1px 10px #233047;
+}
+.bg-preview:before {
+  content: "";
+  position: absolute;
+  inset: -25px;
+  background: inherit;
+  background-size: cover;
+  background-position: center;
+  filter: blur(var(--preview-blur, 0px));
+}
+.bg-preview:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #cfd6e5;
+  opacity: var(--preview-mask, 0.25);
+}
+.bg-preview span {
+  position: relative;
+  z-index: 1;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: 2px;
+}
+.bg-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.bg-presets button {
+  width: calc((100% - 48px) / 7);
+  min-width: 56px;
+  height: 45px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  font-size: 11px;
+  color: #33415b;
+}
+.bg-presets button[data-kind="midnight"] {
+  color: #fff;
+}
+.bg-presets button[aria-pressed="true"],
+.bg-wallpaper[aria-pressed="true"] {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.bg-library-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 20px 0 4px;
+}
+.bg-library-heading h3 {
+  font-size: 14px;
+}
+.bg-gallery {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 9px;
+}
+.bg-wallpaper {
+  position: relative;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  overflow: hidden;
+  aspect-ratio: 1.65;
+  background: var(--app-hover);
+}
+.bg-wallpaper img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bg-wallpaper span {
+  position: absolute;
+  bottom: 4px;
+  right: 5px;
+  background: #15213988;
+  color: white;
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.bg-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 0;
+}
+.bg-upload-row span {
+  font-size: 11px;
+  color: var(--app-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bg-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 18px;
+}
+.bg-controls label {
+  font-size: 11px;
+  color: var(--app-soft);
+  display: block;
+}
+.bg-controls input,
+.bg-controls select {
+  width: 100%;
+  margin-top: 7px;
+}
+.bg-controls output {
+  float: right;
+}
+#bg-progress {
+  width: 100%;
+  height: 7px;
+  accent-color: var(--blue);
+}
+body[data-background-active="true"] .bookmark-card {
+  backdrop-filter: blur(10px);
+}
+@media (max-width: 650px) {
+  .bg-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .bg-controls {
+    grid-template-columns: 1fr;
+  }
+  .bg-preview {
+    height: 110px;
+  }
+  .bg-library-heading {
+    align-items: flex-start;
+  }
+  .bg-library-heading button {
+    font-size: 10px;
+  }
+}
+
+.bg-wallpaper .bg-wallpaper-thumb {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border-radius: 0;
+  background-size: 600% 300%;
+  width: 100%;
+  height: 100%;
+}
+body[data-background-active=true] .bookmark-hero{background:color-mix(in srgb,var(--app-surface) 80%,transparent);backdrop-filter:blur(12px);border:1px solid var(--app-border);border-radius:20px;margin-bottom:24px}body[data-background-active=true] .bookmark-section-heading{background:color-mix(in srgb,var(--app-surface) 90%,transparent);padding:10px 14px;border-radius:10px}

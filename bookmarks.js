@@ -484,6 +484,21 @@
     }
   };
   window.BookmarksWorkspace = {
+    add(item) {
+      const next = clone();
+      if (next.items.some((b) => b.url === item.url)) return false;
+      const group = "浏览器书签";
+      if (!next.groups.includes(group)) next.groups.push(group);
+      next.items.push({
+        id: crypto.randomUUID(),
+        title: item.title.slice(0, 100),
+        url: item.url,
+        icon: "book",
+        color: "#687baf",
+        group,
+      });
+      return commit(next);
+    },
     read: readCloud,
     save: () => saveCloud(),
     state: syncState,

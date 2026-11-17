@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>书签同步</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="eyebrow">PERSONAL WORKSTATION</div>
+    <h1>让书签保持同步</h1>
+    <p>只读取书签，保存到工作站的本机存储。</p>
+    <label
+      >来源名称<input
+        id="name"
+        maxlength="100"
+        placeholder="例如：公司 Edge" /></label
+    ><label class="check"
+      ><input id="auto" type="checkbox" />自动同步浏览器更改</label
+    >
+    <p class="hint">
+      默认关闭。开启后同步新增、修改、移动与删除；下次打开工作站时会读取最新快照。
+    </p>
+    <button id="sync">立即同步</button
+    ><button id="open" class="secondary">打开工作站</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <script src="popup.js"></script>
+  </body>
+</html>
