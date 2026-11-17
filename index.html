@@ -1307,6 +1307,119 @@
           animation: none;
         }
       }
+
+      #task-dialog {
+        max-height: 90vh;
+        overflow: auto;
+      }
+      .repeat-settings {
+        margin-top: 20px;
+        padding: 0 14px 14px;
+        border: 1px solid #e4e8f1;
+        border-radius: 9px;
+        background: #f8f9fc;
+      }
+      .repeat-interval-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        font-size: 12px;
+        color: #738097;
+      }
+      .repeat-interval-row input {
+        width: 65px;
+        padding: 7px;
+      }
+      .weekday-picker {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin: 9px 0 12px;
+      }
+      .weekday-picker label {
+        display: block;
+        margin: 0;
+        position: relative;
+        cursor: pointer;
+      }
+      .weekday-picker input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+      }
+      .weekday-picker span {
+        display: grid;
+        place-items: center;
+        width: 33px;
+        height: 32px;
+        border-radius: 7px;
+        background: white;
+        border: 1px solid #e0e5ef;
+        color: #8893a6;
+        font-size: 12px;
+      }
+      .weekday-picker input:checked + span {
+        background: #e8edff;
+        border-color: #8197f3;
+        color: #536ded;
+      }
+      .weekday-picker input:focus-visible + span {
+        outline: 2px solid #536ded;
+        outline-offset: 2px;
+      }
+      #recurring-dialog {
+        width: 520px;
+        max-height: 85vh;
+        overflow: auto;
+      }
+      .recurring-item {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 12px;
+      }
+      .recurring-item strong {
+        font-size: 13px;
+      }
+      .recurring-item p {
+        font-size: 11px;
+        margin-top: 7px;
+      }
+
+      .project-navigation {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 8px 0 24px;
+        padding: 14px 17px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        flex-wrap: wrap;
+      }
+      .project-navigation[hidden] {
+        display: none;
+      }
+      .project-trail {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #9aa3b1;
+      }
+      .project-trail button {
+        color: #6279d0;
+        font-size: 12px;
+        padding: 3px 0;
+      }
+      .project-trail strong {
+        font-size: 12px;
+        color: #5c687b;
+        font-weight: 550;
+      }
     </style>
   </head>
   <body>
@@ -1462,13 +1575,22 @@
           <h1 id="heading">让每一件事，有序发生。</h1>
           <p id="subtitle">聚焦当下，从容推进每一个目标。</p>
         </div>
-        <button class="primary" onclick="openTask()">＋ 新建任务</button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <button class="secondary" id="recurring-open">↻ 循环计划</button
+          ><button class="primary" onclick="openTask()">＋ 新建任务</button>
+        </div>
       </div>
       <section id="stats" class="stats"></section>
+      <div id="project-nav" class="project-navigation" hidden></div>
       <section id="project-section">
         <div class="section-head">
-          <h2>我的项目 <span class="sub" id="project-count"></span></h2>
-          <button class="secondary" onclick="openProject()">＋ 新建项目</button>
+          <h2>
+            <span id="project-level-title">一级项目</span>
+            <span class="sub" id="project-count"></span>
+          </h2>
+          <button class="secondary" id="project-create" onclick="openProject()">
+            ＋ 新建一级项目
+          </button>
         </div>
         <div id="projects" class="projects"></div>
       </section>
@@ -1558,6 +1680,72 @@
             </select>
           </div>
         </div>
+        <section class="repeat-settings">
+          <label for="repeat-frequency">重复计划</label
+          ><select id="repeat-frequency">
+            <option value="none">不重复</option>
+            <option value="daily">每天循环</option>
+            <option value="weekly">每周 · 指定星期</option>
+            <option value="monthly">每月循环</option>
+          </select>
+          <div id="repeat-options" hidden>
+            <div class="repeat-interval-row">
+              <span>每隔</span
+              ><input
+                id="repeat-interval"
+                type="number"
+                min="1"
+                max="52"
+                value="1"
+                aria-label="重复间隔"
+              /><span id="repeat-unit">天</span><span>执行</span>
+            </div>
+            <div id="repeat-weekdays" hidden>
+              <div class="sub">选择星期（可多选）</div>
+              <div class="weekday-picker">
+                <label
+                  ><input type="checkbox" data-weekday="1" /><span
+                    >一</span
+                  ></label
+                ><label
+                  ><input type="checkbox" data-weekday="2" /><span
+                    >二</span
+                  ></label
+                ><label
+                  ><input type="checkbox" data-weekday="3" /><span
+                    >三</span
+                  ></label
+                ><label
+                  ><input type="checkbox" data-weekday="4" /><span
+                    >四</span
+                  ></label
+                ><label
+                  ><input type="checkbox" data-weekday="5" /><span
+                    >五</span
+                  ></label
+                ><label
+                  ><input type="checkbox" data-weekday="6" /><span
+                    >六</span
+                  ></label
+                ><label
+                  ><input type="checkbox" data-weekday="0" /><span
+                    >日</span
+                  ></label
+                >
+              </div>
+            </div>
+            <p id="repeat-month-note" class="sub" hidden>
+              按开始日期的日号循环；当月没有该日期时，安排在当月最后一天。
+            </p>
+            <label for="repeat-until">循环结束日期（可留空）</label
+            ><input id="repeat-until" type="date" />
+          </div>
+          <p id="repeat-series-note" class="sub" style="margin-top: 10px"></p>
+          <p class="sub" style="margin-top: 6px">
+            页面打开时自动补建到期任务；关闭页面期间不在后台运行。生成的任务需要保存到
+            GitHub 才会同步。
+          </p>
+        </section>
         <label>任务备注</label
         ><textarea name="note" placeholder="补充说明、下一步行动…"></textarea>
         <div class="dialog-actions">
@@ -1566,6 +1754,19 @@
           ><button class="primary">保存任务</button>
         </div>
       </form>
+    </dialog>
+    <dialog id="recurring-dialog">
+      <div class="row">
+        <h2>循环计划</h2>
+        <button id="recurring-close" type="button">✕</button>
+      </div>
+      <p class="sub" style="margin: 12px 0">
+        每轮生成独立任务，历史完成记录保留。暂停后不再生成；恢复时补建遗漏的执行日期。
+      </p>
+      <div id="recurring-list"></div>
+      <button class="primary" id="recurring-create" style="margin-top: 16px">
+        ＋ 新建循环任务
+      </button>
     </dialog>
     <dialog id="project-dialog">
       <form id="project-form">
@@ -1576,8 +1777,17 @@
           </button>
         </div>
         <label>项目名称</label
-        ><input name="title" required maxlength="60" /><label>项目描述</label
-        ><textarea name="description"></textarea><label>标记颜色</label
+        ><input name="title" required maxlength="60" /><label
+          for="project-parent"
+          >项目归属</label
+        ><select id="project-parent" name="parentId">
+          <option value="">一级项目（无上级）</option>
+        </select>
+        <p class="sub" style="margin-top: 7px">
+          选择上级后创建二级项目，最多两级。一级项目进度会汇总其二级项目任务。
+        </p>
+        <label>项目描述</label><textarea name="description"></textarea
+        ><label>标记颜色</label
         ><select name="color">
           <option value="#536ded">鸢尾蓝</option>
           <option value="#34aa97">松石绿</option>
@@ -1645,6 +1855,7 @@
         </div>
       </form>
     </dialog>
+    <script src="./recurrence-core.js?v=1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         esc = (s) =>
@@ -1749,6 +1960,53 @@
         nav = "overview",
         editing = null,
         editProject = null;
+      let projectFocus = null,
+        projectTaskMode = false;
+      const projectChildren = (id) =>
+        db.projects.filter((p) => (p.parentId || "") === id);
+      const projectContains = (parent, id) =>
+        parent === id || project(id)?.parentId === parent;
+      const projectPath = (p) =>
+        p
+          ? p.parentId
+            ? (project(p.parentId)?.title || "") + " / " + p.title
+            : p.title
+          : "";
+      function configureProjectNavigation() {
+        if (projectFocus && !project(projectFocus)) projectFocus = null;
+        const current = project(projectFocus),
+          children = current
+            ? projectChildren(current.id)
+            : projectChildren("");
+        $("#project-level-title").textContent = current
+          ? "二级项目"
+          : "一级项目";
+        $("#project-count").textContent = " / " + children.length;
+        $("#project-create").textContent =
+          current && !current.parentId ? "＋ 新建二级项目" : "＋ 新建一级项目";
+        const navigation = $("#project-nav");
+        navigation.hidden = !current;
+        if (current) {
+          navigation.innerHTML = `<div class="project-trail"><button onclick="setNav('projects')">一级项目</button><span> / </span>${current.parentId ? `<button onclick="filterProject('${current.parentId}')">${esc(project(current.parentId)?.title || "上级项目")}</button><span> / </span>` : ""}<strong>${esc(current.title)}</strong></div><div style="display:flex;gap:8px"><button class="secondary" onclick="openProject('${current.id}')">编辑项目</button>${!current.parentId ? `<button class="secondary" onclick="filterProject('${current.id}',true)">查看全部任务</button><button class="secondary" onclick="openProject()">＋ 二级项目</button>` : ""}</div>`;
+          $("#heading").textContent = current.title;
+          $("#breadcrumb").textContent = projectPath(current);
+          $("#stats").style.display = "none";
+          $("#project-section").style.display =
+            children.length && !projectTaskMode ? "block" : "none";
+          $("#task-section").style.display =
+            children.length && !projectTaskMode ? "none" : "block";
+          $("#project-filter").value = current.id;
+        } else {
+          $("#project-section").style.display = [
+            "overview",
+            "projects",
+          ].includes(nav)
+            ? "block"
+            : "none";
+          $("#task-section").style.display =
+            nav === "projects" ? "none" : "block";
+        }
+      }
       function save() {
         localStorage.setItem("taskspace-pages-v1", JSON.stringify(db));
         render();
@@ -1772,16 +2030,10 @@
         return db.tasks
           .filter(
             (t) =>
-              (!p || t.project === p) &&
+              (!p || projectContains(p, t.project)) &&
               (!s || t.status === s) &&
               (!q ||
-                (
-                  t.title +
-                  " " +
-                  (project(t.project)?.title || "") +
-                  " " +
-                  t.note
-                )
+                (t.title + " " + projectPath(project(t.project)) + " " + t.note)
                   .toLowerCase()
                   .includes(q)),
           )
@@ -1831,11 +2083,15 @@
         $("#project-filter").innerHTML =
           '<option value="">全部项目</option>' +
           db.projects
-            .map((p) => `<option value="${esc(p.id)}">${esc(p.title)}</option>`)
+            .map(
+              (p) =>
+                `<option value="${esc(p.id)}">${esc(projectPath(p))}</option>`,
+            )
             .join("");
         $("#project-filter").value = selected;
         $("#project-count").textContent = " / " + db.projects.length;
         $("#side-projects").innerHTML = db.projects
+          .filter((p) => !p.parentId)
           .map(
             (p) =>
               `<button class="nav" onclick="filterProject('${p.id}')"><i class="dot" style="background:${p.color}"></i>${esc(p.title)}</button>`,
@@ -1843,6 +2099,7 @@
           .join("");
         $("#projects").innerHTML =
           db.projects
+            .filter((p) => (p.parentId || "") === (projectFocus || ""))
             .filter(
               (p) =>
                 !$("#search").value ||
@@ -1851,15 +2108,18 @@
                   .includes($("#search").value.toLowerCase()),
             )
             .map((p, i) => {
-              let tasks = db.tasks.filter((t) => t.project === p.id),
+              let tasks = db.tasks.filter((t) =>
+                  projectContains(p.id, t.project),
+                ),
                 n = tasks.filter((t) => t.status === "已完成").length,
                 percent = tasks.length
                   ? Math.round((n / tasks.length) * 100)
                   : 0;
-              return `<article class="project" onclick="filterProject('${p.id}')"><div class="row"><div class="project-icon" style="color:${p.color};background:${p.color}15">${["⌘", "▧", "♧"][i % 3]}</div><button title="编辑项目" onclick="event.stopPropagation();openProject('${p.id}')">•••</button></div><h3>${esc(p.title)}</h3><p style="font-size:12px;height:38px">${esc(p.description)}</p><div class="row sub" style="margin-top:23px"><span>项目进度</span><span style="color:${p.color}">${percent}%</span></div><div class="bar"><i style="width:${percent}%;background:${p.color}"></i></div><div class="row sub"><span>☑ ${n} / ${tasks.length} 任务</span><span class="tag" style="color:${p.color};background:${p.color}10">${tasks.length && n === tasks.length ? "已完成" : "进行中"}</span></div></article>`;
+              return `<article class="project" onclick="filterProject('${p.id}')"><div class="row"><div class="project-icon" style="color:${p.color};background:${p.color}15">${["⌘", "▧", "♧"][i % 3]}</div><button title="编辑项目" onclick="event.stopPropagation();openProject('${p.id}')">•••</button></div><h3>${esc(p.title)}</h3><p style="font-size:12px;height:38px">${esc(p.description)}</p><div class="row sub" style="margin-top:23px"><span>${projectChildren(p.id).length ? projectChildren(p.id).length + " 个二级项目 · " : ""}项目进度</span><span style="color:${p.color}">${percent}%</span></div><div class="bar"><i style="width:${percent}%;background:${p.color}"></i></div><div class="row sub"><span>☑ ${n} / ${tasks.length} 任务</span><span class="tag" style="color:${p.color};background:${p.color}10">${tasks.length && n === tasks.length ? "已完成" : "进行中"}</span></div></article>`;
             })
             .join("") ||
           '<div class="empty">还没有项目，创建你的第一个目标。</div>';
+        configureProjectNavigation();
         renderTasks();
         window.refreshDeadlineDock?.();
       }
@@ -1879,7 +2139,7 @@
         }
         if (view === "list") {
           $("#task-content").innerHTML =
-            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>截止日期</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">⚑ ${t.priority}</td><td style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}">${t.due === today ? "今天" : esc(t.due.slice(5).replace("-", " / "))}${t.dueTime ? " " + esc(t.dueTime) : ""}</td></tr>`).join("")}</tbody></table></div>`;
+            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>截止日期</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">⚑ ${t.priority}</td><td style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}">${t.due === today ? "今天" : esc(t.due.slice(5).replace("-", " / "))}${t.dueTime ? " " + esc(t.dueTime) : ""}</td></tr>`).join("")}</tbody></table></div>`;
         } else if (view === "board") {
           $("#task-content").innerHTML =
             '<div class="board">' +
@@ -1956,12 +2216,23 @@
         t.status = t.status === "已完成" ? "待开始" : "已完成";
         save();
       }
-      function filterProject(id) {
-        setNav("tasks");
+      function filterProject(id, forceTasks = false) {
+        if (!project(id)) return;
+        nav = "projects";
+        projectFocus = id;
+        projectTaskMode = forceTasks;
+        document
+          .querySelectorAll("[data-nav]")
+          .forEach((b) =>
+            b.classList.toggle("active", b.dataset.nav === "projects"),
+          );
         $("#project-filter").value = id;
-        renderTasks();
+        view = "list";
+        render();
       }
       function setNav(n) {
+        projectFocus = null;
+        projectTaskMode = false;
         nav = n;
         document
           .querySelectorAll("[data-nav]")
@@ -2017,13 +2288,16 @@
         f.elements.project.innerHTML =
           '<option value="">未分类</option>' +
           db.projects
-            .map((p) => `<option value="${p.id}">${esc(p.title)}</option>`)
+            .map(
+              (p) => `<option value="${p.id}">${esc(projectPath(p))}</option>`,
+            )
             .join("");
         Object.keys(t).forEach((k) => {
           if (f.elements[k]) f.elements[k].value = t[k];
         });
         $("#dialog-title").textContent = id ? "编辑任务" : "新建任务";
         $("#delete-task").style.visibility = id ? "visible" : "hidden";
+        window.loadTaskRecurrence?.(t);
         $("#task-dialog").showModal();
       }
       $("#task-form").onsubmit = (e) => {
@@ -2033,14 +2307,21 @@
           toast("截止日期不能早于开始日期");
           return;
         }
-        if (editing)
-          Object.assign(
-            db.tasks.find((t) => t.id === editing),
-            v,
-          );
-        else db.tasks.push({ ...v, id: crypto.randomUUID() });
+        const existing = db.tasks.find((t) => t.id === editing);
+        const candidate = existing
+          ? { ...existing, ...v }
+          : { ...v, id: crypto.randomUUID() };
+        try {
+          window.applyTaskRecurrence?.(candidate, !existing);
+        } catch (error) {
+          toast(error.message);
+          return;
+        }
+        if (existing) Object.assign(existing, candidate);
+        else db.tasks.push(candidate);
         save();
         $("#task-dialog").close();
+        window.runRecurringTasks?.();
         toast("任务已保存");
       };
       $("#delete-task").onclick = () => {
@@ -2055,6 +2336,17 @@
         let p = project(id) || { title: "", description: "", color: "#536ded" },
           f = $("#project-form");
         f.reset();
+        f.elements.parentId.innerHTML =
+          '<option value="">一级项目（无上级）</option>' +
+          db.projects
+            .filter((x) => !x.parentId && x.id !== id)
+            .map((x) => `<option value="${x.id}">${esc(x.title)}</option>`)
+            .join("");
+        f.elements.parentId.value =
+          p.parentId ||
+          (!id && projectFocus
+            ? project(projectFocus)?.parentId || projectFocus
+            : "");
         for (let k of ["title", "description", "color"])
           f.elements[k].value = p[k];
         $("#project-dialog-title").textContent = id ? "编辑项目" : "新建项目";
@@ -2064,6 +2356,19 @@
       $("#project-form").onsubmit = (e) => {
         e.preventDefault();
         let v = Object.fromEntries(new FormData(e.target));
+        if (
+          v.parentId &&
+          (!project(v.parentId) ||
+            project(v.parentId).parentId ||
+            v.parentId === editProject)
+        ) {
+          toast("上级必须是另一个一级项目。");
+          return;
+        }
+        if (v.parentId && editProject && projectChildren(editProject).length) {
+          toast("该项目已有二级项目，请先调整子项目，再更改归属。");
+          return;
+        }
         if (editProject) Object.assign(project(editProject), v);
         else db.projects.push({ ...v, id: crypto.randomUUID() });
         save();
@@ -2071,11 +2376,24 @@
         toast("项目已保存");
       };
       $("#delete-project").onclick = () => {
-        if (confirm("删除项目后，其任务将保留并移至未分类。确定删除？")) {
+        if (
+          confirm(
+            "删除后，直接关联的任务移至未分类，二级项目提升为一级项目。确定删除？",
+          )
+        ) {
+          const parent = project(editProject)?.parentId || null;
+          for (const p of db.projects)
+            if (p.parentId === editProject) p.parentId = "";
+          if (projectFocus === editProject) {
+            projectFocus = parent;
+            projectTaskMode = false;
+          }
           db.projects = db.projects.filter((p) => p.id !== editProject);
           db.tasks.forEach((t) => {
             if (t.project === editProject) t.project = "";
           });
+          for (const s of db.schedules || [])
+            if (s.template.project === editProject) s.template.project = "";
           save();
           $("#project-dialog").close();
         }
@@ -2118,8 +2436,11 @@
           )
             throw Error();
           if (confirm("导入将替换当前所有项目和任务，建议先导出备份。继续？")) {
-            db = x;
+            db = window.validateTaskspaceData
+              ? window.validateTaskspaceData(x)
+              : x;
             save();
+            window.runRecurringTasks?.();
             toast("导入成功");
           }
         } catch {
@@ -2129,8 +2450,9 @@
       };
       render();
     </script>
-    <script src="./github-sync.js?v=dock-status-1"></script>
+    <script src="./github-sync.js?v=hierarchy-recurring-1"></script>
     <script src="./deadline-dock.js?v=1"></script>
+    <script src="./recurring-tasks.js?v=1"></script>
     <script>
       const syncStatus = document.getElementById("gh-status");
       const syncSummary = document.querySelector(".dock-sync-status summary");

@@ -192,8 +192,17 @@
         title: p.title,
         description: p.description ?? "",
         color: p.color,
+        parentId: p.parentId || "",
       };
     });
+    for (const p of projects) {
+      if (typeof p.parentId !== "string") throw Error("项目上级格式无效。");
+      if (p.parentId) {
+        const parent = projects.find((x) => x.id === p.parentId);
+        if (!parent || parent.id === p.id || parent.parentId)
+          throw Error("项目最多支持两级，上级必须是有效的一级项目。");
+      }
+    }
     const tasks = data.tasks.map((t) => {
       if (
         !t ||
@@ -223,9 +232,16 @@
         status: t.status,
         priority: t.priority,
         note: t.note ?? "",
+        ...(window.Recurring ? window.Recurring.taskMetadata(t) : {}),
       };
     });
-    return { projects, tasks };
+    return {
+      projects,
+      tasks,
+      schedules: window.Recurring
+        ? window.Recurring.normalizeSchedules({ ...data, projects, tasks })
+        : [],
+    };
   }
   function encodeData(data) {
     const bytes = new TextEncoder().encode(JSON.stringify(data, null, 2));
@@ -360,6 +376,7 @@
       rememberDirty();
       render();
       status("已读取 GitHub · " + new Date().toLocaleTimeString("zh-CN"));
+      window.runRecurringTasks?.();
     } catch (e) {
       status(e.message, true);
     } finally {
@@ -399,7 +416,7 @@
       }
       const snapshot = JSON.stringify(validateData(db));
       const payload = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         updatedAt: new Date().toISOString(),
         ...JSON.parse(snapshot),
       };
@@ -568,6 +585,7 @@
     }
   });
   status("本地模式 · 连接私有仓库后可读取和保存，Token 不会持久化。");
+  window.validateTaskspaceData = validateData;
   updateButtons();
   el("gh-dock-state").onclick = () => {
     document.querySelector(".github-menu").open = true;
