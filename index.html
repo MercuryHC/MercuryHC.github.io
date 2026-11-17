@@ -835,6 +835,296 @@
       .dock-disconnect {
         --dock-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M9%205H4v14h5m4-14%207%207-7%207m-5-7h12%22%2F%3E%3C%2Fsvg%3E");
       }
+
+      /* Compact macOS-style utility bar with a hover/click disclosure menu. */
+      .workspace-header {
+        min-height: 88px;
+        padding: 13px 0;
+        align-items: center;
+      }
+      .header-context {
+        flex-direction: row;
+        align-items: center;
+        gap: 22px;
+      }
+      .header-context .search {
+        width: 210px;
+      }
+      .mac-dock {
+        gap: 7px;
+        padding: 5px 7px;
+        border-radius: 13px;
+        background: linear-gradient(145deg, #ffffffef, #f0f2f8e6);
+        box-shadow:
+          0 3px 13px #24334d09,
+          inset 0 0 0 1px #d8dfeb55;
+      }
+      .github-menu {
+        position: relative;
+      }
+      .github-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        height: 29px;
+        width: 42px;
+        border-radius: 8px;
+        cursor: pointer;
+        list-style: none;
+        background: transparent;
+        color: #47546b;
+        border: 0;
+        transition: background 0.15s;
+      }
+      .github-trigger::-webkit-details-marker {
+        display: none;
+      }
+      .github-trigger:hover,
+      .github-menu[open] > .github-trigger {
+        background: #e4e8f1;
+        color: #29374d;
+      }
+      .github-trigger:focus-visible {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
+      .github-symbol {
+        display: block;
+        width: 19px;
+        height: 19px;
+        background: currentColor;
+        mask: var(--dock-icon) center/contain no-repeat;
+        -webkit-mask: var(--dock-icon) center/contain no-repeat;
+      }
+      .github-chevron {
+        font-size: 10px;
+        line-height: 1;
+        color: #98a1b0;
+        transition: transform 0.15s;
+      }
+      .github-menu[open] .github-chevron {
+        transform: rotate(180deg);
+      }
+      .github-panel {
+        position: absolute;
+        top: calc(100% + 11px);
+        right: -5px;
+        width: 266px;
+        padding: 6px;
+        border: 1px solid #dfe4ed;
+        border-radius: 13px;
+        background: #fffffff5;
+        box-shadow:
+          0 12px 35px #26385320,
+          0 2px 5px #26385305;
+        backdrop-filter: blur(24px);
+        z-index: 45;
+        animation: menu-in 0.14s ease-out;
+      }
+      .github-panel::before {
+        content: "";
+        position: absolute;
+        top: -14px;
+        left: 0;
+        right: 0;
+        height: 15px;
+      }
+      .github-menu-heading {
+        padding: 9px 10px 11px;
+        font-size: 12px;
+        font-weight: 650;
+        color: #38465c;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .github-menu-heading span {
+        font-size: 10px;
+        font-weight: 400;
+        color: #9aa3b1;
+      }
+      .dock-menu-action {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 9px 10px;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: #526078;
+        text-align: left;
+        font-size: 12px;
+        line-height: 1.4;
+        transition:
+          background 0.12s,
+          color 0.12s;
+      }
+      .dock-menu-action::before {
+        content: "";
+        display: block;
+        flex: none;
+        width: 16px;
+        height: 16px;
+        background: currentColor;
+        mask: var(--dock-icon) center/contain no-repeat;
+        -webkit-mask: var(--dock-icon) center/contain no-repeat;
+      }
+      .dock-menu-action:hover:not(:disabled),
+      .dock-menu-action:focus-visible {
+        color: #fff;
+        background: #5974ed;
+        outline: none;
+      }
+      .dock-menu-action:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+      .dock-menu-action.dock-disconnect {
+        color: #bc6d75;
+      }
+      .menu-separator {
+        height: 1px;
+        background: #e9ecf2;
+        margin: 4px 8px;
+      }
+      .dock-divider {
+        height: 20px;
+        margin: 0 2px;
+      }
+      .dock-avatar {
+        width: 27px;
+        height: 27px;
+        border-radius: 8px;
+        border: 1px solid #ffffff;
+        font-size: 12px;
+        box-shadow: 0 1px 3px #536ded20;
+      }
+      .dock-account summary {
+        gap: 7px;
+        padding: 0 4px;
+      }
+      .account-label {
+        font-size: 11px;
+        font-weight: 550;
+      }
+      .account-menu {
+        top: calc(100% + 17px);
+        padding: 17px;
+        width: 245px;
+      }
+      .dock-sync-status {
+        max-width: none;
+        text-align: left;
+        margin: 7px 4px 1px;
+        padding: 7px 6px 3px;
+        border-top: 1px solid #e9ecf2;
+      }
+      .dock-sync-status summary {
+        font-size: 10px;
+        color: #99a2b1;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+      .dock-sync-status p {
+        position: static;
+        width: auto;
+        padding: 7px 0 3px;
+        border: 0;
+        box-shadow: none;
+        background: transparent;
+        font-size: 11px;
+        line-height: 1.6;
+      }
+      @keyframes menu-in {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (max-width: 1100px) {
+        .header-context {
+          gap: 15px;
+        }
+        .header-context .search {
+          width: 160px;
+        }
+        .workspace-header {
+          flex-wrap: nowrap;
+        }
+        .account-label {
+          font-size: 11px;
+        }
+        .mac-dock {
+          gap: 5px;
+        }
+      }
+      @media (max-width: 850px) {
+        .workspace-header {
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        .header-context {
+          width: auto;
+          flex: 1;
+          min-width: 210px;
+          flex-wrap: wrap;
+          gap: 8px 14px;
+        }
+        .dock-area {
+          margin-left: auto;
+        }
+        .github-panel {
+          right: -90px;
+        }
+      }
+      @media (max-width: 440px) {
+        .workspace-header {
+          gap: 10px;
+        }
+        .header-context {
+          width: 100%;
+          flex: none;
+          justify-content: space-between;
+        }
+        .header-context .search {
+          width: 145px;
+        }
+        .mac-dock {
+          border-radius: 12px;
+          padding: 4px 6px;
+        }
+        .github-panel {
+          right: -92px;
+        }
+        .dock-avatar {
+          width: 25px;
+          height: 25px;
+        }
+        .account-label {
+          font-size: 10px;
+        }
+        .dock-account summary {
+          gap: 6px;
+        }
+        .dock-divider {
+          height: 19px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .github-panel {
+          animation: none;
+        }
+        .github-trigger,
+        .github-chevron {
+          transition: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -870,56 +1160,63 @@
         </div>
         <div class="dock-area">
           <nav class="mac-dock" aria-label="GitHub 同步与账号 Dock">
-            <button
-              class="dock-action dock-connect"
-              id="gh-open"
-              aria-label="连接 GitHub 私有仓库"
-              data-tip="连接私有仓库"
-            >
-              连接私有仓库
-            </button>
-            <button
-              class="dock-action dock-read"
-              id="gh-read"
-              aria-label="读取 GitHub 数据"
-              data-tip="读取 GitHub"
-              disabled
-            >
-              读取 GitHub
-            </button>
-            <button
-              class="dock-action dock-write"
-              id="gh-write"
-              aria-label="保存数据到 GitHub"
-              data-tip="保存到 GitHub"
-              disabled
-            >
-              保存到 GitHub
-            </button>
-            <button
-              class="dock-action dock-backup"
-              id="gh-restore"
-              aria-label="下载读取前的本地快照"
-              data-tip="下载本地快照"
-            >
-              下载最近一次读取前快照
-            </button>
-            <button
-              class="dock-action dock-disconnect"
-              id="gh-disconnect"
-              aria-label="断开 GitHub 连接"
-              data-tip="断开连接"
-              disabled
-            >
-              断开
-            </button>
+            <details class="github-menu">
+              <summary
+                class="github-trigger dock-connect"
+                aria-label="GitHub 同步菜单"
+                title="GitHub 同步"
+              >
+                <span class="github-symbol" aria-hidden="true"></span
+                ><span class="github-chevron" aria-hidden="true">⌄</span>
+              </summary>
+              <div class="github-panel">
+                <div class="github-menu-heading">
+                  GitHub 同步<span>私有数据仓库</span>
+                </div>
+                <button
+                  class="dock-menu-action dock-connect"
+                  id="gh-open"
+                  aria-label="连接 GitHub 私有仓库"
+                >
+                  连接私有仓库
+                </button>
+                <div class="menu-separator"></div>
+                <button
+                  class="dock-menu-action dock-read"
+                  id="gh-read"
+                  disabled
+                >
+                  读取 GitHub
+                </button>
+                <button
+                  class="dock-menu-action dock-write"
+                  id="gh-write"
+                  disabled
+                >
+                  保存到 GitHub
+                </button>
+                <button class="dock-menu-action dock-backup" id="gh-restore">
+                  下载最近一次读取前快照
+                </button>
+                <div class="menu-separator"></div>
+                <button
+                  class="dock-menu-action dock-disconnect"
+                  id="gh-disconnect"
+                  disabled
+                >
+                  断开连接
+                </button>
+                <details class="dock-sync-status">
+                  <summary>同步状态 ⌄</summary>
+                  <p id="gh-status" role="status" aria-live="polite"></p>
+                </details>
+              </div>
+            </details>
             <span class="dock-divider" aria-hidden="true"></span>
             <details class="dock-account">
-              <summary aria-label="我的账号">
+              <summary aria-label="我的账号" title="我的账号">
                 <span class="dock-avatar">C</span
-                ><span class="account-label"
-                  >我的账号<span>个人工作空间</span></span
-                >
+                ><span class="account-label">我的账号</span>
               </summary>
               <div class="account-menu">
                 <strong>我的账号</strong>
@@ -931,10 +1228,6 @@
               </div>
             </details>
           </nav>
-          <details class="dock-sync-status">
-            <summary>同步状态 <span aria-hidden="true">⌄</span></summary>
-            <p id="gh-status" role="status" aria-live="polite"></p>
-          </details>
         </div>
       </header>
       <div class="hero">
@@ -1616,6 +1909,49 @@
         characterData: true,
       });
       refreshDockStatus();
+      const githubMenu = document.querySelector(".github-menu");
+      const githubTrigger = githubMenu.querySelector("summary");
+      const accountMenu = document.querySelector(".dock-account");
+      let menuCloseTimer;
+      githubMenu.addEventListener("pointerenter", (event) => {
+        if (event.pointerType !== "mouse") return;
+        clearTimeout(menuCloseTimer);
+        githubMenu.open = true;
+        accountMenu.open = false;
+      });
+      githubMenu.addEventListener("pointerleave", (event) => {
+        if (event.pointerType !== "mouse") return;
+        menuCloseTimer = setTimeout(() => {
+          if (!githubMenu.contains(document.activeElement))
+            githubMenu.open = false;
+        }, 180);
+      });
+      githubTrigger.addEventListener("click", (event) => {
+        if (event.detail > 0 && matchMedia("(hover: hover)").matches) {
+          event.preventDefault();
+          githubMenu.open = true;
+        }
+        accountMenu.open = false;
+      });
+      document.addEventListener("click", (event) => {
+        if (!githubMenu.contains(event.target)) githubMenu.open = false;
+        if (!accountMenu.contains(event.target)) accountMenu.open = false;
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && githubMenu.open) {
+          githubMenu.open = false;
+          githubTrigger.focus();
+        }
+      });
+      githubMenu.addEventListener("focusout", () => {
+        setTimeout(() => {
+          if (
+            !githubMenu.contains(document.activeElement) &&
+            !githubMenu.matches(":hover")
+          )
+            githubMenu.open = false;
+        }, 0);
+      });
     </script>
   </body>
 </html>
