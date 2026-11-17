@@ -26,7 +26,7 @@
         paint: "linear-gradient(135deg,#27344d,#484e71 55%,#615879)",
       },
     };
-  let saved = { kind: "default", scope: "home", blur: 0, mask: 25 },
+  let saved = { kind: "default", scope: "all", version: 2, blur: 0, mask: 25 },
     draft = { ...saved },
     catalog = null,
     galleryPage = 1,
@@ -43,7 +43,8 @@
         Object.hasOwn(presets, c?.kind) || c?.kind === "image"
           ? c.kind
           : "default",
-      scope: c?.scope === "all" ? "all" : "home",
+      scope: c?.version === 2 && c?.scope === "home" ? "home" : "all",
+      version: 2,
       blur: Math.min(20, Math.max(0, Number(c?.blur) || 0)),
       mask: Math.min(85, Math.max(0, Number(c?.mask) || 0)),
       title: typeof c?.title === "string" ? c.title.slice(0, 100) : "",
@@ -350,7 +351,7 @@
   $("bg-reset").onclick = async () => {
     try {
       localStorage.removeItem(KEY);
-      saved = { kind: "default", scope: "home", blur: 0, mask: 25 };
+      saved = { kind: "default", scope: "all", version: 2, blur: 0, mask: 25 };
       discard();
       if (savedUrl) URL.revokeObjectURL(savedUrl);
       savedUrl = "";

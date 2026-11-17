@@ -207,4 +207,71 @@ body[data-background-active="true"] .bookmark-card {
   width: 100%;
   height: 100%;
 }
-body[data-background-active=true] .bookmark-hero{background:color-mix(in srgb,var(--app-surface) 80%,transparent);backdrop-filter:blur(12px);border:1px solid var(--app-border);border-radius:20px;margin-bottom:24px}body[data-background-active=true] .bookmark-section-heading{background:color-mix(in srgb,var(--app-surface) 90%,transparent);padding:10px 14px;border-radius:10px}
+/* Wallpaper surfaces: keep the image continuous behind every workspace. */
+html body[data-background-active="true"][data-workspace] {
+  --bg-glass: rgba(255, 255, 255, .60);
+  --bg-glass-soft: rgba(255, 255, 255, .32);
+  --bg-glass-control: rgba(255, 255, 255, .72);
+  --bg-glass-border: rgba(255, 255, 255, .38);
+  --app-soft: #5e6c80;
+}
+html[data-theme="dark"] body[data-background-active="true"][data-workspace] {
+  --bg-glass: rgba(28, 34, 44, .64);
+  --bg-glass-soft: rgba(28, 34, 44, .35);
+  --bg-glass-control: rgba(28, 34, 44, .78);
+  --bg-glass-border: rgba(170, 190, 220, .20);
+  --app-soft: #b1bfd1;
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .station-dock, #task-sidebar, #notes-sidebar, #obsidian-sidebar,
+  .extension-sidebar, .mac-dock, .stat, .project, .workspace,
+  .notebook-layout, .extension-paper, .bookmark-card, .br-overview > div,
+  .br-results, .ob-vault-settings
+) {
+  background: var(--bg-glass);
+  border-color: var(--bg-glass-border);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .notebook-paper, .notebook-layout > .notebook-sidebar, .bookmark-add,
+  .notebook-editor, .ob-editor, #nb-body, #ob-body, #nr-source
+) {
+  background: transparent;
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .bookmark-hero, .bookmark-section-heading, .column, th, .task-card,
+  .station-app.active, .station-app:hover
+) {
+  background: var(--bg-glass-soft);
+  border-color: var(--bg-glass-border);
+}
+html body[data-background-active="true"][data-workspace] .bookmark-hero {
+  border: 1px solid var(--bg-glass-border);
+  border-radius: 20px;
+  margin-bottom: 24px;
+}
+html body[data-background-active="true"][data-workspace] .bookmark-section-heading {
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .bookmark-search, .bookmark-filter, .extension-search,
+  .header-context .search, #notes-sidebar > input, #obsidian-sidebar > input,
+  .br-toolbar input, .br-toolbar select, .dock-action, .sidebar-toggle
+) {
+  background: var(--bg-glass-control);
+  border-color: var(--bg-glass-border);
+}
+/* Popovers and dialogs need a stronger surface above the page content. */
+html body[data-background-active="true"][data-workspace] :is(
+  .github-panel, .account-menu, .deadline-panel, .web-engine-menu,
+  .github-upload-progress, dialog
+) {
+  background: var(--app-surface);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .bookmark-card:hover, .br-result:hover
+) {
+  background: var(--bg-glass-control);
+}
