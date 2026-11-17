@@ -1420,6 +1420,37 @@
         color: #5c687b;
         font-weight: 550;
       }
+
+      .deadline-menu[data-level="green"] > summary {
+        color: #329c73;
+        background: #e5f5ec;
+      }
+      .deadline-menu[data-level="yellow"] > summary {
+        color: #b78821;
+        background: #fff3d7;
+      }
+      .deadline-menu[data-level="red"] > summary {
+        color: #df5d66;
+        background: #ffe9e9;
+      }
+      .deadline-menu[data-level="green"] #deadline-count {
+        background: #329c73;
+      }
+      .deadline-menu[data-level="yellow"] #deadline-count {
+        background: #c39329;
+      }
+      .deadline-task[data-level="green"] .deadline-task-meta {
+        color: #329c73;
+      }
+      .deadline-task[data-level="yellow"] .deadline-task-meta {
+        color: #b78821;
+      }
+      .deadline-task[data-level="green"]:hover {
+        background: #edf8f2;
+      }
+      .deadline-task[data-level="yellow"]:hover {
+        background: #fff7e6;
+      }
     </style>
   </head>
   <body>
@@ -1521,8 +1552,8 @@
             <details class="deadline-menu">
               <summary
                 id="deadline-trigger"
-                aria-label="高优先级任务截止提醒"
-                title="高优先级任务截止提醒"
+                aria-label="高与加急任务截止提醒"
+                title="高与加急任务截止提醒"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -1542,13 +1573,14 @@
                 ><span id="deadline-count" hidden>0</span>
               </summary>
               <div class="deadline-panel">
-                <div class="deadline-heading">高优任务截止提醒</div>
+                <div class="deadline-heading">高与加急任务提醒</div>
                 <p class="deadline-hint">
-                  未完成 · 高优先级 · 1 小时内到期或已逾期
+                  仅高 / 加急⚡ · 绿色跨天预告 · 黄色不足6小时 ·
+                  红色不足1小时或逾期
                 </p>
                 <div id="deadline-list"></div>
                 <p class="deadline-footnote">
-                  按本机时区计算；未设置时间按当天 23:59 截止。
+                  按本机时区计算；未设置时间按当天23:59截止。多种提醒并存时，Dock展示最紧急的颜色。
                 </p>
               </div>
             </details>
@@ -1658,7 +1690,8 @@
             <label for="task-due-time">截止时间（本机时区，可留空）</label
             ><input id="task-due-time" name="dueTime" type="time" />
             <p style="font-size: 11px; margin-top: 6px">
-              留空按当天 23:59；高优任务剩余不足 1 小时会显示红色闹铃。
+              留空按当天
+              23:59；仅高和加急⚡任务提醒：不足6小时黄色，不足1小时红色。跨度超过1天的任务从截止前一天12:00起绿色预告。
             </p>
           </div>
         </div>
@@ -1676,6 +1709,7 @@
             ><select name="priority">
               <option>中</option>
               <option>高</option>
+              <option>加急⚡</option>
               <option>低</option>
             </select>
           </div>
@@ -1855,7 +1889,7 @@
         </div>
       </form>
     </dialog>
-    <script src="./recurrence-core.js?v=1"></script>
+    <script src="./recurrence-core.js?v=urgent-2"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         esc = (s) =>
@@ -2139,7 +2173,7 @@
         }
         if (view === "list") {
           $("#task-content").innerHTML =
-            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>截止日期</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">⚑ ${t.priority}</td><td style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}">${t.due === today ? "今天" : esc(t.due.slice(5).replace("-", " / "))}${t.dueTime ? " " + esc(t.dueTime) : ""}</td></tr>`).join("")}</tbody></table></div>`;
+            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>截止日期</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}">${t.due === today ? "今天" : esc(t.due.slice(5).replace("-", " / "))}${t.dueTime ? " " + esc(t.dueTime) : ""}</td></tr>`).join("")}</tbody></table></div>`;
         } else if (view === "board") {
           $("#task-content").innerHTML =
             '<div class="board">' +
@@ -2431,7 +2465,7 @@
                 (!t.dueTime || /^([01]\d|2[0-3]):[0-5]\d$/.test(t.dueTime)) &&
                 t.start <= t.due &&
                 ["待开始", "进行中", "已完成"].includes(t.status) &&
-                ["高", "中", "低"].includes(t.priority),
+                ["加急⚡", "高", "中", "低"].includes(t.priority),
             )
           )
             throw Error();
@@ -2450,8 +2484,8 @@
       };
       render();
     </script>
-    <script src="./github-sync.js?v=hierarchy-recurring-1"></script>
-    <script src="./deadline-dock.js?v=1"></script>
+    <script src="./github-sync.js?v=alarm-levels-2"></script>
+    <script src="./deadline-dock.js?v=levels-2"></script>
     <script src="./recurring-tasks.js?v=1"></script>
     <script>
       const syncStatus = document.getElementById("gh-status");

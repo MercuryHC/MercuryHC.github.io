@@ -27,14 +27,38 @@
       return NaN;
     return result.getTime();
   }
+  function reminderLevel(task, now = Date.now()) {
+    if (!["高", "加急⚡"].includes(task.priority) || task.status === "已完成")
+      return null;
+    const end = deadlineAt(task),
+      remaining = end - now;
+    if (!Number.isFinite(remaining)) return null;
+    if (remaining < 3600000) return "red";
+    if (remaining < 6 * 3600000) return "yellow";
+    const startDay = Date.parse(task.start + "T00:00:00Z"),
+      endDay = Date.parse(task.due + "T00:00:00Z");
+    if (
+      !Number.isFinite(startDay) ||
+      !Number.isFinite(endDay) ||
+      (endDay - startDay) / 86400000 <= 1
+    )
+      return null;
+    const [y, m, d] = task.due.split("-").map(Number);
+    const greenStart = new Date(y, m - 1, d - 1, 12, 0, 0, 0).getTime();
+    return now >= greenStart ? "green" : null;
+  }
   function urgentTasks(tasks, now = Date.now()) {
+    const rank = { red: 0, yellow: 1, green: 2 };
     return tasks
-      .filter((task) => task.priority === "高" && task.status !== "已完成")
-      .map((task) => ({ task, remaining: deadlineAt(task) - now }))
-      .filter(
-        (item) => Number.isFinite(item.remaining) && item.remaining < 3600000,
-      )
-      .sort((a, b) => a.remaining - b.remaining);
+      .map((task) => ({
+        task,
+        remaining: deadlineAt(task) - now,
+        level: reminderLevel(task, now),
+      }))
+      .filter((item) => item.level)
+      .sort(
+        (a, b) => rank[a.level] - rank[b.level] || a.remaining - b.remaining,
+      );
   }
   function remainingLabel(ms) {
     if (ms <= 0) {
@@ -43,7 +67,13 @@
         ? "已逾期 " + Math.floor(minutes / 60) + " 小时"
         : "已逾期 " + minutes + " 分钟";
     }
-    return "剩余 " + Math.max(1, Math.ceil(ms / 60000)) + " 分钟";
+    const minutes = Math.max(1, Math.ceil(ms / 60000));
+    return minutes >= 60
+      ? "剩余 " +
+          Math.floor(minutes / 60) +
+          " 小时" +
+          (minutes % 60 ? " " + (minutes % 60) + " 分钟" : "")
+      : "剩余 " + minutes + " 分钟";
   }
   function refreshDeadlineDock() {
     const entries = urgentTasks(db.tasks),
@@ -51,32 +81,40 @@
     const trigger = document.getElementById("deadline-trigger"),
       count = document.getElementById("deadline-count"),
       list = document.getElementById("deadline-list");
-    menu.classList.toggle("urgent", entries.length > 0);
+    const level = entries[0]?.level || "none";
+    menu.dataset.level = level;
+    menu.classList.toggle("urgent", level === "red");
     count.hidden = entries.length === 0;
     count.textContent = entries.length > 99 ? "99+" : String(entries.length);
+    const counts = { red: 0, yellow: 0, green: 0 };
+    entries.forEach((item) => counts[item.level]++);
     const message = entries.length
-      ? `${entries.length} 项高优任务即将到期或已逾期`
-      : "暂无即将到期的高优任务";
+      ? `高/加急任务提醒：红色 ${counts.red} 项，黄色 ${counts.yellow} 项，绿色 ${counts.green} 项`
+      : "暂无需要提醒的高或加急任务";
     trigger.title = message;
     trigger.setAttribute("aria-label", message);
     list.replaceChildren();
     if (!entries.length) {
       const empty = document.createElement("p");
       empty.className = "deadline-empty";
-      empty.textContent = "暂无 1 小时内到期或逾期的高优任务。";
+      empty.textContent = "暂无满足提醒条件的高或加急任务。";
       list.append(empty);
       return;
     }
-    for (const { task, remaining } of entries) {
+    for (const { task, remaining, level } of entries) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "deadline-task";
+      button.dataset.level = level;
       const name = document.createElement("span");
       name.className = "deadline-task-title";
       name.textContent = task.title;
       const meta = document.createElement("span");
       meta.className = "deadline-task-meta";
       meta.textContent =
+        { red: "红色 · ", yellow: "黄色 · ", green: "绿色 · " }[level] +
+        task.priority +
+        " · " +
         remainingLabel(remaining) +
         " · " +
         task.due +

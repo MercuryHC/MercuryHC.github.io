@@ -217,7 +217,7 @@
           !/^([01]\d|2[0-3]):[0-5]\d$/.test(t.dueTime)) ||
         t.start > t.due ||
         !["待开始", "进行中", "已完成"].includes(t.status) ||
-        !["高", "中", "低"].includes(t.priority) ||
+        !["加急⚡", "高", "中", "低"].includes(t.priority) ||
         !(t.project === "" || pids.has(t.project))
       )
         throw Error("任务字段、日期、所属项目或 ID 不正确。");

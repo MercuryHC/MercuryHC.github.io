@@ -110,7 +110,7 @@
         typeof t.note !== "string" ||
         t.note.length > 50000 ||
         !(t.project === "" || pids.has(t.project)) ||
-        !["高", "中", "低"].includes(t.priority) ||
+        !["加急⚡", "高", "中", "低"].includes(t.priority) ||
         !Number.isInteger(t.durationDays) ||
         t.durationDays < 0 ||
         t.durationDays > 3650 ||
