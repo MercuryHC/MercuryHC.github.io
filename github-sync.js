@@ -1064,7 +1064,7 @@
           ),
         ),
       ),
-    save: (name, text, sha) =>
+    save: (name, text, sha, targetName = name) =>
       notebookOperation(async () => {
         if (new TextEncoder().encode(text).length > 900000)
           throw Error("笔记超过 900 KB，请拆分内容。");
@@ -1082,11 +1082,76 @@
           error.remote = file;
           throw error;
         }
+        noteUrl(targetName);
+        if (targetName !== name) {
+          const destination = await rawApi(
+            noteUrl(targetName) + "?ref=" + encodeURIComponent(config.branch),
+            { missingOK: true },
+          );
+          if (destination)
+            throw Error(
+              "已存在同名笔记，请修改标题后再保存，避免覆盖其他笔记。",
+            );
+        }
+        if (file && targetName !== name) {
+          // Rename and update in a single commit; a moving branch rejects the whole change.
+          const refPath = config.branch
+            .split("/")
+            .map(encodeURIComponent)
+            .join("/");
+          const head = await rawApi(baseUrl() + "/git/ref/heads/" + refPath);
+          const parent = head.object.sha;
+          const sourceAtHead = await rawApi(noteUrl(name) + "?ref=" + parent, {
+            missingOK: true,
+          });
+          const destinationAtHead = await rawApi(
+            noteUrl(targetName) + "?ref=" + parent,
+            { missingOK: true },
+          );
+          if (sourceAtHead?.sha !== file.sha || destinationAtHead)
+            throw Error("笔记版本或目标文件已变化，请重新读取后保存。");
+          const commit = await rawApi(baseUrl() + "/git/commits/" + parent);
+          const directory = noteDirectory() + "/";
+          const tree = await rawApi(baseUrl() + "/git/trees", {
+            method: "POST",
+            body: JSON.stringify({
+              base_tree: commit.tree.sha,
+              tree: [
+                {
+                  path: directory + name,
+                  mode: "100644",
+                  type: "blob",
+                  sha: null,
+                },
+                {
+                  path: directory + targetName,
+                  mode: "100644",
+                  type: "blob",
+                  content: text,
+                },
+              ],
+            }),
+          });
+          const next = await rawApi(baseUrl() + "/git/commits", {
+            method: "POST",
+            body: JSON.stringify({
+              message: "Rename workstation note to match title",
+              tree: tree.sha,
+              parents: [parent],
+            }),
+          });
+          await rawApi(baseUrl() + "/git/refs/heads/" + refPath, {
+            method: "PATCH",
+            body: JSON.stringify({ sha: next.sha, force: false }),
+          });
+          const saved = await rawApi(noteUrl(targetName) + "?ref=" + next.sha);
+          return { sha: saved.sha, text, name: targetName };
+        }
         let binary = "";
         const bytes = new TextEncoder().encode(text);
         for (let i = 0; i < bytes.length; i += 8192)
           binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
-        const result = await rawApi(url, {
+        const result = await rawApi(noteUrl(targetName), {
           method: "PUT",
           body: JSON.stringify({
             message: "Save workstation Markdown note",
@@ -1095,7 +1160,7 @@
             ...(file ? { sha: file.sha } : {}),
           }),
         });
-        return { sha: result.content.sha, text };
+        return { sha: result.content.sha, text, name: targetName };
       }),
     remove: (name, sha) =>
       notebookOperation(async () => {

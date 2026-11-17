@@ -183,13 +183,26 @@
     }
     await run(async () => {
       const text = serialize(n);
+      const title = n.title.trim() || "未命名笔记";
+      if (
+        /[<>:"/\\|?*\x00-\x1f]/.test(title) ||
+        /[. ]$/.test(title) ||
+        new TextEncoder().encode(title + ".md").length > 240 ||
+        /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(title)
+      )
+        throw Error("标题无法用作文件名：请去掉文件名禁用字符，或缩短标题。");
+      const filename = title + ".md";
       message("正在保存这篇笔记…");
       try {
         const result = await git.save(
           n.id,
           text,
           shaOverride === undefined ? n.sha : shaOverride,
+          filename,
         );
+        const oldId = n.id;
+        n.id = result.name || filename;
+        if (selected === oldId) selected = n.id;
         n.sha = result.sha;
         n.base = text;
         persist();
