@@ -2021,6 +2021,32 @@
           gap: 4px;
         }
       }
+      .stat-action {
+        text-align: left;
+        font: inherit;
+        color: inherit;
+        transition:
+          border-color 0.15s,
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+      .stat-action:hover {
+        border-color: #b8c5f7;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px #536ded0c;
+      }
+      .stat-action:focus-visible {
+        outline: 2px solid var(--blue);
+        outline-offset: 3px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .stat-action {
+          transition: none;
+        }
+        .stat-action:hover {
+          transform: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -2216,7 +2242,8 @@
               <option value="">全部状态</option>
               <option>待开始</option>
               <option>进行中</option>
-              <option>已完成</option></select
+              <option>已完成</option>
+              <option value="overdue">已逾期</option></select
             ><button
               class="secondary"
               onclick="exportData()"
@@ -2763,6 +2790,23 @@
       function project(id) {
         return db.projects.find((p) => p.id === id);
       }
+      function isTaskOverdue(task, now = Date.now()) {
+        return (
+          task.status !== "已完成" &&
+          Number.isFinite(window.TaskTime.endAt(task)) &&
+          window.TaskTime.endAt(task) < now
+        );
+      }
+      function openTaskStat(kind) {
+        $("#search").value = "";
+        $("#status-filter").value =
+          { all: "", progress: "进行中", done: "已完成", overdue: "overdue" }[
+            kind
+          ] || "";
+        setNav("tasks");
+        view = "list";
+        renderTasks();
+      }
       function filtered() {
         let q = $("#search").value.toLowerCase(),
           p = $("#project-filter").value,
@@ -2771,7 +2815,7 @@
           .filter(
             (t) =>
               (!p || projectContains(p, t.project)) &&
-              (!s || t.status === s) &&
+              (!s || (s === "overdue" ? isTaskOverdue(t) : t.status === s)) &&
               (!q ||
                 (t.title + " " + projectPath(project(t.project)) + " " + t.note)
                   .toLowerCase()
@@ -2790,9 +2834,7 @@
       }
       function render() {
         let done = db.tasks.filter((t) => t.status === "已完成").length,
-          late = db.tasks.filter(
-            (t) => t.due < today && t.status !== "已完成",
-          ).length;
+          late = db.tasks.filter((t) => isTaskOverdue(t)).length;
         $("#stats").innerHTML = [
           ["全部任务", db.tasks.length, "◫", "把目标拆成每一步"],
           [
@@ -2816,7 +2858,7 @@
         ]
           .map(
             (x, i) =>
-              `<div class="stat"><div class="stat-top">${x[0]}<span style="color:${["#536ded", "#d39b4b", "#34aa97", "#d57c7c"][i]}">${x[2]}</span></div><strong>${x[1]}<span style="font-size:12px;color:#a3acb8;margin-left:8px">项</span></strong><small class="${i === 2 ? "green" : ""}">${x[3]}</small></div>`,
+              `<button type="button" class="stat stat-action" onclick="openTaskStat('${["all", "progress", "done", "overdue"][i]}')" aria-label="查看${x[0]}，${x[1]}项"><span class="stat-top">${x[0]}<span style="color:${["#536ded", "#d39b4b", "#34aa97", "#d57c7c"][i]}">${x[2]}</span></span><strong>${x[1]}<span style="font-size:12px;color:#a3acb8;margin-left:8px">项</span></strong><small class="${i === 2 ? "green" : ""}">${x[3]}</small></button>`,
           )
           .join("");
         let selected = $("#project-filter").value;
@@ -2864,6 +2906,17 @@
         window.refreshDeadlineDock?.();
       }
       function renderTasks() {
+        if (nav === "tasks" && !projectFocus) {
+          const filter = $("#status-filter").value;
+          const title =
+            filter === "overdue"
+              ? "已逾期任务"
+              : filter
+                ? filter + "任务"
+                : "全部任务";
+          $("#heading").textContent = title;
+          $("#breadcrumb").textContent = title;
+        }
         let ts = filtered();
         document
           .querySelectorAll("[data-view]")
@@ -2879,7 +2932,7 @@
         }
         if (view === "list") {
           $("#task-content").innerHTML =
-            `<div class="table-wrap task-table-wrap"><table class="task-list-table"><colgroup><col><col style="width:180px"><col style="width:100px"><col style="width:100px"><col style="width:180px"><col style="width:180px"></colgroup><thead><tr><th>任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>开始时间</th><th>截止时间</th></tr></thead><tbody>${ts.map((t) => `<tr><td><div class="task-name-content"><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span title="${esc(t.title)}" class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></div></td><td class="task-project-cell sub" title="${esc(projectPath(project(t.project)) || "未分类")}"><span class="task-project-content"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i><span class="task-project-label">${esc(project(t.project)?.title || "未分类")}</span></span></td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td class="task-datetime-cell sub"><span class="task-date">${esc(t.start.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.startTime || "—")}</span></td><td class="task-datetime-cell" style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}"><span class="task-date">${esc(t.due.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.dueTime || "—")}</span></td></tr>`).join("")}</tbody></table></div>`;
+            `<div class="table-wrap task-table-wrap"><table class="task-list-table"><colgroup><col><col style="width:180px"><col style="width:100px"><col style="width:100px"><col style="width:180px"><col style="width:180px"></colgroup><thead><tr><th>任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>开始时间</th><th>截止时间</th></tr></thead><tbody>${ts.map((t) => `<tr><td><div class="task-name-content"><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span title="${esc(t.title)}" class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></div></td><td class="task-project-cell sub" title="${esc(projectPath(project(t.project)) || "未分类")}"><span class="task-project-content"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i><span class="task-project-label">${esc(project(t.project)?.title || "未分类")}</span></span></td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td class="task-datetime-cell sub"><span class="task-date">${esc(t.start.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.startTime || "—")}</span></td><td class="task-datetime-cell" style="color:${isTaskOverdue(t) ? "#d97c7c" : "#8a94a4"}"><span class="task-date">${esc(t.due.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.dueTime || "—")}</span></td></tr>`).join("")}</tbody></table></div>`;
         } else if (view === "board") {
           $("#task-content").innerHTML =
             '<div class="board">' +
