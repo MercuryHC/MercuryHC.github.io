@@ -8,7 +8,9 @@
     selected = null,
     working = false,
     conflict = null,
-    view = "split";
+    view = "split",
+    folders = [],
+    currentFolder = "";
   const storageKey = () => "workstation-notes-v1:" + context.key;
   const serialize = (n) =>
     "# " +
@@ -30,7 +32,10 @@
   }
   function persist() {
     try {
-      localStorage.setItem(storageKey(), JSON.stringify({ notes, selected }));
+      localStorage.setItem(
+        storageKey(),
+        JSON.stringify({ notes, selected, folders, currentFolder }),
+      );
       return true;
     } catch {
       message("本机存储空间不足，请下载 .md 备份或保存到 GitHub。", true);
@@ -49,9 +54,13 @@
           )
         : [];
       selected = data?.selected || null;
+      folders = Array.isArray(data?.folders) ? data.folders : [];
+      currentFolder = data?.currentFolder || "";
     } catch {
       notes = [];
       selected = null;
+      folders = [];
+      currentFolder = "";
     }
     if (!current()) selected = notes[0]?.id || null;
   }
@@ -68,37 +77,30 @@
   function list() {
     const query = $("nb-search").value.trim().toLowerCase();
     $("nb-directory-count").textContent = notes.length + " 篇";
-    $("nb-list").replaceChildren();
-    for (const n of [...notes].sort((a, b) =>
-      (b.updatedAt || "").localeCompare(a.updatedAt || ""),
-    )) {
-      if (query && !(n.title + "\n" + n.body).toLowerCase().includes(query))
-        continue;
-      const b = document.createElement("button");
-      b.className = "notebook-list-item" + (n.id === selected ? " active" : "");
-      const title = document.createElement("strong"),
-        hint = document.createElement("small");
-      title.textContent = n.title || "未命名笔记";
-      hint.textContent =
-        (dirty(n) ? "● 待上传" : "✓ 已同步") +
-        " · " +
-        (n.updatedAt
-          ? new Date(n.updatedAt).toLocaleDateString("zh-CN")
-          : "Markdown");
-      b.append(title, hint);
-      b.onclick = () => {
-        selected = n.id;
+    $("nb-current-folder").textContent = currentFolder || "根目录";
+    window.DirectoryTree.render($("nb-list"), {
+      files: notes.map((n) => ({
+        path: n.id,
+        label: (n.title || "未命名笔记") + (dirty(n) ? " · ●" : ""),
+        search: n.body,
+      })),
+      folders,
+      current: currentFolder,
+      selected,
+      query,
+      key: storageKey() + ":tree",
+      onFolder: (path) => {
+        currentFolder = path;
+        persist();
+        list();
+      },
+      onFile: (f) => {
+        selected = f.path;
+        currentFolder = window.DirectoryTree.parent(f.path);
         persist();
         draw();
-      };
-      $("nb-list").append(b);
-    }
-    if (!$("nb-list").children.length) {
-      const p = document.createElement("p");
-      p.className = "empty";
-      p.textContent = query ? "没有匹配的笔记" : "还没有笔记";
-      $("nb-list").append(p);
-    }
+      },
+    });
   }
   function preview() {
     const n = current();
@@ -135,7 +137,10 @@
   }
   function newNote(values = {}) {
     const n = {
-      id: crypto.randomUUID() + ".md",
+      id:
+        (currentFolder ? currentFolder + "/" : "") +
+        crypto.randomUUID() +
+        ".md",
       title: "",
       body: "",
       sha: null,
@@ -191,7 +196,8 @@
         /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(title)
       )
         throw Error("标题无法用作文件名：请去掉文件名禁用字符，或缩短标题。");
-      const filename = title + ".md";
+      const folder = window.DirectoryTree.parent(n.id);
+      const filename = (folder ? folder + "/" : "") + title + ".md";
       message("正在保存这篇笔记…");
       try {
         const result = await git.save(
@@ -224,6 +230,7 @@
       message("正在读取 GitHub 笔记…");
       const files = await git.list(),
         seen = new Set(files.map((f) => f.name));
+      folders = [...new Set([...folders, ...(files.folders || [])])];
       let pending = 0;
       for (const f of files) {
         let n = notes.find((n) => n.id === f.name);
@@ -272,7 +279,16 @@
       return;
     }
     if (choice === "both")
-      newNote({ title: n.title + "（本机副本）", body: n.body });
+      newNote({
+        id:
+          (window.DirectoryTree.parent(n.id)
+            ? window.DirectoryTree.parent(n.id) + "/"
+            : "") +
+          crypto.randomUUID() +
+          ".md",
+        title: n.title + "（本机副本）",
+        body: n.body,
+      });
     if (c.remote)
       Object.assign(n, parse(c.remote.text), {
         sha: c.remote.sha,
@@ -375,7 +391,8 @@
     $("notebook-workspace").hidden = name !== "notion";
     $("obsidian-workspace").hidden = name !== "obsidian";
     $("notes-sidebar").hidden = name !== "notion";
-    $("workspace-collapse").hidden = name === "obsidian";
+    $("workspace-collapse").hidden = false;
+    $("obsidian-sidebar").hidden = name !== "obsidian";
     applyCollapse(name);
     $("gh-read").textContent =
       name === "notion" ? "读取 GitHub 笔记" : "读取 GitHub";
@@ -428,6 +445,35 @@
   document
     .querySelectorAll("[data-app]")
     .forEach((b) => (b.onclick = () => app(b.dataset.app)));
+  $("nb-folder-new").onclick = () =>
+    run(async () => {
+      const name = prompt(
+        "新建文件夹（可输入多级路径）",
+        currentFolder ? currentFolder + "/" : "",
+      );
+      if (!name) return;
+      if (!window.DirectoryTree.valid(name))
+        throw Error("请输入有效的文件夹路径。");
+      if (git.context().connected) await git.createFolder(name);
+      folders = [...new Set([...folders, name])];
+      currentFolder = name;
+      persist();
+      list();
+      message(
+        git.context().connected
+          ? "文件夹已创建并保存至 GitHub。"
+          : "文件夹已保存在本机；连接 GitHub 后可保存文件夹。",
+      );
+    });
+  $("nb-folder-upload").onclick = () =>
+    run(async () => {
+      if (!git.context().connected) {
+        $("gh-open").click();
+        return;
+      }
+      for (const path of folders) await git.createFolder(path);
+      message("文件夹结构已保存至 GitHub。");
+    });
   $("nb-new").onclick = () => newNote();
   $("nb-save").onclick = () => saveNote();
   $("nb-search").oninput = list;

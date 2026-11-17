@@ -17,8 +17,10 @@
     for await (const [name, handle] of dir.entries()) {
       if (name.startsWith(".")) continue;
       const path = prefix + name;
-      if (handle.kind === "directory") await scan(handle, path + "/", out);
-      else if (validPath(path)) {
+      if (handle.kind === "directory") {
+        (out.folders ||= []).push(path);
+        await scan(handle, path + "/", out);
+      } else if (validPath(path)) {
         out.push({ path, handle });
         if (out.length > 1000)
           throw Error("仓库超过 1000 篇 Markdown，请选择较小的笔记目录。");

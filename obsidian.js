@@ -6,6 +6,7 @@
   let root = null,
     vaultId = "",
     entries = [],
+    currentFolder = "",
     active = null,
     base = "",
     dirty = false,
@@ -77,7 +78,7 @@
     $("ob-state").textContent = dirty
       ? "网页草稿待保存（尚未写入 Obsidian 文件）"
       : "与本地文件一致";
-    for (const id of ["ob-rescan", "ob-new", "ob-upload-all"])
+    for (const id of ["ob-rescan", "ob-new", "ob-upload-all", "ob-folder-new"])
       $(id).disabled = busy || !root;
     for (const id of ["ob-save", "ob-upload", "ob-reload"])
       $(id).disabled = busy || !active;
@@ -93,14 +94,20 @@
   }
   function list() {
     const q = $("ob-search").value.toLowerCase();
-    $("ob-list").replaceChildren();
-    for (const e of entries.filter((e) => e.path.toLowerCase().includes(q))) {
-      const b = document.createElement("button");
-      b.className = "notebook-list-item" + (e === active ? " active" : "");
-      b.textContent = e.path;
-      b.onclick = () => run(() => open(e));
-      $("ob-list").append(b);
-    }
+    $("ob-current-folder").textContent = currentFolder || "根目录";
+    window.DirectoryTree.render($("ob-list"), {
+      files: entries,
+      folders: entries.folders || [],
+      current: currentFolder,
+      selected: active?.path || "",
+      query: q,
+      key: "obsidian-tree:" + vaultId,
+      onFolder: (path) => {
+        currentFolder = path;
+        list();
+      },
+      onFile: (e) => run(() => open(e)),
+    });
   }
   async function run(fn) {
     if (busy) return;
@@ -119,6 +126,7 @@
     stash();
     const text = await core.read(e.handle);
     active = e;
+    currentFolder = window.DirectoryTree.parent(e.path);
     const draft = drafts()[e.path];
     base = draft?.base ?? text;
     $("ob-body").value = draft?.text ?? text;
@@ -166,6 +174,7 @@
         : crypto.randomUUID();
     root = handle;
     active = null;
+    currentFolder = "";
     dirty = false;
     await savedHandle({ handle, id: vaultId });
     try {
@@ -304,9 +313,28 @@
     });
   $("ob-vault-name").onchange = configSave;
   $("ob-remote-path").onchange = configSave;
+  $("ob-folder-new").onclick = () =>
+    run(async () => {
+      const path = prompt(
+        "新建本地文件夹（可输入多级路径）",
+        currentFolder ? currentFolder + "/" : "",
+      );
+      if (!path) return;
+      if (!window.DirectoryTree.valid(path)) throw Error("文件夹路径无效。");
+      let dir = root;
+      for (const part of path.split("/"))
+        dir = await dir.getDirectoryHandle(part, { create: true });
+      await scan();
+      currentFolder = path;
+      list();
+      status("已在本地 Obsidian 仓库创建文件夹：" + path);
+    });
   $("ob-new").onclick = () =>
     run(async () => {
-      const path = prompt("输入笔记相对路径（例如 学习/编译器.md）");
+      const path = prompt(
+        "输入新笔记路径",
+        (currentFolder ? currentFolder + "/" : "") + "未命名笔记.md",
+      );
       if (!path) return;
       if (!core.validPath(path))
         throw Error("请输入有效的 .md 相对路径，不能包含隐藏目录或 ..。");

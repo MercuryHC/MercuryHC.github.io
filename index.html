@@ -2048,7 +2048,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="./workstation.css?v=sidebar-2" />
+    <link rel="stylesheet" href="./workstation.css?v=folders-1" />
   </head>
   <body data-workspace="task">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2102,6 +2102,15 @@
     </aside>
     <aside id="notes-sidebar" class="notebook-sidebar" hidden>
       <div class="brand"><b>✎</b> Notes</div>
+      <div class="explorer-actions">
+        <button id="nb-folder-new" title="新建文件夹">▱＋ 新建文件夹</button
+        ><button id="nb-folder-upload" title="将空文件夹结构保存到 GitHub">
+          保存目录
+        </button>
+      </div>
+      <div class="explorer-current">
+        当前目录：<span id="nb-current-folder">根目录</span>
+      </div>
       <div class="notes-directory-heading">
         <span class="small">笔记目录</span
         ><span id="nb-directory-count" class="sub"></span>
@@ -2112,6 +2121,26 @@
         aria-label="搜索笔记"
       />
       <div id="nb-list"></div>
+    </aside>
+
+    <aside id="obsidian-sidebar" class="notebook-sidebar" hidden>
+      <div class="brand"><b style="background: #8865c5">◇</b> Obsidian</div>
+      <div class="notes-directory-heading">
+        <span class="small">文件目录</span>
+      </div>
+      <div class="explorer-actions">
+        <button id="ob-folder-new">▱＋ 新建文件夹</button
+        ><button id="ob-new">＋ 笔记</button>
+      </div>
+      <div class="explorer-current">
+        当前目录：<span id="ob-current-folder">根目录</span>
+      </div>
+      <input
+        id="ob-search"
+        placeholder="搜索文件路径"
+        aria-label="搜索 Obsidian 笔记"
+      />
+      <div id="ob-list"></div>
     </aside>
 
     <main>
@@ -2126,6 +2155,7 @@
           ◧
         </button>
         <div class="header-context">
+          <div class="obsidian-crumb">个人工作站 / Obsidian · 本地知识库</div>
           <div class="notebook-crumb">
             个人工作站 <span>/</span> Notes · 我的笔记
           </div>
@@ -2258,7 +2288,7 @@
                 <p>个人工作空间</p>
                 <span id="gh-indicator">GitHub · 未连接</span>
                 <p style="margin-top: 12px">
-                  GitHub Token 仅在当前页面内存中使用。关闭或刷新后需重新连接。
+                  勾选「记住连接」后可自动重连。断开连接会清除本机保存的 Token。
                 </p>
               </div>
             </details>
@@ -2430,33 +2460,28 @@
           中打开的仓库文件夹，并授权读写。文件直接保存到该文件夹；仅同步 .md
           文件（含子文件夹），附件、插件和 .obsidian 配置暂不上传。
         </p>
-        <div class="ob-settings">
-          <label
-            >Obsidian 仓库名称<input
-              id="ob-vault-name"
-              placeholder="与客户端的仓库名称一致" /></label
-          ><label
-            >GitHub 保存目录<input
-              id="ob-remote-path"
-              placeholder="taskspace.obsidian/仓库名称" /></label
-          ><button class="secondary" id="ob-upload-all">
-            上传全部 Markdown</button
-          ><button class="secondary" id="ob-new">新建笔记</button>
-        </div>
+        <details class="ob-vault-settings">
+          <summary>仓库设置与 GitHub 上传</summary>
+          <div class="ob-settings">
+            <label
+              >Obsidian 仓库名称<input
+                id="ob-vault-name"
+                placeholder="与客户端的仓库名称一致" /></label
+            ><label
+              >GitHub 保存目录<input
+                id="ob-remote-path"
+                placeholder="taskspace.obsidian/仓库名称" /></label
+            ><button class="secondary" id="ob-upload-all">
+              上传全部 Markdown
+            </button>
+          </div>
+        </details>
         <div class="notebook-status-line">
           <span id="ob-status" role="status" aria-live="polite"
             >尚未关联本地仓库。</span
           >
         </div>
         <div class="notebook-layout">
-          <div class="notebook-sidebar">
-            <input
-              id="ob-search"
-              placeholder="搜索文件路径"
-              aria-label="搜索 Obsidian 笔记"
-            />
-            <div id="ob-list"></div>
-          </div>
           <div class="notebook-paper">
             <div id="ob-empty" class="empty">
               关联仓库后，这里显示电脑上的 Markdown 文件。
@@ -2838,7 +2863,7 @@
         <p style="font-size: 12px; margin-top: 14px">
           先创建一个私有仓库并勾选 Add a README，使 main 分支存在。Token 使用
           fine-grained 类型，仅授权该仓库的 Contents: Read and write。Token
-          仅在当前页面内存中使用，刷新后需重新输入。
+          可勾选记住连接，刷新后自动重连。
         </p>
         <label for="gh-owner">仓库所有者</label
         ><input id="gh-owner" name="owner" required autocomplete="off" />
@@ -2863,6 +2888,17 @@
           autocomplete="off"
           spellcheck="false"
         />
+        <label class="remember-connection"
+          ><input
+            type="checkbox"
+            id="gh-remember"
+            name="remember"
+          />记住连接（仅此浏览器）</label
+        >
+        <p style="font-size: 11px; margin-top: 8px">
+          启用后 Token
+          将保存在本机浏览器中；请仅在自己的电脑上启用。断开连接会清除它。
+        </p>
         <p style="font-size: 11px; margin-top: 12px">
           每个一级项目（含二级项目、任务及循环计划）单独保存；未分类任务另存。
           路径 taskspace.json 对应 taskspace.projects/
@@ -3489,10 +3525,11 @@
     <script src="./timeline-view.js?v=1"></script>
     <script src="./merge-core.js?v=1"></script>
     <script src="./project-store.js?v=1"></script>
-    <script src="./github-sync.js?v=sidebar-2"></script>
-    <script src="./workstation.js?v=sidebar-2"></script>
-    <script src="./obsidian-core.js?v=1"></script>
-    <script src="./obsidian.js?v=1"></script>
+    <script src="./github-sync.js?v=folders-remember-1"></script>
+    <script src="./directory-tree.js?v=1"></script>
+    <script src="./workstation.js?v=folders-1"></script>
+    <script src="./obsidian-core.js?v=folders-1"></script>
+    <script src="./obsidian.js?v=folders-1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>

@@ -1,8 +1,9 @@
-/* Personal GitHub storage. Tokens are held only in this page's memory. */
+/* Personal GitHub storage. Credential persistence requires the remember option. */
 (() => {
   "use strict";
   const CONFIG_KEY = "taskspace-github-config-v1";
   const CACHE_KEY = "taskspace-pages-v1";
+  const CONNECTION_KEY = "workstation-github-remember-v1";
   let config = {},
     token = "",
     baseSha = null,
@@ -879,10 +880,15 @@
           path: "taskspace.json",
         }[k];
     f.elements.token.value = "";
+    if (f.elements.remember)
+      f.elements.remember.checked = Boolean(
+        localStorage.getItem(CONNECTION_KEY),
+      );
     el("gh-dialog").showModal();
   };
   el("gh-close").onclick = () => el("gh-dialog").close();
   el("gh-disconnect").onclick = () => {
+    localStorage.removeItem(CONNECTION_KEY);
     token = "";
     baseSha = null;
     baselineSnapshot = null;
@@ -890,7 +896,7 @@
     checked = false;
     syncError = false;
     connected = false;
-    status("已断开连接；Token 已从页面内存清除，本地数据保留。");
+    status("已断开连接，已清除记住的 Token；本地数据保留。");
     updateButtons();
   };
   el("gh-read").onclick = () =>
@@ -945,6 +951,7 @@
       );
       return;
     }
+    const remember = f.elements.remember?.checked === true;
     const candidate = f.elements.token.value.trim();
     f.elements.token.value = "";
     if (!candidate) {
@@ -973,6 +980,16 @@
       await api(baseUrl() + "/branches/" + encodeURIComponent(config.branch));
       localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
       connected = true;
+      if (remember) {
+        try {
+          localStorage.setItem(
+            CONNECTION_KEY,
+            JSON.stringify({ config, token: candidate }),
+          );
+        } catch {
+          status("已连接，但浏览器阻止保存连接记忆。", true);
+        }
+      } else localStorage.removeItem(CONNECTION_KEY);
       try {
         const saved = JSON.parse(localStorage.getItem(baselineKey()));
         if (
@@ -993,6 +1010,8 @@
       await checkRemoteState();
     } catch (e) {
       token = "";
+      if (/Token 无效|公开仓库/.test(e.message))
+        localStorage.removeItem(CONNECTION_KEY);
       status(e.message, true);
     } finally {
       busy = false;
@@ -1020,8 +1039,8 @@
       config.owner && config.repo ? config.owner + "/" + config.repo : "",
   });
   function noteUrl(name) {
-    if (!/^[^/\\\x00-\x1f]{1,200}\.md$/.test(name))
-      throw Error("笔记文件名无效。");
+    if (!window.DirectoryTree.valid(name) || !name.endsWith(".md"))
+      throw Error("笔记文件路径无效。");
     return (
       baseUrl() +
       "/contents/" +
@@ -1061,6 +1080,33 @@
     }
   }
   window.WorkstationGitHub = {
+    createFolder: (path) =>
+      notebookOperation(async () => {
+        if (!window.DirectoryTree.valid(path)) throw Error("文件夹路径无效。");
+        if (!(await rawApi(baseUrl())).private)
+          throw Error("仅允许写入私有仓库。");
+        const url =
+          baseUrl() +
+          "/contents/" +
+          (noteDirectory() + "/" + path + "/.gitkeep")
+            .split("/")
+            .map(encodeURIComponent)
+            .join("/");
+        if (
+          await rawApi(url + "?ref=" + encodeURIComponent(config.branch), {
+            missingOK: true,
+          })
+        )
+          return;
+        await rawApi(url, {
+          method: "PUT",
+          body: JSON.stringify({
+            message: "Create Notes folder",
+            branch: config.branch,
+            content: "",
+          }),
+        });
+      }),
     context: noteContext,
     list: () =>
       notebookOperation(async () => {
@@ -1074,25 +1120,37 @@
           baseUrl() +
           "/contents/" +
           noteDirectory().split("/").map(encodeURIComponent).join("/");
-        const entries = await rawApi(url + "?ref=" + encodeURIComponent(ref), {
-          missingOK: true,
-        });
-        if (!entries) return [];
-        if (!Array.isArray(entries) || entries.length >= 1000)
-          throw Error("笔记目录异常或达到 1000 文件限制。");
         const result = [];
-        for (const entry of entries.filter(
-          (e) => e.type === "file" && e.name.endsWith(".md"),
-        )) {
-          result.push({
-            name: entry.name,
-            ...markdownFile(
-              await rawApi(
-                noteUrl(entry.name) + "?ref=" + encodeURIComponent(ref),
-              ),
-            ),
-          });
+        result.folders = [];
+        async function walk(path, relative = "") {
+          const entries = await rawApi(
+            path + "?ref=" + encodeURIComponent(ref),
+            { missingOK: true },
+          );
+          if (!entries) return;
+          if (!Array.isArray(entries) || entries.length >= 1000)
+            throw Error("笔记目录异常或达到文件数量限制。");
+          for (const e of entries) {
+            if (e.name.startsWith(".")) continue;
+            const name = relative + e.name;
+            if (e.type === "dir") {
+              result.folders.push(name);
+              if (result.folders.length > 1000) throw Error("目录数量过多。");
+              await walk(path + "/" + encodeURIComponent(e.name), name + "/");
+            } else if (e.type === "file" && name.endsWith(".md")) {
+              result.push({
+                name,
+                ...markdownFile(
+                  await rawApi(
+                    noteUrl(name) + "?ref=" + encodeURIComponent(ref),
+                  ),
+                ),
+              });
+              if (result.length > 1000) throw Error("笔记超过1000篇。");
+            }
+          }
         }
+        await walk(url);
         return result;
       }),
     read: (name) =>
@@ -1310,7 +1368,7 @@
         return { saved, conflicts: [] };
       }),
   };
-  status("本地模式 · 连接私有仓库后可读取和保存，Token 不会持久化。");
+  status("本地模式 · 可连接私有仓库；勾选记住连接可在刷新后自动重连。");
   window.validateTaskspaceData = validateData;
   window.refreshGithubDock = updateDockState;
   updateButtons();
@@ -1338,4 +1396,26 @@
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") checkRemoteState();
   });
+  setTimeout(async () => {
+    let saved;
+    try {
+      saved = JSON.parse(localStorage.getItem(CONNECTION_KEY));
+    } catch {
+      return;
+    }
+    if (
+      !saved?.token ||
+      connected ||
+      busy ||
+      JSON.stringify(saved.config) !== JSON.stringify(config)
+    )
+      return;
+    const f = el("gh-form");
+    for (const k of ["owner", "repo", "branch", "path"])
+      f.elements[k].value = saved.config[k];
+    f.elements.token.value = saved.token;
+    if (f.elements.remember) f.elements.remember.checked = true;
+    status("正在恢复此浏览器记住的 GitHub 连接…");
+    await f.onsubmit({ preventDefault() {}, target: f });
+  }, 0);
 })();

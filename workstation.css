@@ -654,3 +654,167 @@ body[data-workspace="notion"] #gh-merge,
 body[data-workspace="notion"] #gh-restore {
   display: none;
 }
+
+.explorer-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  min-height: 34px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #7e8999;
+  font-size: 12px;
+}
+.explorer-row:hover {
+  background: #f2f4f8;
+}
+.explorer-row.active {
+  background: #eef1ff;
+  color: #536ded;
+}
+.explorer-row.folder-current {
+  color: #536ded;
+  font-weight: 600;
+  background: #f5f7ff;
+}
+.explorer-actions {
+  display: flex;
+  gap: 6px;
+  margin: 14px 0 10px;
+  flex-wrap: wrap;
+}
+.explorer-actions button {
+  border: 1px solid #e7ebf1;
+  background: #fcfdff;
+  border-radius: 6px;
+  padding: 7px 8px;
+  font-size: 11px;
+  color: #7e8999;
+}
+.explorer-actions button:hover {
+  color: #536ded;
+  border-color: #bec8f1;
+}
+.explorer-current {
+  font-size: 10px;
+  color: #9ba3b0;
+  overflow-wrap: anywhere;
+  margin: 0 0 16px;
+}
+.ob-vault-settings {
+  border: 1px solid #e5e9f0;
+  background: #fff;
+  border-radius: 10px;
+  padding: 13px 16px;
+  margin-bottom: 20px;
+}
+.ob-vault-settings summary {
+  cursor: pointer;
+  color: #8691a2;
+  font-size: 12px;
+}
+.ob-vault-settings .ob-settings {
+  padding-top: 14px;
+}
+body[data-workspace="obsidian"] > main {
+  margin-left: calc(224px + var(--station-rail));
+  max-width: 1800px;
+}
+body[data-workspace="obsidian"] > #obsidian-sidebar {
+  display: flex;
+  position: fixed;
+  inset: 0 auto 0 var(--station-rail);
+  width: 224px;
+  background: white;
+  padding: 32px 20px;
+  border-right: 1px solid var(--line);
+  flex-direction: column;
+}
+#obsidian-sidebar .brand {
+  padding: 0 0 36px;
+  font-size: 21px;
+}
+#obsidian-sidebar #ob-list {
+  overflow: auto;
+  flex: 1;
+  max-height: none;
+  margin: 0 -7px;
+}
+body[data-workspace="obsidian"] .notebook-layout {
+  display: block;
+}
+body[data-workspace="obsidian"] .notebook-heading {
+  margin-top: 0;
+}
+body[data-workspace="obsidian"] .header-context {
+  visibility: visible;
+}
+body[data-workspace="obsidian"] .header-context > .crumb,
+body[data-workspace="obsidian"] #search {
+  display: none;
+}
+body[data-workspace="obsidian"] .notebook-crumb {
+  display: block;
+  font-size: 0;
+}
+body[data-workspace="obsidian"] .notebook-crumb > * {
+  display: none;
+}
+body[data-workspace="obsidian"] .notebook-crumb:after {
+  content: "个人工作站 / Obsidian · 本地知识库";
+  font-size: 13px;
+}
+body.sidebar-collapsed > #obsidian-sidebar {
+  display: none !important;
+}
+body.sidebar-collapsed > main {
+  margin-left: var(--station-rail);
+}
+@media (max-width: 1050px) {
+  body[data-workspace="obsidian"] > #obsidian-sidebar {
+    width: 185px;
+    padding-inline: 15px;
+  }
+  body[data-workspace="obsidian"] > main {
+    margin-left: calc(185px + var(--station-rail));
+  }
+  body.sidebar-collapsed > main {
+    margin-left: var(--station-rail);
+  }
+}
+@media (max-width: 720px) {
+  body[data-workspace="obsidian"] > #obsidian-sidebar {
+    position: static;
+    margin-left: var(--station-rail);
+    width: calc(100% - var(--station-rail));
+    padding: 18px 15px;
+  }
+  #obsidian-sidebar .brand {
+    padding-bottom: 15px;
+  }
+  #obsidian-sidebar #ob-list {
+    max-height: 200px;
+    flex: none;
+  }
+  body[data-workspace="obsidian"] > main {
+    margin-left: var(--station-rail);
+  }
+}
+
+.remember-connection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 12px;
+}
+.remember-connection input {
+  width: 16px !important;
+  margin: 0 !important;
+  accent-color: #536ded;
+}
+
+.obsidian-crumb{display:none;font-size:13px;color:#8a93a2}body[data-workspace="obsidian"] .obsidian-crumb{display:block}body[data-workspace="obsidian"] .notebook-crumb{display:none}
