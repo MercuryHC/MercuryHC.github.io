@@ -1,0 +1,589 @@
+:root {
+  --app-surface: #fff;
+  --app-hover: #f0f3f9;
+  --app-border: #e6eaf1;
+  --app-text: #34425a;
+  --app-soft: #8b97a9;
+}
+:root[data-theme="dark"] {
+  --app-surface: #1c222c;
+  --app-hover: #273143;
+  --app-border: #303b4a;
+  --app-text: #d5deec;
+  --app-soft: #94a2b6;
+}
+.extension-workspace[hidden],
+.extension-sidebar[hidden],
+#nr-empty[hidden],
+#nr-document[hidden],
+#nr-preview[hidden],
+#nr-source[hidden],
+#nr-warning[hidden] {
+  display: none !important;
+}
+.station-dock {
+  overflow-y: auto;
+}
+.station-app {
+  flex-shrink: 0;
+}
+.extension-sidebar {
+  display: flex;
+  position: fixed;
+  inset: 0 auto 0 var(--station-rail);
+  width: 224px;
+  background: var(--app-surface);
+  color: var(--app-text);
+  padding: 32px 20px;
+  border-right: 1px solid var(--app-border);
+  flex-direction: column;
+}
+.extension-sidebar .brand {
+  padding: 0 0 34px;
+}
+.extension-sidebar .brand b {
+  background: #697b9b;
+  font-size: 20px;
+}
+.extension-sidebar .small {
+  font-size: 10px;
+}
+.extension-search {
+  width: 100%;
+  background: var(--app-hover);
+  border: 0;
+  padding: 10px 12px;
+  border-radius: 7px;
+  margin: 18px 0 12px;
+  font-size: 12px;
+  outline-color: #9cabec;
+  color: var(--app-text);
+}
+#nr-tree {
+  overflow: auto;
+  margin: 15px -9px 0;
+  flex: 1;
+}
+.notion-tree-row {
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  min-height: 35px;
+}
+.notion-tree-row.active {
+  background: var(--app-hover);
+  color: var(--blue);
+}
+.notion-tree-row:hover {
+  background: var(--app-hover);
+}
+.notion-tree-row > button:last-child {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  padding: 9px 4px;
+  font-size: 12px;
+}
+.notion-tree-toggle {
+  width: 21px;
+  color: var(--app-soft);
+  flex: none;
+  padding: 5px 0;
+}
+.notion-tree-toggle:disabled {
+  opacity: 0.3;
+}
+.extension-sidebar-hint {
+  font-size: 11px;
+  padding: 12px;
+  line-height: 1.9;
+  color: var(--app-soft);
+}
+.extension-workspace .notebook-heading {
+  margin-top: 0;
+}
+.extension-workspace .notebook-heading h1 {
+  font-size: 28px;
+  margin: 0 0 10px;
+}
+.extension-workspace .notebook-heading p {
+  font-size: 12px;
+}
+.extension-status {
+  font-size: 11px;
+  color: var(--app-soft);
+  margin: 0 0 18px;
+}
+.extension-paper {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  min-height: calc(100vh - 260px);
+  padding: 28px 32px;
+}
+.extension-empty {
+  text-align: center;
+  padding: 68px 20px;
+  color: var(--app-soft);
+}
+.extension-empty h2 {
+  color: var(--app-text);
+  margin: 24px 0 12px;
+  font-size: 20px;
+}
+.extension-empty p {
+  font-size: 12px;
+  margin-bottom: 25px;
+  line-height: 2;
+  color: var(--app-soft);
+}
+.empty-symbol {
+  font:
+    700 35px Georgia,
+    serif;
+  border: 2px solid #a4afbf;
+  border-radius: 12px;
+  width: 60px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  margin: auto;
+  color: var(--app-soft);
+}
+.notion-document-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.notion-document-heading h2 {
+  font-size: 23px;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.notion-document-heading .secondary {
+  font-size: 11px;
+  padding: 8px 11px;
+}
+.extension-markdown {
+  padding: 30px 16px;
+  max-width: 880px;
+  margin: auto;
+  line-height: 1.95;
+  color: var(--app-text);
+  overflow-wrap: anywhere;
+}
+.extension-markdown p {
+  color: var(--app-text);
+  margin-bottom: 15px;
+}
+.extension-markdown blockquote {
+  margin: 20px 0;
+  padding: 4px 20px;
+  border-left: 3px solid #9aabe0;
+}
+.extension-markdown pre {
+  max-width: 100%;
+  overflow: auto;
+}
+.extension-markdown table {
+  display: block;
+  overflow: auto;
+}
+.extension-markdown a {
+  color: var(--blue);
+}
+#nr-source {
+  width: 100%;
+  min-height: 500px;
+  border: 0;
+  background: transparent;
+  color: var(--app-text);
+  padding: 25px 0;
+  resize: vertical;
+  font:
+    12px/1.9 ui-monospace,
+    Consolas,
+    monospace;
+  outline: 0;
+}
+.notion-warning {
+  font-size: 11px;
+  padding: 12px;
+  background: var(--app-hover);
+  border-radius: 7px;
+  margin-top: 15px;
+  color: var(--app-soft);
+}
+.connection-guide {
+  font-size: 12px;
+  line-height: 2;
+  margin: 18px 0;
+  color: var(--app-soft);
+}
+#nr-error,
+#bm-form-error {
+  font-size: 12px;
+  color: #d37a85;
+}
+#nr-dialog,
+#bm-dialog {
+  width: min(580px, 94vw);
+}
+.sidebar-quiet {
+  font-size: 11px;
+  color: var(--app-soft);
+  padding: 6px 8px;
+  border-radius: 5px;
+}
+.sidebar-quiet:hover {
+  background: var(--app-hover);
+  color: var(--blue);
+}
+#bm-groups {
+  margin: 18px -8px;
+  overflow: auto;
+}
+#bm-groups .nav {
+  font-size: 12px;
+  padding: 11px 12px;
+}
+#bm-group-new {
+  font-size: 12px;
+}
+#bm-group-delete {
+  margin-top: 10px;
+  text-align: left;
+}
+body[data-workspace="notion-cloud"] > main,
+body[data-workspace="bookmarks"] > main {
+  margin-left: calc(224px + var(--station-rail));
+  max-width: 1800px;
+}
+body[data-workspace="notion-cloud"] > aside:not(#notion-cloud-sidebar),
+body[data-workspace="bookmarks"] > aside:not(#bookmarks-sidebar) {
+  display: none !important;
+}
+.cloud-crumb,
+.bookmarks-crumb {
+  display: none;
+  color: var(--app-soft);
+  font-size: 13px;
+}
+body[data-workspace="notion-cloud"] .header-context > :not(.cloud-crumb),
+body[data-workspace="bookmarks"] .header-context > :not(.bookmarks-crumb) {
+  display: none !important;
+}
+body[data-workspace="notion-cloud"] .cloud-crumb,
+body[data-workspace="bookmarks"] .bookmarks-crumb {
+  display: block;
+}
+body[data-workspace="notion-cloud"] #gh-read,
+body[data-workspace="notion-cloud"] #gh-check,
+body[data-workspace="notion-cloud"] #gh-merge,
+body[data-workspace="notion-cloud"] #gh-restore,
+body[data-workspace="bookmarks"] #gh-read,
+body[data-workspace="bookmarks"] #gh-write,
+body[data-workspace="bookmarks"] #gh-check,
+body[data-workspace="bookmarks"] #gh-merge,
+body[data-workspace="bookmarks"] #gh-restore {
+  display: none;
+}
+body.sidebar-collapsed > .extension-sidebar {
+  display: none !important;
+}
+body.sidebar-collapsed > main {
+  margin-left: var(--station-rail);
+}
+.bookmark-hero {
+  text-align: center;
+  padding: 28px 0 36px;
+}
+.bookmark-hero > .small {
+  letter-spacing: 3px;
+  font-size: 9px;
+  color: #9ca9bf;
+}
+.bookmark-clock {
+  font-size: 70px;
+  letter-spacing: -4px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--app-text);
+  line-height: 1.3;
+  margin: 14px 0 3px;
+}
+.bookmark-hero > p {
+  font-size: 12px;
+  color: var(--app-soft);
+}
+.bookmark-hero h1 {
+  font-size: 21px;
+  letter-spacing: 1px;
+  margin: 26px 0 28px;
+  font-weight: 500;
+  color: var(--app-text);
+}
+.bookmark-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 660px;
+  margin: auto;
+  border: 1px solid var(--app-border);
+  border-radius: 13px;
+  padding: 8px 9px 8px 18px;
+  background: var(--app-surface);
+  box-shadow: 0 6px 24px #23334805;
+}
+.bookmark-search > span {
+  font-size: 23px;
+  color: var(--app-soft);
+}
+.bookmark-search input {
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--app-text);
+  font-size: 13px;
+  min-width: 0;
+  flex: 1;
+}
+.bookmark-search .primary {
+  font-size: 12px;
+  white-space: nowrap;
+  padding: 11px 16px;
+}
+.bookmark-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  align-items: center;
+  margin: 12px 0 15px;
+}
+.bookmark-section-heading h2 {
+  font-size: 15px;
+}
+.bookmark-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  padding-bottom: 40px;
+}
+.bookmark-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 15px;
+  min-height: 162px;
+  position: relative;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+  min-width: 0;
+}
+.bookmark-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px #26365012;
+}
+.bookmark-card > a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  padding: 23px 10px 20px;
+  color: var(--app-text);
+  gap: 12px;
+  min-width: 0;
+}
+.bookmark-icon {
+  width: 53px;
+  height: 53px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  color: white;
+  font-size: 30px;
+  font-weight: 650;
+  box-shadow: 0 5px 12px #26365015;
+  overflow: hidden;
+  flex: none;
+}
+.bookmark-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+}
+.bookmark-card strong {
+  font-size: 12px;
+  font-weight: 550;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bookmark-host {
+  font-size: 9px;
+  color: var(--app-soft);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: -5px;
+}
+.bookmark-edit {
+  position: absolute;
+  right: 7px;
+  top: 5px;
+  opacity: 0;
+  color: var(--app-soft);
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+.bookmark-card:hover .bookmark-edit,
+.bookmark-edit:focus-visible {
+  opacity: 1;
+}
+.bookmark-add-card {
+  background: transparent;
+  border-style: dashed;
+  color: var(--app-soft);
+  font-size: 13px;
+}
+.bookmark-card.dragging {
+  opacity: 0.4;
+}
+.bookmark-icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 12px 0;
+}
+.bookmark-icon-picker button {
+  padding: 0;
+  border-radius: 8px;
+}
+.bookmark-icon-picker button:hover {
+  outline: 2px solid #99a8e2;
+  outline-offset: 2px;
+}
+.bookmark-icon-picker .bookmark-icon {
+  width: 31px;
+  height: 31px;
+  font-size: 18px;
+  border-radius: 8px;
+}
+.bookmark-icon-picker svg {
+  width: 20px;
+  height: 20px;
+}
+html[data-theme="dark"] body > .extension-sidebar,
+html[data-theme="dark"] body[data-workspace] > .extension-sidebar {
+  background: var(--app-surface);
+  color: var(--app-text);
+  border-color: var(--app-border);
+}
+html[data-theme="dark"] #nr-source {
+  background: transparent;
+  color: var(--app-text);
+}
+html[data-theme="dark"] .bookmark-search input {
+  background: transparent;
+}
+@media (max-width: 1050px) {
+  .extension-sidebar {
+    width: 185px;
+    padding-inline: 15px;
+  }
+  body[data-workspace="notion-cloud"] > main,
+  body[data-workspace="bookmarks"] > main {
+    margin-left: calc(185px + var(--station-rail));
+  }
+  body.sidebar-collapsed > main {
+    margin-left: var(--station-rail);
+  }
+  .bookmark-grid {
+    grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+  }
+}
+@media (max-width: 720px) {
+  .station-dock {
+    gap: 10px;
+  }
+  .station-mark {
+    margin-bottom: 8px;
+  }
+  .extension-sidebar {
+    position: static;
+    width: calc(100% - var(--station-rail));
+    margin-left: var(--station-rail);
+    padding: 18px 15px;
+  }
+  .extension-sidebar .brand {
+    padding-bottom: 15px;
+  }
+  #nr-tree {
+    max-height: 230px;
+    flex: none;
+  }
+  #bm-groups {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+  #bm-groups .nav {
+    width: auto;
+    white-space: nowrap;
+  }
+  .extension-sidebar #bm-group-new {
+    align-self: flex-start;
+  }
+  body[data-workspace="notion-cloud"] > main,
+  body[data-workspace="bookmarks"] > main {
+    margin-left: var(--station-rail);
+  }
+  .extension-paper {
+    padding: 18px;
+  }
+  .extension-markdown {
+    padding: 20px 0;
+  }
+  .extension-workspace .notebook-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .bookmark-clock {
+    font-size: 55px;
+  }
+  .bookmark-hero {
+    padding-top: 5px;
+  }
+  .bookmark-hero h1 {
+    font-size: 16px;
+  }
+  .bookmark-search .primary {
+    padding: 10px;
+    font-size: 11px;
+  }
+  .bookmark-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .bookmark-edit {
+    opacity: 1;
+  }
+  .bookmark-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .bookmark-card {
+    min-height: 145px;
+  }
+}

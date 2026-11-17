@@ -34,6 +34,28 @@
   }
   function updateDockState() {
     if (
+      ["notion-cloud", "bookmarks"].includes(document.body?.dataset.workspace)
+    ) {
+      const chip = el("gh-dock-state"),
+        cloud = document.body.dataset.workspace === "notion-cloud",
+        s = window.NotionWorkspace?.state();
+      const label = cloud
+        ? s?.busy
+          ? "Notion 读取中"
+          : s?.connected
+            ? "Notion 已连接"
+            : "Notion 未连接"
+        : "收藏本机保存";
+      chip.textContent = label;
+      chip.dataset.state = cloud && s?.busy ? "checking" : "offline";
+      chip.title = cloud
+        ? "Notion 通过独立连接读取，GitHub 可用于备份页面。"
+        : "收藏保存在当前浏览器，可导入与导出。";
+      chip.setAttribute("aria-label", label);
+      return;
+    }
+
+    if (
       document.body?.dataset.workspace === "obsidian" &&
       window.ObsidianWorkspace?.state
     ) {
@@ -214,13 +236,15 @@
         ? "读取 GitHub 笔记"
         : "读取 GitHub";
     el("gh-write").textContent =
-      document.body?.dataset.workspace === "obsidian"
-        ? "上传当前 Obsidian 笔记"
-        : document.body?.dataset.workspace === "notion"
-          ? "保存当前笔记"
-          : dirty
-            ? "保存到 GitHub · 有修改"
-            : "保存到 GitHub";
+      document.body?.dataset.workspace === "notion-cloud"
+        ? "备份当前 Notion 页面"
+        : document.body?.dataset.workspace === "obsidian"
+          ? "上传当前 Obsidian 笔记"
+          : document.body?.dataset.workspace === "notion"
+            ? "保存当前笔记"
+            : dirty
+              ? "保存到 GitHub · 有修改"
+              : "保存到 GitHub";
     el("gh-merge").disabled =
       busy || checking || notebookBusy || !!mergeSession || !connected;
     for (const id of ["merge-refresh", "merge-all-local", "merge-all-remote"])
@@ -954,11 +978,13 @@
       ? window.NotesWorkspace?.refresh()
       : readRemote();
   el("gh-write").onclick = () =>
-    document.body?.dataset.workspace === "obsidian"
-      ? window.ObsidianWorkspace?.uploadCurrent()
-      : document.body?.dataset.workspace === "notion"
-        ? window.NotesWorkspace?.save()
-        : writeRemote();
+    document.body?.dataset.workspace === "notion-cloud"
+      ? document.getElementById("nr-github")?.click()
+      : document.body?.dataset.workspace === "obsidian"
+        ? window.ObsidianWorkspace?.uploadCurrent()
+        : document.body?.dataset.workspace === "notion"
+          ? window.NotesWorkspace?.save()
+          : writeRemote();
   el("gh-restore").onclick = () => {
     try {
       const backups = JSON.parse(

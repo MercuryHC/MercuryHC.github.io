@@ -2061,6 +2061,7 @@
     <link rel="stylesheet" href="./workstation.css?v=progress-1" />
     <link rel="stylesheet" href="./theme.css?v=1" />
     <link rel="stylesheet" href="./code-highlight.css?v=1" />
+    <link rel="stylesheet" href="./workspace-apps.css?v=1" />
   </head>
   <body data-workspace="task">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2093,6 +2094,24 @@
       >
         <span class="station-icon" style="color: #8865c5">◇</span
         ><span>Obsidian</span>
+      </button>
+      <button
+        type="button"
+        data-app="notion-cloud"
+        class="station-app"
+        aria-pressed="false"
+        title="Notion · 云端知识库"
+      >
+        <span class="station-icon station-notion-icon">N</span
+        ><span>Notion</span></button
+      ><button
+        type="button"
+        data-app="bookmarks"
+        class="station-app"
+        aria-pressed="false"
+        title="收藏 · 常用网站"
+      >
+        <span class="station-icon">▦</span><span>收藏</span>
       </button>
       <span class="station-dock-foot">个人<br />工作站</span>
     </nav>
@@ -2180,6 +2199,25 @@
       ></progress
       ><small id="upload-count"></small>
     </section>
+    <aside id="notion-cloud-sidebar" class="extension-sidebar" hidden>
+      <div class="brand"><b>N</b> Notion</div>
+      <div class="small">授权页面目录</div>
+      <input
+        id="nr-search"
+        class="extension-search"
+        placeholder="搜索 Notion 页面"
+        aria-label="搜索 Notion 页面"
+      />
+      <div id="nr-page-count" class="sub"></div>
+      <div id="nr-tree"></div>
+    </aside>
+    <aside id="bookmarks-sidebar" class="extension-sidebar" hidden>
+      <div class="brand"><b>▦</b> 收藏</div>
+      <div class="small">网站分组</div>
+      <div id="bm-groups"></div>
+      <button id="bm-group-new" class="secondary">＋ 新建分组</button
+      ><button id="bm-group-delete" class="sidebar-quiet">删除当前分组</button>
+    </aside>
     <main>
       <header class="workspace-header">
         <button
@@ -2192,6 +2230,8 @@
           ◧
         </button>
         <div class="header-context">
+          <div class="cloud-crumb">个人工作站 / Notion · 云端知识库</div>
+          <div class="bookmarks-crumb">个人工作站 / 收藏 · 常用网站</div>
           <div class="obsidian-crumb">个人工作站 / Obsidian · 本地知识库</div>
           <div class="notebook-crumb">
             个人工作站 <span>/</span> Notes · 我的笔记
@@ -2581,7 +2621,185 @@
           </div>
         </div>
       </section>
+      <section id="notion-cloud-workspace" class="extension-workspace" hidden>
+        <div class="notebook-heading">
+          <div>
+            <h1>Notion</h1>
+            <p>把云端知识，带进你的工作站。</p>
+          </div>
+          <div class="notebook-actions">
+            <button class="secondary" id="nr-refresh">刷新页面</button
+            ><button class="primary" id="nr-connect">连接 Notion</button
+            ><button class="secondary" id="nr-disconnect">断开</button>
+          </div>
+        </div>
+        <p
+          id="nr-status"
+          class="extension-status"
+          role="status"
+          aria-live="polite"
+        >
+          连接后，可浏览共享给此集成的 Notion 页面。
+        </p>
+        <div class="extension-paper">
+          <div id="nr-empty" class="extension-empty">
+            <div class="empty-symbol">N</div>
+            <h2>你的 Notion，随时可读</h2>
+            <p>
+              连接 Notion 集成，左侧即可查看授权页面与子页面。<br />支持代码高亮、Markdown
+              源文和本地导出。
+            </p>
+            <button class="secondary" id="nr-start">连接我的 Notion</button>
+          </div>
+          <div id="nr-document" hidden>
+            <div class="notion-document-heading">
+              <h2 id="nr-title"></h2>
+              <div class="notebook-actions">
+                <a
+                  id="nr-original"
+                  class="secondary"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >在 Notion 打开</a
+                ><button id="nr-export" class="secondary">下载 .md</button
+                ><button id="nr-github" class="secondary">备份到 GitHub</button>
+              </div>
+            </div>
+            <div class="ob-reading-bar">
+              <span id="nr-edited"></span>
+              <div class="ob-view-switch">
+                <button data-nr-view="preview" class="active">预览</button
+                ><button data-nr-view="source">Markdown</button>
+              </div>
+            </div>
+            <p id="nr-warning" class="notion-warning" hidden>
+              此页面包含未完整读取或特殊的内容块；完整内容请在 Notion 中查看。
+            </p>
+            <article id="nr-preview" class="extension-markdown"></article>
+            <textarea
+              id="nr-source"
+              readonly
+              hidden
+              aria-label="Notion Markdown 源文"
+            ></textarea>
+          </div>
+        </div>
+      </section>
+      <section id="bookmarks-workspace" class="extension-workspace" hidden>
+        <div class="bookmark-hero">
+          <div class="small">YOUR PERSONAL LAUNCHPAD</div>
+          <div id="bm-clock" class="bookmark-clock"></div>
+          <p id="bm-date"></p>
+          <h1>每一次打开，都更接近所想。</h1>
+          <div class="bookmark-search">
+            <span>⌕</span
+            ><input
+              id="bm-search"
+              placeholder="搜索你收藏的网站"
+              aria-label="搜索收藏网站"
+            /><button id="bm-add" class="primary">＋ 添加网站</button>
+          </div>
+        </div>
+        <div class="bookmark-section-heading">
+          <h2 id="bm-heading">全部收藏</h2>
+          <div class="notebook-actions">
+            <button id="bm-undo" class="sidebar-quiet">撤销上次更改</button
+            ><button id="bm-export" class="sidebar-quiet">导出</button
+            ><button id="bm-import-button" class="sidebar-quiet">导入</button
+            ><input
+              type="file"
+              id="bm-import"
+              accept="application/json"
+              hidden
+            />
+          </div>
+        </div>
+        <p
+          id="bm-status"
+          class="extension-status"
+          role="status"
+          aria-live="polite"
+        >
+          收藏自动保存在当前浏览器，支持导入与导出。
+        </p>
+        <div id="bm-grid" class="bookmark-grid"></div>
+      </section>
     </main>
+    <dialog id="nr-dialog">
+      <form id="nr-form">
+        <div class="row">
+          <h2>连接 Notion</h2>
+          <button type="button" id="nr-close">×</button>
+        </div>
+        <p class="connection-guide">
+          1. 在 Notion 创建内部集成，授予读取内容权限。<br />2.
+          在页面的连接设置中，将需要查看的页面共享给该集成。<br />3. 在下方输入
+          Integration Token。此连接只读取页面，不修改 Notion 内容。
+        </p>
+        <a
+          href="https://www.notion.so/profile/integrations"
+          target="_blank"
+          rel="noopener noreferrer"
+          >管理 Notion 集成 ↗</a
+        ><label for="nr-token">Notion Integration Token</label
+        ><input
+          type="password"
+          id="nr-token"
+          name="token"
+          autocomplete="off"
+          required
+        /><label class="remember-connection"
+          ><input
+            type="checkbox"
+            name="remember"
+            id="nr-remember"
+          />记住连接（仅此浏览器）</label
+        >
+        <p class="connection-guide">
+          记住后 Token 保存在本机浏览器；仅在自己的电脑启用。Token 只发送至
+          Notion 官方 API。
+        </p>
+        <p id="nr-error" role="status"></p>
+        <div class="dialog-actions">
+          <button class="primary" id="nr-submit">验证并连接</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="bm-dialog">
+      <form id="bm-form">
+        <div class="row">
+          <h2 id="bm-dialog-title">添加网站</h2>
+          <button type="button" id="bm-close">×</button>
+        </div>
+        <label>网站名称<input name="title" required maxlength="100" /></label
+        ><label
+          >网站地址<input name="url" required placeholder="https://"
+        /></label>
+        <div class="row">
+          <label style="flex: 1">分组<select name="group"></select></label
+          ><label
+            >图标背景<input type="color" name="color" value="#536ded"
+          /></label>
+        </div>
+        <label>图标样式<select name="preset"></select></label>
+        <div id="bm-icon-picker" class="bookmark-icon-picker"></div>
+        <label
+          >自定义图标（可选 Emoji、文字或图片网址）<input
+            name="icon"
+            maxlength="500"
+            placeholder="留空使用预置图标"
+        /></label>
+        <p id="bm-form-error" role="status"></p>
+        <div class="dialog-actions">
+          <button type="button" id="bm-delete" class="secondary">
+            删除收藏</button
+          ><button type="button" id="bm-move-up" class="secondary">前移</button
+          ><button type="button" id="bm-move-down" class="secondary">
+            后移</button
+          ><button class="primary">保存网站</button>
+        </div>
+      </form>
+    </dialog>
     <dialog id="ob-conflict">
       <h2>GitHub 上已有不同版本</h2>
       <p>上传已暂停，此文件的本地内容保持不变。请对比后选择。</p>
@@ -3594,12 +3812,16 @@
     <script src="./merge-core.js?v=1"></script>
     <script src="./project-store.js?v=1"></script>
     <script src="./upload-progress.js?v=1"></script>
-    <script src="./github-sync.js?v=progress-1"></script>
+    <script src="./github-sync.js?v=five-apps-1"></script>
+    <script src="./notion-client.js?v=1"></script>
+    <script src="./bookmarks-core.js?v=1"></script>
     <script src="./theme.js?v=1"></script>
     <script src="./directory-tree.js?v=1"></script>
-    <script src="./workstation.js?v=ob-preview-1"></script>
+    <script src="./workstation.js?v=five-apps-1"></script>
     <script src="./obsidian-core.js?v=folders-1"></script>
     <script src="./obsidian.js?v=preview-1"></script>
+    <script src="./notion-workspace.js?v=1"></script>
+    <script src="./bookmarks.js?v=1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>

@@ -385,7 +385,9 @@
     }),
   };
   function app(name) {
-    name = ["notion", "obsidian"].includes(name) ? name : "task";
+    name = ["notion", "obsidian", "notion-cloud", "bookmarks"].includes(name)
+      ? name
+      : "task";
     document.body.dataset.workspace = name;
     $("task-workspace").hidden = name !== "task";
     $("notebook-workspace").hidden = name !== "notion";
@@ -393,21 +395,28 @@
     $("notes-sidebar").hidden = name !== "notion";
     $("workspace-collapse").hidden = false;
     $("obsidian-sidebar").hidden = name !== "obsidian";
+    $("notion-cloud-workspace").hidden = name !== "notion-cloud";
+    $("notion-cloud-sidebar").hidden = name !== "notion-cloud";
+    $("bookmarks-workspace").hidden = name !== "bookmarks";
+    $("bookmarks-sidebar").hidden = name !== "bookmarks";
     applyCollapse(name);
     $("gh-read").textContent =
       name === "notion" ? "读取 GitHub 笔记" : "读取 GitHub";
     $("gh-write").textContent =
-      name === "obsidian"
-        ? "上传当前 Obsidian 笔记"
-        : name === "notion"
-          ? "保存当前笔记"
-          : "保存到 GitHub";
+      name === "notion-cloud"
+        ? "备份当前 Notion 页面"
+        : name === "obsidian"
+          ? "上传当前 Obsidian 笔记"
+          : name === "notion"
+            ? "保存当前笔记"
+            : "保存到 GitHub";
     document.querySelectorAll("[data-app]").forEach((b) => {
       b.classList.toggle("active", b.dataset.app === name);
       b.setAttribute("aria-pressed", String(b.dataset.app === name));
     });
     localStorage.setItem("workstation-app", name);
     window.refreshGithubDock?.();
+    window.dispatchEvent(new Event("workstation-app-changed"));
   }
   $("nb-title").addEventListener("input", changed);
   $("nb-body").addEventListener("input", changed);
