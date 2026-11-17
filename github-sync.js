@@ -32,6 +32,33 @@
     localStorage.setItem("taskspace-local-dirty", String(dirty));
   }
   function updateDockState() {
+    if (
+      document.body?.dataset.workspace === "notion" &&
+      window.NotesWorkspace?.state
+    ) {
+      const s = window.NotesWorkspace.state(),
+        chip = el("gh-dock-state");
+      const label = s.working
+        ? "笔记同步中"
+        : s.dirty
+          ? s.connected
+            ? "笔记待上传"
+            : "笔记本机草稿"
+          : s.connected
+            ? "笔记已连接"
+            : "笔记未连接";
+      chip.dataset.state = s.working
+        ? "checking"
+        : s.dirty
+          ? "upload"
+          : s.connected
+            ? "synced"
+            : "offline";
+      chip.textContent = label;
+      chip.title = "Notes：通过 GitHub 菜单读取笔记或保存当前笔记。";
+      chip.setAttribute("aria-label", label);
+      return;
+    }
     let state, label;
     if (busy || checking) {
       state = "checking";
@@ -157,9 +184,16 @@
       busy || checking || notebookBusy || !!mergeSession || !connected;
     el("gh-disconnect").disabled =
       busy || checking || notebookBusy || !!mergeSession || !token;
-    el("gh-write").textContent = dirty
-      ? "保存到 GitHub · 有修改"
-      : "保存到 GitHub";
+    el("gh-read").textContent =
+      document.body?.dataset.workspace === "notion"
+        ? "读取 GitHub 笔记"
+        : "读取 GitHub";
+    el("gh-write").textContent =
+      document.body?.dataset.workspace === "notion"
+        ? "保存当前笔记"
+        : dirty
+          ? "保存到 GitHub · 有修改"
+          : "保存到 GitHub";
     el("gh-merge").disabled =
       busy || checking || notebookBusy || !!mergeSession || !connected;
     for (const id of ["merge-refresh", "merge-all-local", "merge-all-remote"])
@@ -859,8 +893,14 @@
     status("已断开连接；Token 已从页面内存清除，本地数据保留。");
     updateButtons();
   };
-  el("gh-read").onclick = readRemote;
-  el("gh-write").onclick = writeRemote;
+  el("gh-read").onclick = () =>
+    document.body?.dataset.workspace === "notion"
+      ? window.NotesWorkspace?.refresh()
+      : readRemote();
+  el("gh-write").onclick = () =>
+    document.body?.dataset.workspace === "notion"
+      ? window.NotesWorkspace?.save()
+      : writeRemote();
   el("gh-restore").onclick = () => {
     try {
       const backups = JSON.parse(
@@ -1272,15 +1312,25 @@
   };
   status("本地模式 · 连接私有仓库后可读取和保存，Token 不会持久化。");
   window.validateTaskspaceData = validateData;
+  window.refreshGithubDock = updateDockState;
   updateButtons();
   el("gh-dock-state").onclick = () => {
-    if (connected && dirty && remoteChanged && !canAutoMerge) {
+    if (
+      document.body?.dataset.workspace !== "notion" &&
+      connected &&
+      dirty &&
+      remoteChanged &&
+      !canAutoMerge
+    ) {
       openMerge();
       return;
     }
     document.querySelector(".github-menu").open = true;
   };
-  el("gh-check").onclick = checkRemoteState;
+  el("gh-check").onclick = () =>
+    document.body?.dataset.workspace === "notion"
+      ? window.NotesWorkspace?.refresh()
+      : checkRemoteState();
   setInterval(() => {
     if (document.visibilityState === "visible") checkRemoteState();
   }, 60000);

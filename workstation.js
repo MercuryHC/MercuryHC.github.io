@@ -58,17 +58,16 @@
   function controls() {
     const n = current(),
       connected = git.context().connected;
-    for (const id of ["nb-refresh", "nb-save", "nb-delete", "nb-connect"])
-      $(id).disabled = working;
+    for (const id of ["nb-save", "nb-delete"]) $(id).disabled = working;
     $("nb-save").disabled = working || !n;
-    $("nb-connect").textContent = connected ? "GitHub 已连接" : "连接 GitHub";
-    $("nb-refresh").disabled = working || !connected;
+    window.refreshGithubDock?.();
     $("nb-location").textContent = context.repository
       ? context.repository + " / " + context.directory
       : "尚未连接私有仓库";
   }
   function list() {
     const query = $("nb-search").value.trim().toLowerCase();
+    $("nb-directory-count").textContent = notes.length + " 篇";
     $("nb-list").replaceChildren();
     for (const n of [...notes].sort((a, b) =>
       (b.updatedAt || "").localeCompare(a.updatedAt || ""),
@@ -132,6 +131,7 @@
     persist();
     preview();
     list();
+    controls();
   }
   function newNote(values = {}) {
     const n = {
@@ -340,17 +340,53 @@
     a.focus();
     changed();
   }
+  function applyCollapse(name = document.body.dataset.workspace) {
+    const collapsed =
+      localStorage.getItem("workstation-sidebar:" + name) === "true";
+    document.body.classList.toggle("sidebar-collapsed", collapsed);
+    $("workspace-collapse").setAttribute("aria-expanded", String(!collapsed));
+    $("workspace-collapse").setAttribute(
+      "aria-label",
+      collapsed ? "展开侧栏" : "折叠侧栏",
+    );
+    $("workspace-collapse").title = collapsed ? "展开侧栏" : "折叠侧栏";
+  }
+  $("workspace-collapse").onclick = () => {
+    const name = document.body.dataset.workspace;
+    localStorage.setItem(
+      "workstation-sidebar:" + name,
+      String(!document.body.classList.contains("sidebar-collapsed")),
+    );
+    applyCollapse(name);
+  };
+  window.NotesWorkspace = {
+    refresh,
+    save: saveNote,
+    state: () => ({
+      dirty: notes.some(dirty),
+      working,
+      connected: git.context().connected,
+    }),
+  };
   function app(name) {
     name = ["notion", "obsidian"].includes(name) ? name : "task";
     document.body.dataset.workspace = name;
     $("task-workspace").hidden = name !== "task";
     $("notebook-workspace").hidden = name !== "notion";
     $("obsidian-workspace").hidden = name !== "obsidian";
+    $("notes-sidebar").hidden = name !== "notion";
+    $("workspace-collapse").hidden = name === "obsidian";
+    applyCollapse(name);
+    $("gh-read").textContent =
+      name === "notion" ? "读取 GitHub 笔记" : "读取 GitHub";
+    $("gh-write").textContent =
+      name === "notion" ? "保存当前笔记" : "保存到 GitHub";
     document.querySelectorAll("[data-app]").forEach((b) => {
       b.classList.toggle("active", b.dataset.app === name);
       b.setAttribute("aria-pressed", String(b.dataset.app === name));
     });
     localStorage.setItem("workstation-app", name);
+    window.refreshGithubDock?.();
   }
   $("nb-title").addEventListener("input", changed);
   $("nb-body").addEventListener("input", changed);
@@ -394,9 +430,7 @@
     .forEach((b) => (b.onclick = () => app(b.dataset.app)));
   $("nb-new").onclick = () => newNote();
   $("nb-save").onclick = () => saveNote();
-  $("nb-refresh").onclick = refresh;
   $("nb-search").oninput = list;
-  $("nb-connect").onclick = () => $("gh-open").click();
   $("nb-delete").onclick = remove;
   $("nb-export").onclick = () => {
     const n = current();
@@ -434,7 +468,7 @@
       if (conflict) closeConflict();
       persist();
       draw();
-      message("已切换笔记仓库，点击「读取笔记」获取已有内容。");
+      message("已切换笔记仓库，通过右上角 GitHub 菜单读取笔记。");
     }
     controls();
   });

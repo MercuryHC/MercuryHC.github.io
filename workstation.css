@@ -501,3 +501,156 @@ body[data-workspace="obsidian"] .header-context {
     min-width: 100%;
   }
 }
+
+/* Match Task navigation and Notes directory; each app remembers its own collapsed state. */
+.sidebar-toggle {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e3e8ef;
+  border-radius: 7px;
+  color: #8793a3;
+  margin-right: 12px;
+  font-size: 19px;
+}
+.sidebar-toggle:hover {
+  background: #eef1ff;
+  color: #536ded;
+}
+.workspace-header .header-context {
+  flex: 1;
+}
+.sidebar-toggle[hidden] {
+  display: none !important;
+}
+body > aside[hidden] {
+  display: none !important;
+}
+body[data-workspace="notion"] > main {
+  margin-left: calc(224px + var(--station-rail));
+  max-width: 1800px;
+}
+body[data-workspace="notion"] > #notes-sidebar {
+  display: flex;
+  position: fixed;
+  inset: 0 auto 0 var(--station-rail);
+  width: 224px;
+  background: white;
+  border-right: 1px solid var(--line);
+  padding: 32px 20px;
+  flex-direction: column;
+}
+#notes-sidebar .brand {
+  padding: 0 5px 36px;
+}
+#notes-sidebar .brand b {
+  font-size: 20px;
+}
+#notes-sidebar > input {
+  background: #f1f3f7;
+  padding: 10px;
+  margin: 16px 0;
+}
+#notes-sidebar #nb-list {
+  overflow: auto;
+  flex: 1;
+  margin: 0 -6px;
+}
+.notes-directory-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+}
+.notes-directory-heading .small {
+  letter-spacing: 1px;
+}
+body[data-workspace="notion"] .notebook-layout {
+  display: block;
+  min-height: calc(100vh - 290px);
+}
+body[data-workspace="notion"] .notebook-heading {
+  margin: 0 0 20px;
+}
+body[data-workspace="notion"] .notebook-heading .small {
+  display: none;
+}
+body[data-workspace="notion"] .notebook-heading h1 {
+  font-size: 28px;
+  margin: 0 0 10px;
+}
+body[data-workspace="notion"] .notebook-paper {
+  padding: 24px 28px;
+}
+body[data-workspace="notion"] .notebook-status-line {
+  font-size: 11px;
+}
+.notes-new-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.notes-new-button > span {
+  font-size: 18px;
+  line-height: 1;
+}
+body.sidebar-collapsed > #task-sidebar,
+body.sidebar-collapsed > #notes-sidebar {
+  display: none !important;
+}
+body.sidebar-collapsed > main {
+  margin-left: var(--station-rail);
+}
+@media (max-width: 1050px) {
+  body[data-workspace="notion"] > #notes-sidebar {
+    width: 185px;
+    padding-inline: 15px;
+  }
+  body[data-workspace="notion"] > main {
+    margin-left: calc(185px + var(--station-rail));
+  }
+  body.sidebar-collapsed > main {
+    margin-left: var(--station-rail);
+  }
+}
+@media (max-width: 720px) {
+  body[data-workspace="notion"] > #notes-sidebar {
+    position: static;
+    margin-left: var(--station-rail);
+    width: calc(100% - var(--station-rail));
+    padding: 18px 15px;
+  }
+  #notes-sidebar .brand {
+    padding-bottom: 15px;
+  }
+  #notes-sidebar #nb-list {
+    max-height: 180px;
+    flex: none;
+  }
+  body[data-workspace="notion"] > main {
+    margin-left: var(--station-rail);
+  }
+  body[data-workspace="notion"] .notebook-heading {
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+  }
+  body[data-workspace="notion"] .notebook-paper {
+    padding: 16px;
+  }
+  .sidebar-toggle {
+    margin-right: 8px;
+  }
+  body[data-workspace="notion"] .notebook-heading h1 {
+    font-size: 23px;
+  }
+  .notes-new-button {
+    white-space: nowrap;
+    padding: 10px 12px;
+  }
+}
+
+body[data-workspace="notion"] #gh-merge,
+body[data-workspace="notion"] #gh-restore {
+  display: none;
+}

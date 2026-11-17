@@ -2048,7 +2048,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="./workstation.css?v=obsidian-1" />
+    <link rel="stylesheet" href="./workstation.css?v=sidebar-2" />
   </head>
   <body data-workspace="task">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2084,7 +2084,7 @@
       </button>
       <span class="station-dock-foot">个人<br />工作站</span>
     </nav>
-    <aside>
+    <aside id="task-sidebar">
       <div class="brand"><b>序</b> Task</div>
       <div class="small" style="padding-left: 15px">工作空间</div>
       <nav>
@@ -2100,8 +2100,31 @@
       </div>
       <div id="side-projects"></div>
     </aside>
+    <aside id="notes-sidebar" class="notebook-sidebar" hidden>
+      <div class="brand"><b>✎</b> Notes</div>
+      <div class="notes-directory-heading">
+        <span class="small">笔记目录</span
+        ><span id="nb-directory-count" class="sub"></span>
+      </div>
+      <input
+        id="nb-search"
+        placeholder="搜索标题或正文"
+        aria-label="搜索笔记"
+      />
+      <div id="nb-list"></div>
+    </aside>
+
     <main>
       <header class="workspace-header">
+        <button
+          id="workspace-collapse"
+          class="sidebar-toggle"
+          title="折叠侧栏"
+          aria-label="折叠侧栏"
+          aria-expanded="true"
+        >
+          ◧
+        </button>
         <div class="header-context">
           <div class="notebook-crumb">
             个人工作站 <span>/</span> Notes · 我的笔记
@@ -2319,14 +2342,14 @@
       <section id="notebook-workspace" hidden aria-label="Notes Markdown 笔记">
         <div class="notebook-heading">
           <div>
-            <div class="small">NOTES / PERSONAL NOTES</div>
+            <div class="small">NOTES / 我的知识空间</div>
             <h1>我的笔记</h1>
             <p>记录想法，沉淀工作中的每一步。</p>
           </div>
           <div class="notebook-actions">
-            <button class="secondary" id="nb-connect">连接 GitHub</button
-            ><button class="secondary" id="nb-refresh">读取笔记</button
-            ><button class="primary" id="nb-new">＋ 新建笔记</button>
+            <button class="primary notes-new-button" id="nb-new">
+              <span aria-hidden="true">＋</span> 新建笔记
+            </button>
           </div>
         </div>
         <div class="notebook-status-line">
@@ -2335,14 +2358,6 @@
           ><span id="nb-location"></span>
         </div>
         <div class="notebook-layout">
-          <div class="notebook-sidebar">
-            <input
-              id="nb-search"
-              placeholder="搜索标题或正文"
-              aria-label="搜索笔记"
-            />
-            <div id="nb-list"></div>
-          </div>
           <div class="notebook-paper">
             <div id="nb-empty" class="empty">
               从一篇笔记开始。新建笔记，或连接 GitHub 读取已有内容。
@@ -3474,8 +3489,8 @@
     <script src="./timeline-view.js?v=1"></script>
     <script src="./merge-core.js?v=1"></script>
     <script src="./project-store.js?v=1"></script>
-    <script src="./github-sync.js?v=obsidian-1"></script>
-    <script src="./workstation.js?v=obsidian-1"></script>
+    <script src="./github-sync.js?v=sidebar-2"></script>
+    <script src="./workstation.js?v=sidebar-2"></script>
     <script src="./obsidian-core.js?v=1"></script>
     <script src="./obsidian.js?v=1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
