@@ -2586,7 +2586,7 @@
             ><input id="gh-branch" name="branch" required />
           </div>
           <div style="flex: 1">
-            <label for="gh-path">数据文件路径</label
+            <label for="gh-path">旧文件 / 存储路径</label
             ><input id="gh-path" name="path" required />
           </div>
         </div>
@@ -2600,9 +2600,12 @@
           spellcheck="false"
         />
         <p style="font-size: 11px; margin-top: 12px">
-          本地修改仍需点击「保存到
-          GitHub」提交。两边都有更新时可打开合并弹窗，逐项选择本地或远端版本，再确认上传。请直接在页面输入
-          Token，不要发到聊天中。
+          每个一级项目（含二级项目、任务及循环计划）单独保存；未分类任务另存。
+          路径 taskspace.json 对应 taskspace.projects/
+          目录，首次保存自动迁移并保留旧文件。
+          只上传有修改的项目，不同记录的修改自动合并，同一记录冲突时弹窗选择。
+          所有设备均应刷新到此版本后再保存，避免旧页面继续写入旧文件。 Token
+          请直接在页面输入，不要发到聊天中。
         </p>
         <p
           id="gh-dialog-status"
@@ -3221,7 +3224,8 @@
     </script>
     <script src="./timeline-view.js?v=1"></script>
     <script src="./merge-core.js?v=1"></script>
-    <script src="./github-sync.js?v=merge-1"></script>
+    <script src="./project-store.js?v=1"></script>
+    <script src="./github-sync.js?v=projects-1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>

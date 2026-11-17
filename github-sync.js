@@ -13,6 +13,7 @@
     checked = false,
     checking = false,
     syncError = false;
+  let canAutoMerge = false;
   let lastChecked = null,
     baselineSnapshot = null;
   const baselineKey = () =>
@@ -37,7 +38,7 @@
     } else if (!connected) {
       state = dirty ? "upload" : "offline";
       label = dirty ? "本地待上传" : "未连接";
-    } else if (remoteChanged && dirty) {
+    } else if (remoteChanged && dirty && !canAutoMerge) {
       state = "conflict";
       label = "待合并";
     } else if (syncError) {
@@ -48,7 +49,7 @@
       label = "待检查";
     } else if (remoteChanged) {
       state = "download";
-      label = "待读取";
+      label = canAutoMerge && dirty ? "可自动合并" : "待读取";
     } else if (dirty) {
       state = "upload";
       label = "待上传";
@@ -63,7 +64,9 @@
       ? "连接 GitHub 后才能检查远端；本地数据仍保留。"
       : remoteChanged
         ? dirty
-          ? "本地与 GitHub 均有变化，点击状态或 GitHub 菜单打开合并弹窗。"
+          ? canAutoMerge
+            ? "不同记录的更新可以自动合并，点击保存即可按项目上传。"
+            : "本地与 GitHub 均有变化，点击状态或 GitHub 菜单打开合并弹窗。"
           : "GitHub 数据已更新，请读取远端。"
         : dirty
           ? "本地任务或项目有修改，需要保存到 GitHub。"
@@ -83,6 +86,7 @@
     try {
       const file = await remote();
       mergeFile = file;
+      canAutoMerge = Boolean(file && autoMerge(file));
       if (!connected) return;
       if (file) {
         const snapshot = JSON.stringify(validateData(decodeData(file.content)));
@@ -107,7 +111,9 @@
       status(
         remoteChanged
           ? dirty
-            ? "本地和远端均有更新，请打开「合并本地与远端」逐项选择。"
+            ? canAutoMerge
+              ? "不同记录的更新可自动合并，点击「保存到 GitHub」即可按项目保存。"
+              : "同一记录存在不同修改，请打开合并弹窗选择。"
             : "GitHub 数据已更新，请读取远端。"
           : dirty
             ? "本地有修改，等待保存到 GitHub。"
@@ -280,7 +286,7 @@
       config.path.split("/").map(encodeURIComponent).join("/")
     );
   }
-  async function api(url, options = {}) {
+  async function rawApi(url, options = {}) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 25000);
     try {
@@ -324,20 +330,32 @@
       clearTimeout(timer);
     }
   }
-  async function remote() {
-    const result = await api(
-      fileUrl() + "?ref=" + encodeURIComponent(config.branch),
-      { missingOK: true },
+  const projectStore = window.ProjectStore.create({
+    request: rawApi,
+    baseUrl,
+    config: () => config,
+    validate: validateData,
+    encode: encodeData,
+    decode: decodeData,
+  });
+  async function api(url, options = {}) {
+    if (url === fileUrl() && options.method === "PUT")
+      return projectStore.write(JSON.parse(options.body));
+    return rawApi(url, options);
+  }
+  const remote = () => projectStore.read();
+  function autoMerge(file) {
+    if (!file) return null;
+    const plan = window.MergeCore.plan(
+      validateData(db),
+      validateData(decodeData(file.content)),
+      baselineSnapshot ? validateData(JSON.parse(baselineSnapshot)) : null,
     );
-    if (
-      result &&
-      (result.type !== "file" ||
-        result.encoding !== "base64" ||
-        typeof result.content !== "string" ||
-        result.size > 900000)
-    )
-      throw Error("远端必须为小于 900 KB 的 JSON 文件。");
-    return result;
+    const result = window.MergeCore.build(
+      plan,
+      () => "merge_" + crypto.randomUUID(),
+    );
+    return result.unresolved.length ? null : validateData(result.data);
   }
   function backupLocal() {
     const backups = JSON.parse(
@@ -360,7 +378,7 @@
     }
     if (
       !confirm(
-        "读取 GitHub 将替换当前本地项目和任务。建议先点「导出」备份；本次读取也会保留最近三次本地快照。继续？",
+        "读取 GitHub 将读取所有项目文件并替换本地项目和任务。建议先点「导出」备份；本次读取也会保留最近三次本地快照。继续？",
       )
     )
       return;
@@ -403,78 +421,71 @@
   }
   async function writeRemote() {
     if (mergeSession || busy || checking) return;
-    if (dirty && remoteChanged) {
-      await openMerge();
-      return;
-    }
-    let conflictFile = null;
     busy = true;
     updateButtons();
-    status("正在检查远端版本…");
+    status("正在逐项目检查远端版本…");
     try {
-      // Recheck visibility before every write in case repository settings changed.
       const repo = await api(baseUrl());
-      if (!repo.private)
-        throw Error(
-          "只允许写入私有仓库。请创建私有数据仓库，避免任务内容公开。",
-        );
+      if (!repo.private) throw Error("只允许写入私有数据仓库。");
       const file = await remote();
-      if (file && (!baseSha || file.sha !== baseSha)) {
-        remoteChanged = true;
-        conflictFile = file;
-        checked = true;
-        throw Error(
-          "远端存在新版本，已阻止覆盖。请在合并弹窗选择要保留的任务。",
-        );
-      }
-      if (!file && baseSha)
-        throw Error("远端文件已被删除，已阻止重新创建。请重新连接并确认数据。");
+      const before = localSnapshot();
+      let data = validateData(db);
+      if (file) {
+        const merged = autoMerge(file);
+        if (!merged) {
+          remoteChanged = true;
+          prepareMerge(file);
+          status("同一记录有不同修改，请在弹窗选择合并版本。");
+          return;
+        }
+        data = merged;
+      } else if (baseSha)
+        throw Error("远端存储已被删除，已阻止重新创建，请确认后重新连接。");
       if (
         !file &&
         !confirm(
-          `将在私有仓库 ${config.owner}/${config.repo} 的 ${config.branch} 分支创建 ${config.path}，保存当前项目与任务。继续？`,
+          `将在私有仓库 ${config.owner}/${config.repo} 创建按项目存储目录；每个一级项目和其子项目单独保存。继续？`,
         )
-      ) {
-        status("已取消创建，数据仍在本地。");
+      )
         return;
-      }
-      const snapshot = JSON.stringify(validateData(db));
-      const payload = {
-        schemaVersion: 2,
-        updatedAt: new Date().toISOString(),
-        ...JSON.parse(snapshot),
-      };
-      const content = encodeData(payload);
-      if (content.length > 1200000)
-        throw Error("数据超过 900 KB，请先清理或拆分数据。");
-      status("正在保存到 GitHub…");
-      const result = await api(fileUrl(), {
+      const snapshot = JSON.stringify(data);
+      const response = await api(fileUrl(), {
         method: "PUT",
         body: JSON.stringify({
-          message: "Save Taskspace data",
-          content,
+          message: "Save Taskspace project changes",
+          content: encodeData(data),
           branch: config.branch,
-          ...(baseSha ? { sha: baseSha } : {}),
+          ...(file ? { sha: file.sha } : {}),
         }),
       });
-      rememberBaseline(result.content.sha, snapshot);
-      dirty = localSnapshot() !== snapshot;
+      // The store can incorporate an unrelated project committed during our upload.
+      const saved = validateData(response.data || data);
+      rememberBaseline(response.content.sha, JSON.stringify(saved));
+      if (localSnapshot() === before) {
+        backupLocal();
+        db = saved;
+        localStorage.setItem(CACHE_KEY, JSON.stringify(db));
+        render();
+      }
+      dirty = localSnapshot() !== baselineSnapshot;
       remoteChanged = false;
+      canAutoMerge = false;
       checked = true;
       syncError = false;
       lastChecked = new Date();
       rememberDirty();
       status(
         dirty
-          ? "本次快照已保存；保存期间有新修改，请再次保存。"
-          : "已保存到 GitHub · " + new Date().toLocaleTimeString("zh-CN"),
+          ? "项目快照已保存；保存期间有新修改，请再次保存。"
+          : "已按项目保存；其他项目的远端更新已自动保留。旧单文件备份保持不变。",
       );
+      window.runRecurringTasks?.();
     } catch (e) {
       status(e.message, true);
     } finally {
       busy = false;
       updateButtons();
-      offerMerge(conflictFile);
+      mergePreview();
     }
   }
   let mergeSession = null,
@@ -537,7 +548,7 @@
     el("merge-list").replaceChildren();
     mergeError("");
     el("merge-context").textContent =
-      `${config.owner}/${config.repo} · ${config.path} · 远端版本 ${session.remoteSha.slice(0, 8)}。${session.plan.hasBase ? "已参考上次同步版本判断单边修改及删除。" : "未找到共同版本：独有记录默认保留，同 ID 的不同版本需要你选择。"}`;
+      `${config.owner}/${config.repo} · ${config.path.replace(/\.json$/, ".projects")} · 按一级项目存储 · 远端版本 ${session.remoteSha.slice(0, 8)}。${session.plan.hasBase ? "已参考上次同步版本判断单边修改及删除。" : "未找到共同版本：独有记录默认保留，同 ID 的不同版本需要你选择。"}`;
     for (const group of ["tasks", "projects", "schedules"]) {
       const rows = session.plan.rows.filter(
         (r) => r.group === group && r.kind !== "same",
@@ -663,6 +674,7 @@
   function offerMerge(file) {
     if (
       !file ||
+      autoMerge(file) ||
       !remoteChanged ||
       !dirty ||
       mergeSession ||
@@ -752,8 +764,7 @@
         updatedAt: new Date().toISOString(),
         ...merged,
       });
-      if (content.length > 1200000)
-        throw Error("合并后数据超过 900 KB，请减少保留内容。");
+      // Per-project size limits are enforced by ProjectStore.
       backupLocal();
       const response = await api(fileUrl(), {
         method: "PUT",
@@ -778,7 +789,7 @@
         status("合并结果已上传，但保存期间本地又有修改，请继续合并。");
         return;
       }
-      finishMerge(merged, response.content.sha);
+      finishMerge(validateData(response.data || merged), response.content.sha);
     } catch (e) {
       mergeError(e.message);
       status(e.message, true);
@@ -928,7 +939,7 @@
         }
       } catch {}
       status(
-        "已连接私有仓库。首次请读取 GitHub；文件不存在时，可保存当前本地数据以创建。",
+        "已连接：按一级项目独立保存。兼容旧单文件，首次保存会迁移并保留旧文件。",
       );
       el("gh-dialog").close();
       busy = false;
@@ -951,7 +962,7 @@
   window.validateTaskspaceData = validateData;
   updateButtons();
   el("gh-dock-state").onclick = () => {
-    if (connected && dirty && remoteChanged) {
+    if (connected && dirty && remoteChanged && !canAutoMerge) {
       openMerge();
       return;
     }
