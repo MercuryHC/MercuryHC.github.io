@@ -7,7 +7,9 @@
   let data = core.defaults(),
     group = "",
     editing = null,
-    dragging = null;
+    dragging = null,
+    syncBusy = false,
+    syncSession = null;
   try {
     const saved = localStorage.getItem(KEY);
     if (saved) data = core.validate(JSON.parse(saved));
@@ -62,6 +64,7 @@
     return box;
   }
   function render() {
+    window.refreshGithubDock?.();
     const q = $("bm-search").value.toLowerCase().trim();
     $("bm-groups").replaceChildren();
     for (const name of ["", ...data.groups]) {
@@ -115,7 +118,7 @@
         tile.classList.add("dragging");
       };
       tile.ondragend = () => {
-        dragging = null;
+        ((dragging = null), (syncBusy = false), (syncSession = null));
         tile.classList.remove("dragging");
       };
       tile.ondragover = (e) => e.preventDefault();
@@ -295,6 +298,199 @@
       status(e.message, true);
     }
   };
+  const snapshot = (value) => JSON.stringify(core.validate(value));
+  const baseKey = () =>
+    "workstation-bookmarks-github-base:" +
+    window.WorkstationGitHub.context().key;
+  function getBase() {
+    try {
+      const value = JSON.parse(localStorage.getItem(baseKey()));
+      return value?.sha
+        ? { sha: value.sha, data: core.validate(value.data) }
+        : null;
+    } catch {
+      return null;
+    }
+  }
+  function rememberBase(file) {
+    localStorage.setItem(
+      baseKey(),
+      JSON.stringify({ sha: file.sha, data: core.validate(file.data) }),
+    );
+  }
+  function syncState() {
+    const base = getBase();
+    return {
+      busy: syncBusy,
+      connected: window.WorkstationGitHub.context().connected,
+      known: !!base,
+      dirty: base
+        ? snapshot(data) !== snapshot(base.data)
+        : !!localStorage.getItem(KEY),
+    };
+  }
+  async function syncRun(fn) {
+    if (syncBusy) return;
+    if (!window.WorkstationGitHub.context().connected) {
+      $("gh-open").click();
+      status("请先连接 GitHub 数据仓库，再读取或保存主页收藏。");
+      return;
+    }
+    syncBusy = true;
+    $("bm-sync-confirm").disabled = true;
+    window.refreshGithubDock?.();
+    try {
+      await fn();
+    } catch (e) {
+      status(e.message, true);
+      $("bm-sync-error").textContent = e.message;
+    } finally {
+      syncBusy = false;
+      $("bm-sync-confirm").disabled = false;
+      window.refreshGithubDock?.();
+    }
+  }
+  function previewSync(plan, remote, localSnapshot) {
+    syncSession = { plan, sha: remote.sha, localSnapshot };
+    $("bm-sync-conflicts").replaceChildren();
+    $("bm-sync-error").textContent = "";
+    for (const row of plan.conflicts) {
+      const card = document.createElement("section"),
+        heading = document.createElement("strong");
+      card.className = "bm-sync-record";
+      heading.textContent = row.local?.title || row.remote?.title || row.id;
+      card.append(heading);
+      for (const [side, label] of [
+        ["local", "本机版本"],
+        ["remote", "GitHub 版本"],
+      ]) {
+        const option = document.createElement("label"),
+          radio = document.createElement("input"),
+          text = document.createElement("span");
+        radio.type = "radio";
+        radio.name = "bookmark-conflict-" + plan.rows.indexOf(row);
+        radio.value = side;
+        radio.onchange = () => {
+          row.choice = side;
+        };
+        const b = row[side];
+        text.textContent =
+          label +
+          "：" +
+          (b ? b.title + " · " + b.url + " · " + b.group : "删除此收藏");
+        option.append(radio, text);
+        card.append(option);
+      }
+      $("bm-sync-conflicts").append(card);
+    }
+    $("bm-sync-dialog").showModal();
+    status("本机和 GitHub 的同一收藏有不同修改，请选择保留版本。");
+  }
+  async function readCloud() {
+    return syncRun(async () => {
+      const before = snapshot(data);
+      status("正在读取 GitHub 主页收藏…");
+      const file = await window.BookmarksGitHub.read();
+      if (!file) {
+        status("远端尚无收藏文件；点击 GitHub 菜单中的「保存主页收藏」创建。");
+        return;
+      }
+      if (snapshot(data) !== before)
+        throw Error("读取期间本机收藏有新修改，已保留；请重新读取。");
+      if (
+        syncState().dirty &&
+        before !== snapshot(file.data) &&
+        !confirm("读取将替换本机收藏；可通过「撤销上次更改」恢复。继续？")
+      )
+        return;
+      if (!commit(file.data)) return;
+      rememberBase(file);
+      window.refreshGithubDock?.();
+      status("已读取 GitHub 主页收藏 · " + window.BookmarksGitHub.path());
+    });
+  }
+  async function saveCloud(resolution = null) {
+    return syncRun(async () => {
+      const before = snapshot(data),
+        base = getBase();
+      status("正在检查 GitHub 收藏版本…");
+      const remote = await window.BookmarksGitHub.read();
+      if (snapshot(data) !== before)
+        throw Error("检查期间本机收藏有更新，请再次保存。");
+      let target;
+      if (resolution) {
+        if (before !== resolution.localSnapshot)
+          throw Error("合并预览期间本机收藏有变化，请关闭窗口后重新保存。");
+        if (remote?.sha !== resolution.sha)
+          throw Error("远端收藏又有更新，请关闭窗口后重新保存、刷新合并版本。");
+        target = resolution.data;
+      } else if (remote) {
+        if (before === snapshot(remote.data)) {
+          rememberBase(remote);
+          status("主页收藏与 GitHub 一致，无需上传。");
+          return;
+        }
+        const plan = core.plan(data, remote.data, base?.data || null);
+        if (plan.conflicts.length) {
+          previewSync(plan, remote, before);
+          return;
+        }
+        target = core.build(plan);
+      } else {
+        if (
+          base &&
+          !confirm("远端收藏文件已删除，是否用当前本机收藏重新创建？")
+        )
+          return;
+        target = core.validate(data);
+      }
+      const result = await window.BookmarksGitHub.save(
+        target,
+        remote?.sha || null,
+      );
+      rememberBase(result);
+      const newer = snapshot(data) !== before;
+      if (!newer && !commit(result.data)) {
+        status("GitHub 已保存，但本机存储失败；请导出备份或重新读取。", true);
+        return;
+      }
+      if (syncSession) {
+        syncSession = null;
+        $("bm-sync-dialog").close();
+      }
+      status(
+        newer
+          ? "本次快照已保存到 GitHub；保存期间还有新修改，请再次保存。"
+          : "主页收藏已保存到 GitHub · " + window.BookmarksGitHub.path(),
+      );
+    });
+  }
+  $("bm-sync-cancel").onclick = () => {
+    if (syncBusy) return;
+    syncSession = null;
+    $("bm-sync-dialog").close();
+  };
+  $("bm-sync-dialog").addEventListener("cancel", (e) => {
+    if (syncBusy) e.preventDefault();
+    else syncSession = null;
+  });
+  $("bm-sync-confirm").onclick = () => {
+    if (!syncSession || syncBusy) return;
+    try {
+      const data = core.build(syncSession.plan);
+      saveCloud({ ...syncSession, data });
+    } catch (e) {
+      $("bm-sync-error").textContent = e.message;
+    }
+  };
+  window.BookmarksWorkspace = {
+    read: readCloud,
+    save: () => saveCloud(),
+    state: syncState,
+  };
+  window.addEventListener("taskspace-github-state", () =>
+    window.refreshGithubDock?.(),
+  );
   function clock() {
     const now = new Date();
     $("bm-clock").textContent = now.toLocaleTimeString("zh-CN", {

@@ -2061,7 +2061,7 @@
     <link rel="stylesheet" href="./workstation.css?v=progress-1" />
     <link rel="stylesheet" href="./theme.css?v=1" />
     <link rel="stylesheet" href="./code-highlight.css?v=1" />
-    <link rel="stylesheet" href="./workspace-apps.css?v=home-1" />
+    <link rel="stylesheet" href="./workspace-apps.css?v=icons-sync-1" />
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2716,12 +2716,46 @@
             rel="noopener noreferrer"
             role="search"
           >
-            <select id="web-search-engine" aria-label="选择网页搜索引擎">
-              <option value="google">Google</option>
-              <option value="bing">必应</option>
-              <option value="baidu">百度</option>
-              <option value="github">GitHub</option></select
-            ><input
+            <div class="engine-picker" id="web-engine-picker">
+              <select
+                id="web-search-engine"
+                hidden
+                aria-label="选择网页搜索引擎"
+              >
+                <option value="google">Google</option>
+                <option value="bing">必应</option>
+                <option value="baidu">百度</option>
+                <option value="github">GitHub</option></select
+              ><button
+                id="web-engine-trigger"
+                class="engine-trigger"
+                type="button"
+                aria-label="切换搜索引擎"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="web-engine-menu"
+              >
+                <span id="web-engine-icon"></span
+                ><svg
+                  viewBox="0 0 12 12"
+                  width="10"
+                  height="10"
+                  fill="none"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="m3 4 3 3 3-3" />
+                </svg>
+              </button>
+              <div
+                id="web-engine-menu"
+                class="engine-menu"
+                role="listbox"
+                aria-label="搜索引擎"
+                hidden
+              ></div>
+            </div>
+            <input
               id="web-search-query"
               name="q"
               type="search"
@@ -2730,7 +2764,19 @@
               required
               autocomplete="off"
             /><button class="primary" type="submit" aria-label="搜索网页">
-              搜索
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m16 16 4.5 4.5" />
+              </svg>
             </button>
           </form>
         </div>
@@ -2766,7 +2812,7 @@
           role="status"
           aria-live="polite"
         >
-          收藏自动保存在当前浏览器，支持导入与导出。
+          收藏自动保存在本机，通过右上角 GitHub 菜单读取或保存到数据仓库。
         </p>
         <div id="bm-grid" class="bookmark-grid"></div>
       </section>
@@ -2810,6 +2856,20 @@
           <button class="primary" id="nr-submit">验证并连接</button>
         </div>
       </form>
+    </dialog>
+    <dialog id="bm-sync-dialog">
+      <div class="row">
+        <h2>合并本机与 GitHub 收藏</h2>
+        <button id="bm-sync-cancel">×</button>
+      </div>
+      <p class="connection-guide">
+        不同收藏的修改已自动合并。请为以下冲突选择保留版本，确认后上传。
+      </p>
+      <div id="bm-sync-conflicts"></div>
+      <p id="bm-sync-error" role="status"></p>
+      <div class="dialog-actions">
+        <button id="bm-sync-confirm" class="primary">确认合并并上传</button>
+      </div>
     </dialog>
     <dialog id="bm-dialog">
       <form id="bm-form">
@@ -3859,17 +3919,17 @@
     <script src="./project-store.js?v=1"></script>
     <script src="./vault-sync.js?v=1"></script>
     <script src="./upload-progress.js?v=diff-1"></script>
-    <script src="./github-sync.js?v=vault-diff-1"></script>
+    <script src="./github-sync.js?v=bookmark-sync-1"></script>
     <script src="./notion-client.js?v=1"></script>
-    <script src="./bookmarks-core.js?v=1"></script>
+    <script src="./bookmarks-core.js?v=merge-1"></script>
     <script src="./theme.js?v=1"></script>
     <script src="./directory-tree.js?v=1"></script>
-    <script src="./workstation.js?v=home-1"></script>
+    <script src="./workstation.js?v=bookmark-sync-1"></script>
     <script src="./obsidian-core.js?v=folders-1"></script>
     <script src="./obsidian.js?v=diff-1"></script>
     <script src="./notion-workspace.js?v=1"></script>
-    <script src="./web-search.js?v=1"></script>
-    <script src="./bookmarks.js?v=1"></script>
+    <script src="./web-search.js?v=icons-1"></script>
+    <script src="./bookmarks.js?v=sync-1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>

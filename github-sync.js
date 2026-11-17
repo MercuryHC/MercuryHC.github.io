@@ -34,6 +34,34 @@
   }
   function updateDockState() {
     if (
+      document.body?.dataset.workspace === "bookmarks" &&
+      window.BookmarksWorkspace?.state
+    ) {
+      const s = window.BookmarksWorkspace.state(),
+        chip = el("gh-dock-state"),
+        label = s.busy
+          ? "收藏同步中"
+          : !s.connected
+            ? "收藏未连接"
+            : s.dirty
+              ? "收藏待上传"
+              : s.known
+                ? "收藏已同步"
+                : "收藏待检查";
+      chip.textContent = label;
+      chip.dataset.state = s.busy
+        ? "checking"
+        : s.dirty
+          ? "upload"
+          : s.connected && s.known
+            ? "synced"
+            : "offline";
+      chip.title = "主页收藏：使用 GitHub 菜单读取或保存。";
+      chip.setAttribute("aria-label", label);
+      return;
+    }
+
+    if (
       ["notion-cloud", "bookmarks"].includes(document.body?.dataset.workspace)
     ) {
       const chip = el("gh-dock-state"),
@@ -232,19 +260,23 @@
     el("gh-disconnect").disabled =
       busy || checking || notebookBusy || !!mergeSession || !token;
     el("gh-read").textContent =
-      document.body?.dataset.workspace === "notion"
-        ? "读取 GitHub 笔记"
-        : "读取 GitHub";
+      document.body?.dataset.workspace === "bookmarks"
+        ? "读取主页收藏"
+        : document.body?.dataset.workspace === "notion"
+          ? "读取 GitHub 笔记"
+          : "读取 GitHub";
     el("gh-write").textContent =
-      document.body?.dataset.workspace === "notion-cloud"
-        ? "备份当前 Notion 页面"
-        : document.body?.dataset.workspace === "obsidian"
-          ? "上传当前 Obsidian 笔记"
-          : document.body?.dataset.workspace === "notion"
-            ? "保存当前笔记"
-            : dirty
-              ? "保存到 GitHub · 有修改"
-              : "保存到 GitHub";
+      document.body?.dataset.workspace === "bookmarks"
+        ? "保存主页收藏"
+        : document.body?.dataset.workspace === "notion-cloud"
+          ? "备份当前 Notion 页面"
+          : document.body?.dataset.workspace === "obsidian"
+            ? "上传当前 Obsidian 笔记"
+            : document.body?.dataset.workspace === "notion"
+              ? "保存当前笔记"
+              : dirty
+                ? "保存到 GitHub · 有修改"
+                : "保存到 GitHub";
     el("gh-merge").disabled =
       busy || checking || notebookBusy || !!mergeSession || !connected;
     for (const id of ["merge-refresh", "merge-all-local", "merge-all-remote"])
@@ -974,17 +1006,21 @@
     updateButtons();
   };
   el("gh-read").onclick = () =>
-    document.body?.dataset.workspace === "notion"
-      ? window.NotesWorkspace?.refresh()
-      : readRemote();
+    document.body?.dataset.workspace === "bookmarks"
+      ? window.BookmarksWorkspace?.read()
+      : document.body?.dataset.workspace === "notion"
+        ? window.NotesWorkspace?.refresh()
+        : readRemote();
   el("gh-write").onclick = () =>
-    document.body?.dataset.workspace === "notion-cloud"
-      ? document.getElementById("nr-github")?.click()
-      : document.body?.dataset.workspace === "obsidian"
-        ? window.ObsidianWorkspace?.uploadCurrent()
-        : document.body?.dataset.workspace === "notion"
-          ? window.NotesWorkspace?.save()
-          : writeRemote();
+    document.body?.dataset.workspace === "bookmarks"
+      ? window.BookmarksWorkspace?.save()
+      : document.body?.dataset.workspace === "notion-cloud"
+        ? document.getElementById("nr-github")?.click()
+        : document.body?.dataset.workspace === "obsidian"
+          ? window.ObsidianWorkspace?.uploadCurrent()
+          : document.body?.dataset.workspace === "notion"
+            ? window.NotesWorkspace?.save()
+            : writeRemote();
   el("gh-restore").onclick = () => {
     try {
       const backups = JSON.parse(
@@ -1359,6 +1395,57 @@
             sha: file.sha,
           }),
         });
+      }),
+  };
+  const bookmarkPath = () => config.path.replace(/\.json$/, ".bookmarks.json");
+  const bookmarkUrl = () =>
+    baseUrl() +
+    "/contents/" +
+    bookmarkPath().split("/").map(encodeURIComponent).join("/");
+  async function readBookmarkFile() {
+    const file = await rawApi(
+      bookmarkUrl() + "?ref=" + encodeURIComponent(config.branch),
+      { missingOK: true },
+    );
+    if (!file) return null;
+    if (
+      file.type !== "file" ||
+      file.encoding !== "base64" ||
+      file.size > 900000
+    )
+      throw Error("主页收藏文件无法读取或超过 900 KB。");
+    return {
+      sha: file.sha,
+      data: window.BookmarksCore.validate(decodeData(file.content)),
+    };
+  }
+  window.BookmarksGitHub = {
+    path: bookmarkPath,
+    read: () => notebookOperation(readBookmarkFile),
+    save: (data, sha) =>
+      uploadOperation(async () => {
+        if (!(await rawApi(baseUrl())).private)
+          throw Error("仅允许保存到私有数据仓库。");
+        const remote = await readBookmarkFile();
+        if ((remote?.sha || null) !== (sha || null)) {
+          const error = Error("远端收藏又有更新，请重新保存以刷新合并版本。");
+          error.code = "BOOKMARK_CONFLICT";
+          error.remote = remote;
+          throw error;
+        }
+        const clean = window.BookmarksCore.validate(data),
+          content = encodeData({ schemaVersion: 1, ...clean });
+        if (content.length > 1200000) throw Error("收藏数据超过900 KB。");
+        const result = await rawApi(bookmarkUrl(), {
+          method: "PUT",
+          body: JSON.stringify({
+            message: "Save workstation home bookmarks",
+            branch: config.branch,
+            content,
+            ...(remote ? { sha: remote.sha } : {}),
+          }),
+        });
+        return { sha: result.content.sha, data: clean };
       }),
   };
   function vaultPath(prefix, path) {

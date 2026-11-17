@@ -111,6 +111,58 @@
       })),
     };
   }
-  root.BookmarksCore = { icons, url, validate, defaults };
+  function plan(local, remote, base = null) {
+    local = validate(local);
+    remote = validate(remote);
+    if (base) base = validate(base);
+    const maps = [local, remote, base].map(
+        (d) => new Map((d?.items || []).map((b) => [b.id, b])),
+      ),
+      equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+    const order =
+      base &&
+      equal(
+        local.items.map((x) => x.id),
+        base.items.map((x) => x.id),
+      )
+        ? [...remote.items, ...local.items]
+        : [...local.items, ...remote.items];
+    const rows = [
+      ...new Set(
+        order.map((x) => x.id).concat(base?.items.map((x) => x.id) || []),
+      ),
+    ].map((id) => {
+      const l = maps[0].get(id),
+        r = maps[1].get(id),
+        b = maps[2].get(id);
+      let choice = null;
+      if (equal(l, r)) choice = "local";
+      else if (base && equal(l, b)) choice = "remote";
+      else if (base && equal(r, b)) choice = "local";
+      else if (!base && (!l || !r)) choice = l ? "local" : "remote";
+      return { id, local: l, remote: r, choice };
+    });
+    const groups = [...new Set([...local.groups, ...remote.groups])].filter(
+      (g) => {
+        if (!base) return true;
+        const l = local.groups.includes(g),
+          r = remote.groups.includes(g),
+          b = base.groups.includes(g);
+        return l === b ? r : r === b ? l : l || r;
+      },
+    );
+    return { rows, groups, conflicts: rows.filter((r) => !r.choice) };
+  }
+  function build(plan) {
+    if (plan.rows.some((r) => !r.choice))
+      throw Error("请先选择所有冲突的保留版本。");
+    const items = plan.rows
+        .map((r) => (r.choice === "local" ? r.local : r.remote))
+        .filter(Boolean),
+      groups = [...plan.groups];
+    for (const b of items) if (!groups.includes(b.group)) groups.push(b.group);
+    return validate({ groups, items });
+  }
+  root.BookmarksCore = { icons, url, validate, defaults, plan, build };
   if (typeof module !== "undefined") module.exports = root.BookmarksCore;
 })(typeof window !== "undefined" ? window : globalThis);
