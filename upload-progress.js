@@ -40,6 +40,18 @@
       bar.max = total || 1;
       bar.value = n;
     },
+    stage,
+    diff(stats) {
+      if (!active) return;
+      count.textContent =
+        "相同 " +
+        stats.unchanged +
+        " · 新增 " +
+        stats.added +
+        " · 修改 " +
+        stats.modified +
+        (stats.conflicts ? " · 冲突 " + stats.conflicts : "");
+    },
     request(url, method) {
       if (!active || method === "GET") return;
       const path = new URL(url).pathname;
@@ -75,7 +87,8 @@
       detail.textContent = writes
         ? "GitHub 已确认本次写入。"
         : "远端已是当前内容，或本次操作未写入文件。";
-      if (total) count.textContent = total + " 个文件处理完成";
+      if (total && !count.textContent.startsWith("相同"))
+        count.textContent = total + " 个文件处理完成";
       bar.max = 1;
       bar.value = 1;
       const id = generation;

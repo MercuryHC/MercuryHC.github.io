@@ -1378,81 +1378,16 @@
     path.split("/").map(encodeURIComponent).join("/");
   window.ObsidianGitHub = {
     upload: (prefix, files, baselines = {}, force = {}) =>
-      uploadOperation(async () => {
-        if (!(await rawApi(baseUrl())).private)
-          throw Error("仅允许上传到私有仓库。");
-        const refPath = config.branch
-          .split("/")
-          .map(encodeURIComponent)
-          .join("/");
-        const head = await rawApi(baseUrl() + "/git/ref/heads/" + refPath),
-          parent = head.object.sha;
-        const commit = await rawApi(baseUrl() + "/git/commits/" + parent);
-        const tree = [],
-          saved = {},
-          conflicts = [];
-        window.GitHubUpload?.files(files.length);
-        let checkedFiles = 0;
-        for (const f of files) {
-          const path = vaultPath(prefix, f.path);
-          if (new TextEncoder().encode(f.text).length > 900000)
-            throw Error("笔记超过 900 KB：" + f.path);
-          const remote = markdownFile(
-            await rawApi(vaultUrl(path) + "?ref=" + parent, {
-              missingOK: true,
-            }),
-          );
-          window.GitHubUpload?.checked(++checkedFiles, f.path);
-          if (remote?.text === f.text) {
-            saved[f.path] = remote.sha;
-            continue;
-          }
-          if (
-            remote &&
-            remote.sha !== baselines[f.path] &&
-            remote.sha !== force[f.path]
-          ) {
-            conflicts.push({ path: f.path, remote, local: f.text });
-            continue;
-          }
-          if (!remote && baselines[f.path] && force[f.path] !== "recreate") {
-            conflicts.push({ path: f.path, remote: null, local: f.text });
-            continue;
-          }
-          tree.push({ path, mode: "100644", type: "blob", content: f.text });
-        }
-        if (conflicts.length) {
-          window.GitHubUpload?.fail(
-            conflicts.length + " 个文件存在远端冲突，请对比后再上传。",
-          );
-          return { saved: {}, conflicts };
-        }
-        if (!tree.length) return { saved, conflicts: [] };
-        const nextTree = await rawApi(baseUrl() + "/git/trees", {
-          method: "POST",
-          body: JSON.stringify({ base_tree: commit.tree.sha, tree }),
-        });
-        const next = await rawApi(baseUrl() + "/git/commits", {
-          method: "POST",
-          body: JSON.stringify({
-            message: "Save Obsidian vault Markdown notes",
-            tree: nextTree.sha,
-            parents: [parent],
-          }),
-        });
-        await rawApi(baseUrl() + "/git/refs/heads/" + refPath, {
-          method: "PATCH",
-          body: JSON.stringify({ sha: next.sha, force: false }),
-        });
-        for (const f of files)
-          if (!saved[f.path])
-            saved[f.path] = (
-              await rawApi(
-                vaultUrl(vaultPath(prefix, f.path)) + "?ref=" + next.sha,
-              )
-            ).sha;
-        return { saved, conflicts: [] };
-      }),
+      uploadOperation(() =>
+        window.VaultSync.create({
+          request: rawApi,
+          baseUrl: baseUrl(),
+          branch: config.branch,
+          validatePath: vaultPath,
+          decode: markdownFile,
+          progress: window.GitHubUpload,
+        }).upload(prefix, files, baselines, force),
+      ),
   };
   status("本地模式 · 可连接私有仓库；勾选记住连接可在刷新后自动重连。");
   window.validateTaskspaceData = validateData;

@@ -242,12 +242,27 @@
       )
     )
       return;
-    const files = [];
-    for (const e of targets)
-      files.push({ path: e.path, text: await core.read(e.handle) });
+    const connectionKey = window.WorkstationGitHub.context().key,
+      storageKey = syncKey();
+    window.GitHubUpload?.begin("读取 Obsidian 本地文件");
+    window.GitHubUpload?.files(targets.length);
+    let files,
+      readCount = 0;
+    try {
+      files = await window.VaultSync.mapLimit(targets, 6, async (e) => {
+        const text = await core.read(e.handle);
+        window.GitHubUpload?.checked(++readCount, e.path);
+        return { path: e.path, text };
+      });
+      if (window.WorkstationGitHub.context().key !== connectionKey)
+        throw Error("读取文件期间 GitHub 连接已切换，请重新上传。");
+    } catch (e) {
+      window.GitHubUpload?.fail(e.message);
+      throw e;
+    }
     let baselines = {};
     try {
-      baselines = JSON.parse(localStorage.getItem(syncKey())) || {};
+      baselines = JSON.parse(localStorage.getItem(storageKey)) || {};
     } catch {}
     status("正在上传 " + files.length + " 篇 Markdown…");
     const result = await window.ObsidianGitHub.upload(
@@ -272,13 +287,14 @@
       return;
     }
     localStorage.setItem(
-      syncKey(),
+      storageKey,
       JSON.stringify({ ...baselines, ...result.saved }),
     );
+    const diff = result.stats;
     status(
-      "已上传 " +
-        files.length +
-        " 篇 Markdown。保留子文件夹路径；客户端后续修改需再次上传。",
+      diff
+        ? `Diff 完成：相同 ${diff.unchanged} 篇已跳过，新增 ${diff.added} 篇、修改 ${diff.modified} 篇已保存。`
+        : `已处理 ${files.length} 篇 Markdown。`,
     );
   }
   function setView(mode) {
