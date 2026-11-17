@@ -14,6 +14,7 @@
     checking = false,
     syncError = false;
   let canAutoMerge = false;
+  let notebookBusy = false;
   let lastChecked = null,
     baselineSnapshot = null;
   const baselineKey = () =>
@@ -79,7 +80,7 @@
     chip.setAttribute("aria-label", "同步状态：" + label + "。" + detail);
   }
   async function checkRemoteState() {
-    if (!connected || busy || checking || mergeSession) return;
+    if (!connected || busy || checking || notebookBusy || mergeSession) return;
     checking = true;
     updateButtons();
     let mergeFile = null;
@@ -147,20 +148,26 @@
       "gh-check",
       "gh-merge",
     ])
-      el(id).disabled = busy || checking || !!mergeSession;
-    el("gh-check").disabled = busy || checking || !!mergeSession || !connected;
-    el("gh-read").disabled = busy || checking || !!mergeSession || !connected;
-    el("gh-write").disabled = busy || checking || !!mergeSession || !connected;
-    el("gh-disconnect").disabled = busy || checking || !!mergeSession || !token;
+      el(id).disabled = busy || checking || notebookBusy || !!mergeSession;
+    el("gh-check").disabled =
+      busy || checking || notebookBusy || !!mergeSession || !connected;
+    el("gh-read").disabled =
+      busy || checking || notebookBusy || !!mergeSession || !connected;
+    el("gh-write").disabled =
+      busy || checking || notebookBusy || !!mergeSession || !connected;
+    el("gh-disconnect").disabled =
+      busy || checking || notebookBusy || !!mergeSession || !token;
     el("gh-write").textContent = dirty
       ? "保存到 GitHub · 有修改"
       : "保存到 GitHub";
-    el("gh-merge").disabled = busy || checking || !!mergeSession || !connected;
+    el("gh-merge").disabled =
+      busy || checking || notebookBusy || !!mergeSession || !connected;
     for (const id of ["merge-refresh", "merge-all-local", "merge-all-remote"])
       el(id).disabled = busy || checking;
     el("merge-list")
       .querySelectorAll("input")
       .forEach((input) => (input.disabled = busy));
+    window.dispatchEvent?.(new Event("taskspace-github-state"));
     updateDockState();
     el("gh-indicator").textContent = connected
       ? dirty
@@ -875,7 +882,7 @@
   };
   el("gh-form").onsubmit = async (e) => {
     e.preventDefault();
-    if (busy || checking) return;
+    if (busy || checking || notebookBusy) return;
     const f = e.target;
     const next = Object.fromEntries(
       ["owner", "repo", "branch", "path"].map((k) => [
@@ -958,6 +965,161 @@
       e.returnValue = "";
     }
   });
+  const noteDirectory = () =>
+    config.path?.replace(/\.json$/, ".notes") || "taskspace.notes";
+  const noteContext = () => ({
+    connected,
+    key: JSON.stringify([
+      config.owner || "",
+      config.repo || "",
+      config.branch || "",
+      config.path || "",
+    ]),
+    directory: noteDirectory(),
+    repository:
+      config.owner && config.repo ? config.owner + "/" + config.repo : "",
+  });
+  function noteUrl(name) {
+    if (!/^[^/\\\x00-\x1f]{1,200}\.md$/.test(name))
+      throw Error("笔记文件名无效。");
+    return (
+      baseUrl() +
+      "/contents/" +
+      (noteDirectory() + "/" + name)
+        .split("/")
+        .map(encodeURIComponent)
+        .join("/")
+    );
+  }
+  function markdownFile(file) {
+    if (!file) return null;
+    if (
+      file.type !== "file" ||
+      file.encoding !== "base64" ||
+      file.size > 900000
+    )
+      throw Error("笔记文件无法读取或超过 900 KB。");
+    const bytes = Uint8Array.from(atob(file.content.replace(/\s/g, "")), (c) =>
+      c.charCodeAt(0),
+    );
+    return {
+      sha: file.sha,
+      text: new TextDecoder("utf-8", { fatal: true }).decode(bytes),
+    };
+  }
+  async function notebookOperation(fn) {
+    if (!connected) throw Error("请先连接 GitHub 私有仓库。");
+    if (busy || checking || notebookBusy || mergeSession)
+      throw Error("GitHub 正在同步，请稍后重试。");
+    notebookBusy = true;
+    updateButtons();
+    try {
+      return await fn();
+    } finally {
+      notebookBusy = false;
+      updateButtons();
+    }
+  }
+  window.WorkstationGitHub = {
+    context: noteContext,
+    list: () =>
+      notebookOperation(async () => {
+        const head = await rawApi(
+          baseUrl() +
+            "/git/ref/heads/" +
+            config.branch.split("/").map(encodeURIComponent).join("/"),
+        );
+        const ref = head.object.sha;
+        const url =
+          baseUrl() +
+          "/contents/" +
+          noteDirectory().split("/").map(encodeURIComponent).join("/");
+        const entries = await rawApi(url + "?ref=" + encodeURIComponent(ref), {
+          missingOK: true,
+        });
+        if (!entries) return [];
+        if (!Array.isArray(entries) || entries.length >= 1000)
+          throw Error("笔记目录异常或达到 1000 文件限制。");
+        const result = [];
+        for (const entry of entries.filter(
+          (e) => e.type === "file" && e.name.endsWith(".md"),
+        )) {
+          result.push({
+            name: entry.name,
+            ...markdownFile(
+              await rawApi(
+                noteUrl(entry.name) + "?ref=" + encodeURIComponent(ref),
+              ),
+            ),
+          });
+        }
+        return result;
+      }),
+    read: (name) =>
+      notebookOperation(async () =>
+        markdownFile(
+          await rawApi(
+            noteUrl(name) + "?ref=" + encodeURIComponent(config.branch),
+            { missingOK: true },
+          ),
+        ),
+      ),
+    save: (name, text, sha) =>
+      notebookOperation(async () => {
+        if (new TextEncoder().encode(text).length > 900000)
+          throw Error("笔记超过 900 KB，请拆分内容。");
+        if (!(await rawApi(baseUrl())).private)
+          throw Error("仅允许写入私有仓库。");
+        const url = noteUrl(name),
+          file = markdownFile(
+            await rawApi(url + "?ref=" + encodeURIComponent(config.branch), {
+              missingOK: true,
+            }),
+          );
+        if ((file?.sha || null) !== (sha || null)) {
+          const error = Error("笔记在 GitHub 上已有更新，请选择保留版本。");
+          error.code = "NOTE_CONFLICT";
+          error.remote = file;
+          throw error;
+        }
+        let binary = "";
+        const bytes = new TextEncoder().encode(text);
+        for (let i = 0; i < bytes.length; i += 8192)
+          binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+        const result = await rawApi(url, {
+          method: "PUT",
+          body: JSON.stringify({
+            message: "Save workstation Markdown note",
+            branch: config.branch,
+            content: btoa(binary),
+            ...(file ? { sha: file.sha } : {}),
+          }),
+        });
+        return { sha: result.content.sha, text };
+      }),
+    remove: (name, sha) =>
+      notebookOperation(async () => {
+        if (!(await rawApi(baseUrl())).private)
+          throw Error("仅允许写入私有仓库。");
+        const url = noteUrl(name),
+          file = markdownFile(
+            await rawApi(url + "?ref=" + encodeURIComponent(config.branch), {
+              missingOK: true,
+            }),
+          );
+        if (!file) return;
+        if (file.sha !== sha)
+          throw Error("远端笔记已更新，请读取并合并后再删除。");
+        await rawApi(url, {
+          method: "DELETE",
+          body: JSON.stringify({
+            message: "Delete workstation Markdown note",
+            branch: config.branch,
+            sha: file.sha,
+          }),
+        });
+      }),
+  };
   status("本地模式 · 连接私有仓库后可读取和保存，Token 不会持久化。");
   window.validateTaskspaceData = validateData;
   updateButtons();
