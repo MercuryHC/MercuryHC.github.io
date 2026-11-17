@@ -561,6 +561,39 @@
           aria-label="搜索任务、项目"
         />
       </header>
+      <section
+        aria-label="GitHub 数据同步"
+        style="
+          background: white;
+          border: 1px solid var(--line);
+          border-radius: 10px;
+          padding: 15px 18px;
+          margin-bottom: 24px;
+        "
+      >
+        <div class="row" style="flex-wrap: wrap">
+          <strong id="gh-indicator">GitHub · 未连接</strong>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            <button class="secondary" id="gh-open">连接私有仓库</button
+            ><button class="secondary" id="gh-read" disabled>读取 GitHub</button
+            ><button class="primary" id="gh-write" disabled>
+              保存到 GitHub</button
+            ><button class="secondary" id="gh-disconnect" disabled>断开</button>
+          </div>
+        </div>
+        <p
+          id="gh-status"
+          role="status"
+          aria-live="polite"
+          style="font-size: 12px; margin-top: 10px"
+        ></p>
+        <button
+          id="gh-restore"
+          style="font-size: 11px; color: var(--blue); padding: 8px 0 0"
+        >
+          下载最近一次读取前快照
+        </button>
+      </section>
       <div class="hero">
         <div>
           <h1 id="heading">让每一件事，有序发生。</h1>
@@ -690,6 +723,60 @@
         </div>
       </form>
     </dialog>
+    <dialog id="gh-dialog">
+      <form id="gh-form">
+        <div class="row">
+          <h2>连接 GitHub 私有数据仓库</h2>
+          <button type="button" id="gh-close">✕</button>
+        </div>
+        <p style="font-size: 12px; margin-top: 14px">
+          先创建一个私有仓库并勾选 Add a README，使 main 分支存在。Token 使用
+          fine-grained 类型，仅授权该仓库的 Contents: Read and write。Token
+          仅在当前页面内存中使用，刷新后需重新输入。
+        </p>
+        <label for="gh-owner">仓库所有者</label
+        ><input id="gh-owner" name="owner" required autocomplete="off" />
+        <label for="gh-repo">私有仓库名称</label
+        ><input id="gh-repo" name="repo" required autocomplete="off" />
+        <div class="row">
+          <div style="flex: 1">
+            <label for="gh-branch">分支</label
+            ><input id="gh-branch" name="branch" required />
+          </div>
+          <div style="flex: 1">
+            <label for="gh-path">数据文件路径</label
+            ><input id="gh-path" name="path" required />
+          </div>
+        </div>
+        <label for="gh-token">GitHub Token</label
+        ><input
+          id="gh-token"
+          name="token"
+          type="password"
+          required
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <p style="font-size: 11px; margin-top: 12px">
+          本地修改仍需点击「保存到
+          GitHub」提交。远端版本改变时会阻止覆盖；可先导出本地备份，再读取远端合并。请直接在页面输入
+          Token，不要发到聊天中。
+        </p>
+        <p
+          id="gh-dialog-status"
+          role="status"
+          style="font-size: 12px; color: #c45860; margin-top: 12px"
+        ></p>
+        <div class="dialog-actions">
+          <a
+            href="https://github.com/settings/personal-access-tokens/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            >创建 Token ↗</a
+          ><button class="primary" id="gh-connect">验证并连接</button>
+        </div>
+      </form>
+    </dialog>
     <script>
       const $ = (s) => document.querySelector(s),
         esc = (s) =>
@@ -797,6 +884,7 @@
       function save() {
         localStorage.setItem("taskspace-pages-v1", JSON.stringify(db));
         render();
+        window.githubSyncMarkDirty?.();
       }
       function toast(s) {
         let x = document.createElement("div");
@@ -1169,5 +1257,6 @@
       };
       render();
     </script>
+    <script src="./github-sync.js"></script>
   </body>
 </html>
