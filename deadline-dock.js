@@ -35,14 +35,12 @@
     if (!Number.isFinite(remaining)) return null;
     if (remaining < 3600000) return "red";
     if (remaining < 6 * 3600000) return "yellow";
-    const startDay = Date.parse(task.start + "T00:00:00Z"),
-      endDay = Date.parse(task.due + "T00:00:00Z");
-    if (
-      !Number.isFinite(startDay) ||
-      !Number.isFinite(endDay) ||
-      (endDay - startDay) / 86400000 <= 1
-    )
-      return null;
+    const startAt = window.TaskTime
+      ? window.TaskTime.startAt(task)
+      : new Date(
+          task.start + "T" + (task.startTime || "00:00") + ":00",
+        ).getTime();
+    if (!Number.isFinite(startAt) || end - startAt <= 86400000) return null;
     const [y, m, d] = task.due.split("-").map(Number);
     const greenStart = new Date(y, m - 1, d - 1, 12, 0, 0, 0).getTime();
     return now >= greenStart ? "green" : null;

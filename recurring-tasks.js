@@ -97,6 +97,7 @@
         priority: task.priority,
         note: task.note || "",
         dueTime: task.dueTime || "",
+        startTime: task.startTime || "",
         durationDays,
       },
     });
@@ -147,6 +148,7 @@
             : "已结束"
           : "已暂停") +
         " · " +
+        (s.template.startTime ? "开始 " + s.template.startTime + " · " : "") +
         (s.template.dueTime ? "截止 " + s.template.dueTime : "截止当日 23:59");
       const actions = document.createElement("div");
       actions.className = "row";

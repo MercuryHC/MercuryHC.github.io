@@ -211,6 +211,7 @@
         !t.title.trim() ||
         !text(t.note ?? "", 50000) ||
         !validDate(t.start) ||
+        (window.TaskTime && !window.TaskTime.validRange(t)) ||
         !validDate(t.due) ||
         (t.dueTime != null &&
           t.dueTime !== "" &&
@@ -227,6 +228,7 @@
         title: t.title,
         project: t.project,
         start: t.start,
+        startTime: t.startTime || "",
         due: t.due,
         dueTime: t.dueTime || "",
         status: t.status,

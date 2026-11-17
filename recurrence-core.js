@@ -114,6 +114,11 @@
         !Number.isInteger(t.durationDays) ||
         t.durationDays < 0 ||
         t.durationDays > 3650 ||
+        (t.startTime != null &&
+          t.startTime !== "" &&
+          !/^([01]\d|2[0-3]):[0-5]\d$/.test(t.startTime)) ||
+        (t.durationDays === 0 &&
+          (t.startTime || "00:00") > (t.dueTime || "23:59")) ||
         !(t.dueTime === "" || /^([01]\d|2[0-3]):[0-5]\d$/.test(t.dueTime))
       )
         throw Error("循环任务模板无效。");
@@ -130,6 +135,7 @@
           priority: t.priority,
           note: t.note,
           dueTime: t.dueTime,
+          startTime: t.startTime || "",
           durationDays: t.durationDays,
         },
       };
@@ -174,11 +180,12 @@
             title: t.title,
             project: t.project,
             start: occurrence,
+            startTime: t.startTime || "",
             due: addDays(occurrence, t.durationDays),
             dueTime: t.dueTime,
             status: "待开始",
             priority: t.priority,
-            note: t.note,
+            note: root.Notes ? root.Notes.resetTodos(t.note) : t.note,
             scheduleId: s.id,
             occurrence,
           });

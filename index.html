@@ -1451,6 +1451,299 @@
       .deadline-task[data-level="yellow"]:hover {
         background: #fff7e6;
       }
+
+      #task-dialog {
+        width: 660px;
+      }
+      .notes-section {
+        margin-top: 20px;
+        padding: 14px;
+        border: 1px solid #e2e7f1;
+        border-radius: 10px;
+      }
+      .notes-section label {
+        font-size: 12px;
+      }
+      .notes-section select {
+        width: auto;
+        font-size: 11px;
+        padding: 5px 8px;
+      }
+      .notes-toolbar {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        margin: 12px 0 9px;
+      }
+      .notes-toolbar button {
+        height: 27px;
+        min-width: 29px;
+        padding: 4px 7px;
+        background: #f4f6fa;
+        border: 1px solid #e7eaf1;
+        border-radius: 5px;
+        font-size: 12px;
+      }
+      .notes-toolbar button:hover {
+        background: #e9edff;
+        color: #536ded;
+      }
+      .notes-panels {
+        display: flex;
+        gap: 12px;
+        align-items: stretch;
+      }
+      .notes-panels > div {
+        flex: 1;
+        min-width: 0;
+      }
+      .notes-panels > [hidden] {
+        display: none;
+      }
+      #task-note {
+        font:
+          12px/1.8 ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+        min-height: 170px;
+        height: 200px;
+        resize: vertical;
+      }
+      #note-preview-wrap {
+        border: 1px solid #e7eaf1;
+        border-radius: 6px;
+        padding: 10px;
+        max-height: 350px;
+        overflow: auto;
+        background: #fcfdff;
+      }
+      .notes-preview-label {
+        font-size: 10px;
+        color: #9ba4b2;
+        margin-bottom: 8px;
+      }
+      .markdown-notes {
+        font-size: 12px;
+        line-height: 1.8;
+        color: #536078;
+        overflow-wrap: anywhere;
+      }
+      .markdown-notes p {
+        font-size: 12px;
+        color: inherit;
+        margin: 6px 0;
+      }
+      .markdown-notes ul,
+      .markdown-notes ol {
+        padding-left: 20px;
+        margin: 7px 0;
+      }
+      .markdown-notes .note-todo-item {
+        list-style: none;
+        position: relative;
+      }
+      .markdown-notes input.note-todo-check {
+        width: 14px;
+        height: 14px;
+        accent-color: #536ded;
+        margin: 0 7px 0 -19px;
+        vertical-align: middle;
+        cursor: pointer;
+      }
+      .markdown-notes h1,
+      .markdown-notes h2,
+      .markdown-notes h3 {
+        font-size: 15px;
+        margin: 10px 0 6px;
+      }
+      .markdown-notes code {
+        background: #eff2f8;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 11px;
+      }
+      .markdown-notes pre {
+        overflow: auto;
+        background: #eff2f8;
+        padding: 9px;
+        border-radius: 5px;
+      }
+      .markdown-notes blockquote {
+        border-left: 3px solid #c7d1f3;
+        margin: 8px 0;
+        padding-left: 10px;
+        color: #8a94a4;
+      }
+      .markdown-notes table {
+        min-width: 0;
+        width: 100%;
+        font-size: 11px;
+      }
+      .markdown-notes td,
+      .markdown-notes th {
+        padding: 5px 7px;
+        border: 1px solid #e6eaf2;
+      }
+      .markdown-notes a {
+        color: #536ded;
+      }
+      .notes-placeholder {
+        color: #a4adbc !important;
+      }
+      @media (max-width: 620px) {
+        #task-dialog {
+          width: 94vw;
+        }
+        .notes-panels {
+          flex-direction: column;
+        }
+        .notes-section {
+          padding: 10px;
+        }
+      }
+
+      .zoom-timeline {
+        padding: 16px;
+      }
+      .timeline-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .timeline-zoom {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+      }
+      .timeline-zoom button {
+        padding: 6px 10px;
+        border: 1px solid #e6eaf1;
+        border-radius: 6px;
+        font-size: 11px;
+      }
+      .timeline-zoom button.active {
+        background: #edf1ff;
+        color: #536ded;
+        border-color: #d7e0ff;
+      }
+      .timeline-tip,
+      .timeline-range {
+        font-size: 10px;
+        color: #98a2b2;
+      }
+      .timeline-range {
+        margin: 9px 0 13px;
+      }
+      .timeline-canvas {
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: 480px;
+        border: 1px solid #e8ecf3;
+        border-radius: 8px;
+        touch-action: pan-y;
+        user-select: none;
+        cursor: grab;
+      }
+      .timeline-canvas:active {
+        cursor: grabbing;
+      }
+      .timeline-axis-row,
+      .timeline-data-row {
+        display: grid;
+        grid-template-columns: 180px minmax(0, 1fr);
+      }
+      .timeline-axis-row {
+        height: 34px;
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: #f8faff;
+        border-bottom: 1px solid #e7ecf4;
+      }
+      .timeline-label-header {
+        font-size: 11px;
+        color: #9aa5b7;
+        padding: 10px 12px;
+        border-right: 1px solid #e8ecf3;
+      }
+      .timeline-axis {
+        position: relative;
+        overflow: hidden;
+      }
+      .timeline-tick {
+        position: absolute;
+        top: 10px;
+        font-size: 10px;
+        white-space: nowrap;
+        color: #8995aa;
+        transform: translateX(4px);
+      }
+      .timeline-data-row {
+        height: 48px;
+        border-bottom: 1px solid #eef1f6;
+      }
+      .timeline-task-name {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+        font-size: 11px;
+        padding: 10px 12px;
+        border-right: 1px solid #e8ecf3;
+        background: white;
+      }
+      .timeline-task-name:hover {
+        color: #536ded;
+        background: #f9faff;
+      }
+      .timeline-plot {
+        position: relative;
+        overflow: hidden;
+      }
+      .timeline-grid {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-left: 1px solid #edf0f6;
+      }
+      .timeline-now {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-left: 1px dashed #df7a83;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .timeline-task-bar {
+        position: absolute;
+        top: 11px;
+        height: 26px;
+        border-radius: 5px;
+        font-size: 10px;
+        padding: 5px 8px;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      @media (max-width: 650px) {
+        .timeline-axis-row,
+        .timeline-data-row {
+          grid-template-columns: 120px minmax(0, 1fr);
+        }
+        .zoom-timeline {
+          padding: 10px;
+        }
+        .timeline-task-name {
+          padding: 8px;
+          font-size: 10px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1684,6 +1977,9 @@
         <div class="row">
           <div style="flex: 1">
             <label>开始日期</label><input name="start" type="date" required />
+            <label for="task-start-time">开始时间（本机时区，可留空）</label
+            ><input id="task-start-time" name="startTime" type="time" />
+            <p class="sub" style="margin-top: 6px">留空按当天 00:00 计算。</p>
           </div>
           <div style="flex: 1">
             <label>截止日期</label><input name="due" type="date" required />
@@ -1780,8 +2076,96 @@
             GitHub 才会同步。
           </p>
         </section>
-        <label>任务备注</label
-        ><textarea name="note" placeholder="补充说明、下一步行动…"></textarea>
+        <section class="notes-section">
+          <div class="row">
+            <label for="task-note" style="margin: 0"
+              >任务备注 · Markdown / TODO</label
+            ><select id="notes-view" aria-label="备注显示方式">
+              <option value="split">编辑与预览</option>
+              <option value="edit">仅编辑</option>
+              <option value="preview">仅预览</option>
+            </select>
+          </div>
+          <div class="notes-toolbar" aria-label="Markdown 工具栏">
+            <button
+              type="button"
+              data-note-format="bold"
+              title="加粗 Ctrl+B"
+              aria-label="加粗 Ctrl+B"
+            >
+              B</button
+            ><button
+              type="button"
+              data-note-format="italic"
+              title="斜体 Ctrl+I"
+              aria-label="斜体 Ctrl+I"
+            >
+              I</button
+            ><button
+              type="button"
+              data-note-format="strike"
+              title="删除线"
+              aria-label="删除线"
+            >
+              S̶</button
+            ><button
+              type="button"
+              data-note-format="todo"
+              title="TODO 清单"
+              aria-label="TODO 清单"
+            >
+              ☑</button
+            ><button
+              type="button"
+              data-note-format="list"
+              title="无序列表"
+              aria-label="无序列表"
+            >
+              ☷</button
+            ><button
+              type="button"
+              data-note-format="heading"
+              title="标题"
+              aria-label="标题"
+            >
+              H</button
+            ><button
+              type="button"
+              data-note-format="code"
+              title="行内代码"
+              aria-label="行内代码"
+            >
+              ⌘</button
+            ><button
+              type="button"
+              data-note-format="link"
+              title="链接"
+              aria-label="链接"
+            >
+              ↗
+            </button>
+          </div>
+          <div class="notes-panels">
+            <div id="note-editor">
+              <textarea
+                id="task-note"
+                name="note"
+                maxlength="50000"
+                placeholder="- [ ] 阶段一：调研&#10;- [ ] 阶段二：实现&#10;&#10;**加粗**、*斜体*，支持常用 Markdown。"
+              ></textarea>
+            </div>
+            <div id="note-preview-wrap">
+              <div class="notes-preview-label">预览 · 可直接勾选</div>
+              <div id="note-preview" class="markdown-notes"></div>
+            </div>
+          </div>
+          <div class="row" style="margin-top: 8px">
+            <span id="note-checklist-progress" class="sub"></span>
+          </div>
+          <p id="notes-save-hint" class="sub" style="margin-top: 6px">
+            勾选现有任务的清单会自动保存备注和状态；取消勾选会将已完成任务恢复为进行中。其余修改请点击保存任务。
+          </p>
+        </section>
         <div class="dialog-actions">
           <button id="delete-task" type="button" style="color: #d86d72">
             删除任务</button
@@ -1889,7 +2273,10 @@
         </div>
       </form>
     </dialog>
-    <script src="./recurrence-core.js?v=urgent-2"></script>
+    <script src="./vendor/markdown-it.min.js?v=14.1.0"></script>
+    <script src="./notes-core.js?v=1"></script>
+    <script src="./task-time.js?v=1"></script>
+    <script src="./recurrence-core.js?v=notes-3"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         esc = (s) =>
@@ -2173,7 +2560,7 @@
         }
         if (view === "list") {
           $("#task-content").innerHTML =
-            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>截止日期</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}">${t.due === today ? "今天" : esc(t.due.slice(5).replace("-", " / "))}${t.dueTime ? " " + esc(t.dueTime) : ""}</td></tr>`).join("")}</tbody></table></div>`;
+            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>开始时间</th><th>截止时间</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td class="sub">${esc(t.start.slice(5))}${t.startTime ? " " + esc(t.startTime) : ""}</td><td style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}">${t.due === today ? "今天" : esc(t.due.slice(5).replace("-", " / "))}${t.dueTime ? " " + esc(t.dueTime) : ""}</td></tr>`).join("")}</tbody></table></div>`;
         } else if (view === "board") {
           $("#task-content").innerHTML =
             '<div class="board">' +
@@ -2184,7 +2571,7 @@
                     .filter((t) => t.status === s)
                     .map(
                       (t) =>
-                        `<div class="task-card" draggable="true" data-id="${t.id}" onclick="openTask('${t.id}')"><div style="line-height:1.7">${esc(t.title)}</div><div class="row sub" style="margin-top:18px"><span>${esc(project(t.project)?.title || "未分类")}</span><span>${t.due.slice(5)}${t.dueTime ? " " + esc(t.dueTime) : ""}</span></div></div>`,
+                        `<div class="task-card" draggable="true" data-id="${t.id}" onclick="openTask('${t.id}')"><div style="line-height:1.7">${esc(t.title)}</div><div class="row sub" style="margin-top:18px"><span>${esc(project(t.project)?.title || "未分类")}</span><span>${t.start.slice(5)} ${esc(t.startTime || "00:00")} → ${t.due.slice(5)} ${esc(t.dueTime || "23:59")}</span></div></div>`,
                     )
                     .join("")}</div>`,
               )
@@ -2211,40 +2598,10 @@
             };
           });
         } else {
-          let min = ts.reduce(
-              (a, t) => (t.start < a ? t.start : a),
-              ts[0].start,
-            ),
-            max = ts.reduce((a, t) => (t.due > a ? t.due : a), ts[0].due),
-            days = Math.max(
-              14,
-              Math.round((new Date(max) - new Date(min)) / 86400000) + 2,
-            );
-          $("#task-content").innerHTML =
-            `<div class="timeline"><div class="time-row"><span class="sub">任务时间线 · ${min} 起</span><div style="display:flex;justify-content:space-around" class="sub">${Array.from(
-              { length: Math.min(days, 14) },
-              (_, i) => {
-                let d = new Date(min + "T00:00:00Z");
-                d.setUTCDate(
-                  d.getUTCDate() + Math.floor((i * days) / Math.min(days, 14)),
-                );
-                return "<span>" + d.toISOString().slice(5, 10) + "</span>";
-              },
-            ).join("")}</div></div>${ts
-              .map((t) => {
-                let offset = Math.round(
-                    (new Date(t.start) - new Date(min)) / 86400000,
-                  ),
-                  len =
-                    Math.round(
-                      (new Date(t.due) - new Date(t.start)) / 86400000,
-                    ) + 1,
-                  c = project(t.project)?.color || "#536ded";
-                return `<div class="time-row"><button style="text-align:left;padding-right:15px;font-size:12px" onclick="openTask('${t.id}')">${esc(t.title)}</button><div class="track"><button class="time-bar" title="${t.start} → ${t.due}" onclick="openTask('${t.id}')" style="left:${(offset / days) * 100}%;width:${(len / days) * 100}%;background:${c}24;color:${c}">${t.status === "已完成" ? "✓ " : ""}${esc(t.title)}</button></div></div>`;
-              })
-              .join("")}</div>`;
+          window.renderTaskTimeline?.(ts);
         }
       }
+
       function toggle(id) {
         let t = db.tasks.find((t) => t.id === id);
         t.status = t.status === "已完成" ? "待开始" : "已完成";
@@ -2313,6 +2670,7 @@
             start: today,
             due: today,
             dueTime: "",
+            startTime: "",
             status: "待开始",
             priority: "中",
             note: "",
@@ -2332,19 +2690,24 @@
         $("#dialog-title").textContent = id ? "编辑任务" : "新建任务";
         $("#delete-task").style.visibility = id ? "visible" : "hidden";
         window.loadTaskRecurrence?.(t);
+        window.loadTaskNotes?.();
         $("#task-dialog").showModal();
       }
       $("#task-form").onsubmit = (e) => {
         e.preventDefault();
         let v = Object.fromEntries(new FormData(e.target));
-        if (v.start > v.due) {
-          toast("截止日期不能早于开始日期");
+        if (!window.TaskTime.validRange(v)) {
+          toast("截止时间不能早于开始时间，请检查日期和时间。");
           return;
         }
         const existing = db.tasks.find((t) => t.id === editing);
         const candidate = existing
           ? { ...existing, ...v }
           : { ...v, id: crypto.randomUUID() };
+        candidate.status = window.Notes.statusFor(
+          candidate.note,
+          candidate.status,
+        );
         try {
           window.applyTaskRecurrence?.(candidate, !existing);
         } catch (error) {
@@ -2463,7 +2826,7 @@
                 /^\d{4}-\d{2}-\d{2}$/.test(t.start) &&
                 /^\d{4}-\d{2}-\d{2}$/.test(t.due) &&
                 (!t.dueTime || /^([01]\d|2[0-3]):[0-5]\d$/.test(t.dueTime)) &&
-                t.start <= t.due &&
+                window.TaskTime.validRange(t) &&
                 ["待开始", "进行中", "已完成"].includes(t.status) &&
                 ["加急⚡", "高", "中", "低"].includes(t.priority),
             )
@@ -2484,9 +2847,11 @@
       };
       render();
     </script>
-    <script src="./github-sync.js?v=alarm-levels-2"></script>
-    <script src="./deadline-dock.js?v=levels-2"></script>
-    <script src="./recurring-tasks.js?v=1"></script>
+    <script src="./timeline-view.js?v=1"></script>
+    <script src="./github-sync.js?v=notes-time-3"></script>
+    <script src="./deadline-dock.js?v=start-time-3"></script>
+    <script src="./recurring-tasks.js?v=start-time-2"></script>
+    <script src="./task-notes.js?v=1"></script>
     <script>
       const syncStatus = document.getElementById("gh-status");
       const syncSummary = document.querySelector(".dock-sync-status summary");
