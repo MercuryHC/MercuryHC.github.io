@@ -1862,6 +1862,165 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+
+      #gh-merge-dialog {
+        width: min(900px, 95vw);
+        max-height: 90vh;
+        padding: 0;
+        overflow: auto;
+      }
+      .merge-dialog-header {
+        padding: 23px 25px 15px;
+        border-bottom: 1px solid var(--line);
+        background: #fafbfe;
+      }
+      .merge-dialog-header p {
+        margin-top: 10px;
+        font-size: 11px;
+        line-height: 1.7;
+      }
+      .merge-bulk {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        margin-top: 13px;
+      }
+      .merge-bulk button {
+        font-size: 11px;
+        padding: 7px 10px;
+      }
+      #merge-list {
+        padding: 5px 25px 20px;
+      }
+      .merge-group-heading {
+        font-size: 13px;
+        margin: 20px 0 12px;
+        color: #65728b;
+      }
+      .merge-record {
+        padding: 15px;
+        margin: 10px 0;
+        border: 1px solid #e4e8f0;
+        border-radius: 9px;
+      }
+      .merge-record[data-conflict="true"] {
+        border-color: #e7cba0;
+        background: #fffcf6;
+      }
+      .merge-record > strong {
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .merge-record-hint {
+        display: block;
+        color: #9aa3b2;
+        font-size: 10px;
+        margin-top: 6px;
+      }
+      .merge-options {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+      .merge-options label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        padding: 6px 9px;
+        margin: 0;
+        border: 1px solid #e2e7f0;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+      }
+      .merge-options input {
+        width: 13px;
+        height: 13px;
+        margin: 0;
+        accent-color: #536ded;
+      }
+      .merge-record summary {
+        font-size: 11px;
+        color: #7a89a2;
+        cursor: pointer;
+      }
+      .merge-versions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .merge-versions > div {
+        min-width: 0;
+      }
+      .merge-version-label {
+        font-size: 10px;
+        color: #8290a7;
+        margin-bottom: 6px;
+      }
+      .merge-versions pre {
+        max-height: 190px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-size: 11px;
+        line-height: 1.8;
+        font-family: inherit;
+        background: #f3f5fa;
+        border: 1px solid #e9edf5;
+        border-radius: 6px;
+        padding: 9px;
+        margin: 0;
+        color: #69758a;
+      }
+      .merge-dialog-footer {
+        position: sticky;
+        bottom: 0;
+        padding: 15px 25px;
+        background: #fffffff5;
+        border-top: 1px solid var(--line);
+        backdrop-filter: blur(12px);
+      }
+      #merge-summary {
+        font-size: 12px;
+        color: #687997;
+        margin-bottom: 10px;
+      }
+      #merge-warnings {
+        max-height: 95px;
+        overflow: auto;
+      }
+      #merge-warnings p {
+        font-size: 11px;
+        color: #b18241;
+        margin-bottom: 5px;
+      }
+      #merge-error {
+        font-size: 12px;
+        color: #cc6470;
+        margin: 8px 0;
+      }
+      #gh-merge-dialog button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      @media (max-width: 600px) {
+        .merge-versions {
+          grid-template-columns: 1fr;
+        }
+        #merge-list {
+          padding: 4px 13px 15px;
+        }
+        .merge-dialog-header,
+        .merge-dialog-footer {
+          padding: 15px;
+        }
+        .merge-options {
+          gap: 4px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1916,6 +2075,13 @@
                   aria-label="连接 GitHub 私有仓库"
                 >
                   连接私有仓库
+                </button>
+                <button
+                  class="dock-menu-action dock-read"
+                  id="gh-merge"
+                  disabled
+                >
+                  合并本地与远端
                 </button>
                 <button class="dock-menu-action dock-read" id="gh-check">
                   检查同步状态
@@ -2344,6 +2510,34 @@
         </div>
       </form>
     </dialog>
+    <dialog id="gh-merge-dialog" aria-labelledby="merge-title">
+      <div class="merge-dialog-header">
+        <h2 id="merge-title">合并本地与 GitHub 数据</h2>
+        <p id="merge-context" class="sub"></p>
+        <p class="sub">
+          独有记录默认保留；有共同版本时自动识别单边修改和删除。冲突请选择一个版本，任务也可保留两个版本（远端副本转为普通任务）。取消不会修改本地或远端。
+        </p>
+        <div class="merge-bulk">
+          <button class="secondary" id="merge-all-local">冲突全部选本地</button
+          ><button class="secondary" id="merge-all-remote">
+            冲突全部选远端</button
+          ><button class="secondary" id="merge-refresh">刷新版本</button>
+        </div>
+      </div>
+      <div id="merge-list"></div>
+      <div class="merge-dialog-footer">
+        <p id="merge-summary" role="status"></p>
+        <div id="merge-warnings"></div>
+        <p id="merge-error" role="alert"></p>
+        <div class="row">
+          <button class="secondary" id="merge-cancel">取消</button
+          ><button class="primary" id="merge-confirm">确认合并并上传</button>
+        </div>
+        <p class="sub" style="margin-top: 9px">
+          确认时先备份本地，再重新检查远端版本。未保留的项目会在预览中提示其任务和子项目的处理方式。
+        </p>
+      </div>
+    </dialog>
     <dialog id="gh-dialog">
       <form id="gh-form">
         <div class="row">
@@ -2380,7 +2574,7 @@
         />
         <p style="font-size: 11px; margin-top: 12px">
           本地修改仍需点击「保存到
-          GitHub」提交。远端版本改变时会阻止覆盖；可先导出本地备份，再读取远端合并。请直接在页面输入
+          GitHub」提交。两边都有更新时可打开合并弹窗，逐项选择本地或远端版本，再确认上传。请直接在页面输入
           Token，不要发到聊天中。
         </p>
         <p
@@ -2973,7 +3167,8 @@
       render();
     </script>
     <script src="./timeline-view.js?v=1"></script>
-    <script src="./github-sync.js?v=notes-time-3"></script>
+    <script src="./merge-core.js?v=1"></script>
+    <script src="./github-sync.js?v=merge-1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>

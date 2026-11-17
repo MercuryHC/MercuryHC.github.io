@@ -63,7 +63,7 @@
       ? "连接 GitHub 后才能检查远端；本地数据仍保留。"
       : remoteChanged
         ? dirty
-          ? "本地与 GitHub 均有变化，请先导出本地备份，再读取和合并。"
+          ? "本地与 GitHub 均有变化，点击状态或 GitHub 菜单打开合并弹窗。"
           : "GitHub 数据已更新，请读取远端。"
         : dirty
           ? "本地任务或项目有修改，需要保存到 GitHub。"
@@ -76,11 +76,13 @@
     chip.setAttribute("aria-label", "同步状态：" + label + "。" + detail);
   }
   async function checkRemoteState() {
-    if (!connected || busy || checking) return;
+    if (!connected || busy || checking || mergeSession) return;
     checking = true;
     updateButtons();
+    let mergeFile = null;
     try {
       const file = await remote();
+      mergeFile = file;
       if (!connected) return;
       if (file) {
         const snapshot = JSON.stringify(validateData(decodeData(file.content)));
@@ -105,7 +107,7 @@
       status(
         remoteChanged
           ? dirty
-            ? "本地和远端均有更新，请先备份并合并。"
+            ? "本地和远端均有更新，请打开「合并本地与远端」逐项选择。"
             : "GitHub 数据已更新，请读取远端。"
           : dirty
             ? "本地有修改，等待保存到 GitHub。"
@@ -117,6 +119,7 @@
     } finally {
       checking = false;
       updateButtons();
+      offerMerge(mergeFile);
     }
   }
   try {
@@ -136,15 +139,22 @@
       "gh-disconnect",
       "gh-connect",
       "gh-check",
+      "gh-merge",
     ])
-      el(id).disabled = busy || checking;
-    el("gh-check").disabled = busy || checking || !connected;
-    el("gh-read").disabled = busy || checking || !connected;
-    el("gh-write").disabled = busy || checking || !connected;
-    el("gh-disconnect").disabled = busy || checking || !token;
+      el(id).disabled = busy || checking || !!mergeSession;
+    el("gh-check").disabled = busy || checking || !!mergeSession || !connected;
+    el("gh-read").disabled = busy || checking || !!mergeSession || !connected;
+    el("gh-write").disabled = busy || checking || !!mergeSession || !connected;
+    el("gh-disconnect").disabled = busy || checking || !!mergeSession || !token;
     el("gh-write").textContent = dirty
       ? "保存到 GitHub · 有修改"
       : "保存到 GitHub";
+    el("gh-merge").disabled = busy || checking || !!mergeSession || !connected;
+    for (const id of ["merge-refresh", "merge-all-local", "merge-all-remote"])
+      el(id).disabled = busy || checking;
+    el("merge-list")
+      .querySelectorAll("input")
+      .forEach((input) => (input.disabled = busy));
     updateDockState();
     el("gh-indicator").textContent = connected
       ? dirty
@@ -301,7 +311,7 @@
           401: "Token 无效或已过期，请重新连接。",
           403: "访问被拒绝或请求限流，请检查仓库授权及 Contents 读写权限。",
           404: "仓库、分支或文件不可访问，请检查名称和 Token 的仓库授权。",
-          409: "远端数据已改变或分支冲突。请先导出本地备份，再读取远端。",
+          409: "远端数据已改变或分支冲突。请刷新合并版本后重新选择。",
           422: "写入失败，请检查分支名、文件路径和仓库规则。",
         };
         throw Error(
@@ -343,6 +353,11 @@
     );
   }
   async function readRemote() {
+    if (mergeSession || busy || checking) return;
+    if (dirty && remoteChanged) {
+      await openMerge();
+      return;
+    }
     if (
       !confirm(
         "读取 GitHub 将替换当前本地项目和任务。建议先点「导出」备份；本次读取也会保留最近三次本地快照。继续？",
@@ -387,6 +402,12 @@
     }
   }
   async function writeRemote() {
+    if (mergeSession || busy || checking) return;
+    if (dirty && remoteChanged) {
+      await openMerge();
+      return;
+    }
+    let conflictFile = null;
     busy = true;
     updateButtons();
     status("正在检查远端版本…");
@@ -400,9 +421,10 @@
       const file = await remote();
       if (file && (!baseSha || file.sha !== baseSha)) {
         remoteChanged = true;
+        conflictFile = file;
         checked = true;
         throw Error(
-          "远端存在尚未读取的新版本，已阻止覆盖。先导出本地备份，再读取 GitHub 后合并修改。",
+          "远端存在新版本，已阻止覆盖。请在合并弹窗选择要保留的任务。",
         );
       }
       if (!file && baseSha)
@@ -452,8 +474,347 @@
     } finally {
       busy = false;
       updateButtons();
+      offerMerge(conflictFile);
     }
   }
+  let mergeSession = null,
+    lastMergePromptKey = "";
+  const mergeNames = { tasks: "任务", projects: "项目", schedules: "循环计划" };
+  function mergeError(text) {
+    el("merge-error").textContent = text;
+  }
+  function mergePreview() {
+    if (!mergeSession) return;
+    const result = window.MergeCore.build(mergeSession.plan, (row) =>
+      mergeSession.copyIds.get(row.id),
+    );
+    el("merge-confirm").disabled = busy || !!result.unresolved.length;
+    el("merge-summary").textContent = result.unresolved.length
+      ? `还有 ${result.unresolved.length} 项冲突需要选择；相同的 ${mergeSession.plan.unchanged} 条记录自动保留。`
+      : `合并后：${result.data.tasks.length} 项任务、${result.data.projects.length} 个项目、${result.data.schedules.length} 个循环计划。`;
+    const warnings = el("merge-warnings");
+    warnings.replaceChildren();
+    for (const text of result.warnings) {
+      const p = document.createElement("p");
+      p.textContent = text;
+      warnings.append(p);
+    }
+    return result;
+  }
+  function versionDescription(record, group, data) {
+    if (!record) return "此版本中已删除 / 不存在";
+    if (group === "tasks") {
+      const p = data.projects.find((p) => p.id === record.project);
+      return [
+        `任务：${record.title}`,
+        `状态：${record.status} · 优先级：${record.priority}`,
+        `项目：${p?.title || "未分类"}`,
+        `开始：${record.start} ${record.startTime || "00:00"}`,
+        `截止：${record.due} ${record.dueTime || "23:59"}`,
+        `备注：\n${record.note || "（空）"}`,
+      ].join("\n");
+    }
+    if (group === "projects")
+      return [
+        `项目：${record.title}`,
+        `上级：${data.projects.find((p) => p.id === record.parentId)?.title || "一级项目"}`,
+        `颜色：${record.color}`,
+        `说明：${record.description || "（空）"}`,
+      ].join("\n");
+    const rule = record.rule;
+    return [
+      `计划：${record.template.title}`,
+      `状态：${record.active ? "启用" : "暂停"}`,
+      `频率：${rule.frequency} / ${rule.interval}`,
+      `星期：${rule.weekdays.join(", ") || "—"}`,
+      `开始：${rule.anchor}；结束：${rule.until || "不限"}`,
+      `下次日期：${record.nextDate || "已结束"}`,
+      `模板：\n${JSON.stringify(record.template, null, 2)}`,
+    ].join("\n");
+  }
+  function drawMerge() {
+    const session = mergeSession;
+    el("merge-list").replaceChildren();
+    mergeError("");
+    el("merge-context").textContent =
+      `${config.owner}/${config.repo} · ${config.path} · 远端版本 ${session.remoteSha.slice(0, 8)}。${session.plan.hasBase ? "已参考上次同步版本判断单边修改及删除。" : "未找到共同版本：独有记录默认保留，同 ID 的不同版本需要你选择。"}`;
+    for (const group of ["tasks", "projects", "schedules"]) {
+      const rows = session.plan.rows.filter(
+        (r) => r.group === group && r.kind !== "same",
+      );
+      if (!rows.length) continue;
+      const heading = document.createElement("h3");
+      heading.className = "merge-group-heading";
+      heading.textContent = `${mergeNames[group]} · ${rows.length} 项差异`;
+      el("merge-list").append(heading);
+      for (const row of rows.sort(
+        (a, b) => Number(b.kind === "conflict") - Number(a.kind === "conflict"),
+      )) {
+        const card = document.createElement("section");
+        card.className = "merge-record";
+        card.dataset.conflict = row.kind === "conflict";
+        const title = document.createElement("strong");
+        title.textContent =
+          row.local?.title ||
+          row.remote?.title ||
+          row.local?.template?.title ||
+          row.remote?.template?.title ||
+          row.base?.title ||
+          row.base?.template?.title ||
+          row.id;
+        const hint = document.createElement("span");
+        hint.className = "merge-record-hint";
+        hint.textContent =
+          row.kind === "conflict"
+            ? "两边不同，需要选择"
+            : row.kind === "local-only"
+              ? "仅本地存在"
+              : row.kind === "remote-only"
+                ? "仅远端存在"
+                : row.kind === "local-change"
+                  ? "本地修改（含删除）"
+                  : "远端修改（含删除）";
+        const options = document.createElement("div");
+        options.className = "merge-options";
+        const choices = [
+          ["local", row.local ? "采用本地" : "采用本地删除"],
+          ["remote", row.remote ? "采用远端" : "采用远端删除"],
+          ...(group === "tasks" && row.local && row.remote
+            ? [["both", "两个都保留"]]
+            : []),
+          ["omit", "不保留"],
+        ];
+        for (const [value, label] of choices) {
+          const wrapper = document.createElement("label"),
+            input = document.createElement("input"),
+            text = document.createElement("span");
+          input.type = "radio";
+          input.name = "merge-" + session.plan.rows.indexOf(row);
+          input.value = value;
+          input.checked = row.choice === value;
+          input.disabled = busy;
+          input.onchange = () => {
+            row.choice = value;
+            mergeError("");
+            mergePreview();
+          };
+          text.textContent = label;
+          wrapper.append(input, text);
+          options.append(wrapper);
+        }
+        const details = document.createElement("details");
+        details.open = row.kind === "conflict";
+        const summary = document.createElement("summary");
+        summary.textContent = "对比具体内容";
+        details.append(summary);
+        const columns = document.createElement("div");
+        columns.className = "merge-versions";
+        for (const [side, label] of [
+          ["local", "本地版本"],
+          ["remote", "GitHub 版本"],
+        ]) {
+          const column = document.createElement("div"),
+            head = document.createElement("div"),
+            pre = document.createElement("pre");
+          head.className = "merge-version-label";
+          head.textContent = label;
+          pre.textContent = versionDescription(row[side], group, session[side]);
+          column.append(head, pre);
+          columns.append(column);
+        }
+        details.append(columns);
+        card.append(title, hint, options, details);
+        el("merge-list").append(card);
+      }
+    }
+    if (!session.plan.rows.some((r) => r.kind !== "same")) {
+      const p = document.createElement("p");
+      p.textContent = "两边数据内容一致，可以确认同步版本。";
+      el("merge-list").append(p);
+    }
+    mergePreview();
+  }
+  function prepareMerge(file, baseOverride) {
+    const remoteData = validateData(decodeData(file.content)),
+      localData = validateData(db);
+    let base = baseOverride || null;
+    if (!base && baselineSnapshot)
+      try {
+        base = validateData(JSON.parse(baselineSnapshot));
+      } catch {}
+    const plan = window.MergeCore.plan(localData, remoteData, base);
+    mergeSession = {
+      plan,
+      local: localData,
+      remote: remoteData,
+      localSnapshot: JSON.stringify(localData),
+      remoteSha: file.sha,
+      copyIds: new Map(
+        plan.rows
+          .filter((r) => r.group === "tasks")
+          .map((r) => [r.id, "merge_" + crypto.randomUUID()]),
+      ),
+    };
+    lastMergePromptKey = file.sha + ":" + baseSha;
+    drawMerge();
+    if (!el("gh-merge-dialog").open) el("gh-merge-dialog").showModal();
+    updateButtons();
+  }
+  function offerMerge(file) {
+    if (
+      !file ||
+      !remoteChanged ||
+      !dirty ||
+      mergeSession ||
+      document.querySelector("dialog[open]")
+    )
+      return;
+    const key = file.sha + ":" + baseSha;
+    if (key === lastMergePromptKey) return;
+    try {
+      prepareMerge(file);
+    } catch (e) {
+      status("无法打开合并预览：" + e.message, true);
+    }
+  }
+  async function openMerge() {
+    if (!connected || busy || checking) return;
+    busy = true;
+    updateButtons();
+    try {
+      const file = await remote();
+      if (!file) throw Error("远端数据文件不存在，暂时无法对比合并。");
+      prepareMerge(file);
+    } catch (e) {
+      status(e.message, true);
+    } finally {
+      busy = false;
+      updateButtons();
+      mergePreview();
+    }
+  }
+  function finishMerge(data, sha) {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    db = data;
+    rememberBaseline(sha, JSON.stringify(data));
+    dirty = false;
+    remoteChanged = false;
+    checked = true;
+    syncError = false;
+    lastChecked = new Date();
+    rememberDirty();
+    mergeSession = null;
+    el("gh-merge-dialog").close();
+    render();
+    window.refreshDeadlineDock?.();
+    window.runRecurringTasks?.();
+    status(
+      dirty
+        ? "合并已上传；循环计划生成了新任务，需要再次保存。"
+        : "合并并上传成功 · " + new Date().toLocaleTimeString("zh-CN"),
+    );
+  }
+  async function confirmMerge() {
+    if (!mergeSession || busy) return;
+    const session = mergeSession,
+      result = mergePreview();
+    if (!result?.data) return;
+    busy = true;
+    updateButtons();
+    el("merge-confirm").disabled = true;
+    el("merge-cancel").disabled = true;
+    mergeError("正在检查远端并保存合并结果…");
+    try {
+      const merged = validateData(result.data),
+        snapshot = JSON.stringify(merged);
+      if (localSnapshot() !== session.localSnapshot)
+        throw Error("预览期间本地数据有新修改，请点击「刷新版本」重新选择。");
+      const repo = await api(baseUrl());
+      if (!repo.private) throw Error("仅允许保存到私有数据仓库。");
+      const file = await remote();
+      if (!file) throw Error("远端文件已被删除，请确认后再合并。");
+      if (file.sha !== session.remoteSha) {
+        if (
+          JSON.stringify(validateData(decodeData(file.content))) === snapshot
+        ) {
+          if (localSnapshot() !== session.localSnapshot)
+            throw Error("本地数据又有变化，请刷新合并版本。");
+          backupLocal();
+          finishMerge(merged, file.sha);
+          return;
+        }
+        throw Error("远端已出现更新，已阻止覆盖。请点击「刷新版本」重新合并。");
+      }
+      if (localSnapshot() !== session.localSnapshot)
+        throw Error("本地数据又有变化，请刷新合并版本。");
+      const content = encodeData({
+        schemaVersion: 2,
+        updatedAt: new Date().toISOString(),
+        ...merged,
+      });
+      if (content.length > 1200000)
+        throw Error("合并后数据超过 900 KB，请减少保留内容。");
+      backupLocal();
+      const response = await api(fileUrl(), {
+        method: "PUT",
+        body: JSON.stringify({
+          message: "Merge Taskspace local and remote changes",
+          content,
+          branch: config.branch,
+          sha: file.sha,
+        }),
+      });
+      if (localSnapshot() !== session.localSnapshot) {
+        // Never replace changes made while the upload was running.
+        remoteChanged = true;
+        dirty = true;
+        rememberDirty();
+        mergeSession = null;
+        el("gh-merge-dialog").close();
+        prepareMerge(
+          { sha: response.content.sha, content: encodeData(merged) },
+          session.local,
+        );
+        status("合并结果已上传，但保存期间本地又有修改，请继续合并。");
+        return;
+      }
+      finishMerge(merged, response.content.sha);
+    } catch (e) {
+      mergeError(e.message);
+      status(e.message, true);
+    } finally {
+      busy = false;
+      el("merge-cancel").disabled = false;
+      updateButtons();
+      mergePreview();
+    }
+  }
+  el("gh-merge").onclick = openMerge;
+  el("merge-confirm").onclick = confirmMerge;
+  el("merge-refresh").onclick = openMerge;
+  el("merge-cancel").onclick = () => {
+    if (busy) return;
+    mergeSession = null;
+    el("gh-merge-dialog").close();
+    updateButtons();
+  };
+  el("gh-merge-dialog").addEventListener("cancel", (event) => {
+    if (busy) {
+      event.preventDefault();
+      return;
+    }
+    mergeSession = null;
+    updateButtons();
+  });
+  for (const side of ["local", "remote"])
+    el("merge-all-" + side).onclick = () => {
+      if (!mergeSession || busy) return;
+      mergeSession.plan.rows
+        .filter((r) => r.kind === "conflict")
+        .forEach((r) => (r.choice = side));
+      drawMerge();
+    };
+
   el("gh-open").onclick = () => {
     const f = el("gh-form");
     for (const k of ["owner", "repo", "branch", "path"])
@@ -590,6 +951,10 @@
   window.validateTaskspaceData = validateData;
   updateButtons();
   el("gh-dock-state").onclick = () => {
+    if (connected && dirty && remoteChanged) {
+      openMerge();
+      return;
+    }
     document.querySelector(".github-menu").open = true;
   };
   el("gh-check").onclick = checkRemoteState;
