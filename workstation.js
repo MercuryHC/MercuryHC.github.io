@@ -390,6 +390,7 @@
       : "task";
     document.body.dataset.workspace = name;
     $("task-workspace").hidden = name !== "task";
+    $("task-sidebar").hidden = name !== "task";
     $("notebook-workspace").hidden = name !== "notion";
     $("obsidian-workspace").hidden = name !== "obsidian";
     $("notes-sidebar").hidden = name !== "notion";
@@ -539,5 +540,6 @@
   });
   load();
   draw();
-  app(localStorage.getItem("workstation-app"));
+  localStorage.setItem("workstation-sidebar:bookmarks", "true");
+  app("bookmarks");
 })();

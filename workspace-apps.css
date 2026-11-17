@@ -587,3 +587,79 @@ html[data-theme="dark"] .bookmark-search input {
     min-height: 145px;
   }
 }
+
+.bookmark-search {
+  max-width: 760px;
+}
+.bookmark-search select {
+  flex: none;
+  width: 108px;
+  border: 0;
+  border-right: 1px solid var(--app-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--app-text);
+  padding: 8px 12px 8px 0;
+  outline-color: #8c9fe7;
+  font-size: 13px;
+}
+.bookmark-search input[type="search"] {
+  width: 0;
+  min-width: 0;
+  flex: 1;
+  padding: 8px 0;
+}
+.bookmark-title-tools {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.bookmark-filter {
+  width: 170px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  border-radius: 7px;
+  padding: 8px 11px;
+  font-size: 11px;
+  outline-color: #9cabec;
+  color: var(--app-text);
+}
+.bookmark-add-button {
+  padding: 8px 13px;
+  font-size: 11px;
+}
+html[data-theme="dark"] .bookmark-search select {
+  background: transparent;
+  color: var(--app-text);
+}
+html[data-theme="dark"] .bookmark-filter {
+  background: var(--app-surface);
+  color: var(--app-text);
+  border-color: var(--app-border);
+}
+@media (max-width: 720px) {
+  .bookmark-search {
+    gap: 8px;
+    padding-left: 12px;
+  }
+  .bookmark-search select {
+    width: 88px;
+    font-size: 12px;
+    padding-right: 6px;
+  }
+  .bookmark-search input[type="search"] {
+    font-size: 12px;
+  }
+  .bookmark-title-tools {
+    gap: 10px;
+  }
+  .bookmark-filter {
+    width: 135px;
+  }
+  .bookmark-section-heading > .notebook-actions {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+}
