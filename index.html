@@ -1802,6 +1802,66 @@
           font-size: 11px;
         }
       }
+
+      .task-table-wrap {
+        overflow-x: auto;
+      }
+      .task-table-wrap .task-list-table {
+        width: 100%;
+        min-width: 1040px;
+        table-layout: fixed;
+      }
+      .task-list-table th,
+      .task-list-table td {
+        padding: 15px 16px;
+        vertical-align: middle;
+      }
+      .task-list-table th {
+        white-space: nowrap;
+      }
+      .task-list-table td:nth-child(2),
+      .task-list-table td:nth-child(3),
+      .task-list-table td:nth-child(4) {
+        white-space: nowrap;
+        word-break: normal;
+        overflow-wrap: normal;
+      }
+      .task-list-table .tag {
+        white-space: nowrap;
+      }
+      .task-name-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .task-name-content .check {
+        flex: none;
+        margin: 0;
+      }
+      .task-name-content .task-title {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .task-project-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .task-project-content .dot {
+        flex: none;
+        margin: 0;
+      }
+      .task-project-label {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     </style>
   </head>
   <body>
@@ -2625,7 +2685,7 @@
         }
         if (view === "list") {
           $("#task-content").innerHTML =
-            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>开始时间</th><th>截止时间</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td class="task-datetime-cell sub"><span class="task-date">${esc(t.start.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.startTime || "—")}</span></td><td class="task-datetime-cell" style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}"><span class="task-date">${esc(t.due.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.dueTime || "—")}</span></td></tr>`).join("")}</tbody></table></div>`;
+            `<div class="table-wrap task-table-wrap"><table class="task-list-table"><colgroup><col><col style="width:180px"><col style="width:100px"><col style="width:100px"><col style="width:180px"><col style="width:180px"></colgroup><thead><tr><th>任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>开始时间</th><th>截止时间</th></tr></thead><tbody>${ts.map((t) => `<tr><td><div class="task-name-content"><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span title="${esc(t.title)}" class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></div></td><td class="task-project-cell sub" title="${esc(projectPath(project(t.project)) || "未分类")}"><span class="task-project-content"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i><span class="task-project-label">${esc(project(t.project)?.title || "未分类")}</span></span></td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td class="task-datetime-cell sub"><span class="task-date">${esc(t.start.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.startTime || "—")}</span></td><td class="task-datetime-cell" style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}"><span class="task-date">${esc(t.due.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.dueTime || "—")}</span></td></tr>`).join("")}</tbody></table></div>`;
         } else if (view === "board") {
           $("#task-content").innerHTML =
             '<div class="board">' +
