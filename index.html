@@ -1125,6 +1125,188 @@
           transition: none;
         }
       }
+
+      .sync-state-chip {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 10px;
+        white-space: nowrap;
+        border-radius: 6px;
+        padding: 5px 7px;
+        background: #e9edf3;
+        color: #8b96a7;
+        line-height: 1.2;
+      }
+      .sync-state-chip::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        flex: none;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .sync-state-chip[data-state="synced"] {
+        background: #e8f5ee;
+        color: #3f9d74;
+      }
+      .sync-state-chip[data-state="upload"] {
+        background: #fff1d9;
+        color: #bd872d;
+      }
+      .sync-state-chip[data-state="download"] {
+        background: #e9efff;
+        color: #5878cf;
+      }
+      .sync-state-chip[data-state="conflict"] {
+        background: #f1e9ff;
+        color: #9870c7;
+      }
+      .sync-state-chip[data-state="error"] {
+        background: #ffe9e9;
+        color: #cc6267;
+      }
+      .sync-state-chip[data-state="checking"]::before {
+        animation: sync-blink 1s ease-in-out infinite;
+      }
+      .deadline-menu {
+        position: relative;
+      }
+      .deadline-menu > summary {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 29px;
+        height: 29px;
+        border-radius: 7px;
+        list-style: none;
+        color: #97a1b1;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .deadline-menu > summary::-webkit-details-marker {
+        display: none;
+      }
+      .deadline-menu > summary:hover {
+        background: #e6eaf2;
+      }
+      .deadline-menu.urgent > summary {
+        color: #df5d66;
+        background: #ffe9e9;
+      }
+      .deadline-menu.urgent > summary svg {
+        animation: alarm-ring 4s ease-in-out infinite;
+        transform-origin: 50% 50%;
+      }
+      #deadline-count {
+        position: absolute;
+        right: -2px;
+        top: -3px;
+        border-radius: 8px;
+        background: #df5d66;
+        color: white;
+        min-width: 12px;
+        padding: 1px 3px;
+        font-size: 8px;
+        line-height: 10px;
+        border: 1px solid white;
+      }
+      .deadline-panel {
+        position: absolute;
+        right: -70px;
+        top: calc(100% + 13px);
+        width: min(310px, 85vw);
+        padding: 15px;
+        border-radius: 13px;
+        background: #fffffff8;
+        border: 1px solid #e4e7ef;
+        box-shadow: 0 12px 35px #26385320;
+        backdrop-filter: blur(22px);
+        z-index: 45;
+      }
+      .deadline-heading {
+        font-size: 12px;
+        font-weight: 650;
+        color: #49566b;
+      }
+      .deadline-hint,
+      .deadline-footnote {
+        font-size: 10px;
+        margin-top: 6px;
+        line-height: 1.6;
+      }
+      #deadline-list {
+        max-height: 260px;
+        overflow: auto;
+        margin: 10px -5px;
+      }
+      .deadline-task {
+        display: block;
+        width: 100%;
+        padding: 10px 8px;
+        text-align: left;
+        border-radius: 8px;
+      }
+      .deadline-task:hover {
+        background: #fff0f0;
+      }
+      .deadline-task-title {
+        display: block;
+        font-size: 12px;
+        color: #4d586a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .deadline-task-meta {
+        display: block;
+        font-size: 10px;
+        color: #d46169;
+        margin-top: 5px;
+      }
+      .deadline-empty {
+        font-size: 11px;
+        color: #95a0af;
+        padding: 15px 8px;
+      }
+      @keyframes sync-blink {
+        50% {
+          opacity: 0.3;
+        }
+      }
+      @keyframes alarm-ring {
+        0%,
+        10%,
+        100% {
+          transform: rotate(0);
+        }
+        2%,
+        6% {
+          transform: rotate(-12deg);
+        }
+        4%,
+        8% {
+          transform: rotate(12deg);
+        }
+      }
+      @media (max-width: 440px) {
+        .sync-state-chip {
+          font-size: 9px;
+          padding: 5px;
+        }
+        .deadline-panel {
+          right: -80px;
+        }
+        .mac-dock {
+          gap: 5px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .deadline-menu.urgent > summary svg,
+        .sync-state-chip[data-state="checking"]::before {
+          animation: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1180,6 +1362,9 @@
                 >
                   连接私有仓库
                 </button>
+                <button class="dock-menu-action dock-read" id="gh-check">
+                  检查同步状态
+                </button>
                 <div class="menu-separator"></div>
                 <button
                   class="dock-menu-action dock-read"
@@ -1210,6 +1395,48 @@
                   <summary>同步状态 ⌄</summary>
                   <p id="gh-status" role="status" aria-live="polite"></p>
                 </details>
+              </div>
+            </details>
+            <button
+              id="gh-dock-state"
+              class="sync-state-chip"
+              data-state="offline"
+              aria-label="同步状态：未连接"
+            >
+              未连接
+            </button>
+            <details class="deadline-menu">
+              <summary
+                id="deadline-trigger"
+                aria-label="高优先级任务截止提醒"
+                title="高优先级任务截止提醒"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="13" r="7" />
+                  <path
+                    d="M12 9v4l2 1M5 3 2 6m17-3 3 3M7 20l-1 2m11-2 1 2"
+                  /></svg
+                ><span id="deadline-count" hidden>0</span>
+              </summary>
+              <div class="deadline-panel">
+                <div class="deadline-heading">高优任务截止提醒</div>
+                <p class="deadline-hint">
+                  未完成 · 高优先级 · 1 小时内到期或已逾期
+                </p>
+                <div id="deadline-list"></div>
+                <p class="deadline-footnote">
+                  按本机时区计算；未设置时间按当天 23:59 截止。
+                </p>
               </div>
             </details>
             <span class="dock-divider" aria-hidden="true"></span>
@@ -1306,6 +1533,11 @@
           </div>
           <div style="flex: 1">
             <label>截止日期</label><input name="due" type="date" required />
+            <label for="task-due-time">截止时间（本机时区，可留空）</label
+            ><input id="task-due-time" name="dueTime" type="time" />
+            <p style="font-size: 11px; margin-top: 6px">
+              留空按当天 23:59；高优任务剩余不足 1 小时会显示红色闹铃。
+            </p>
           </div>
         </div>
         <div class="row">
@@ -1521,6 +1753,7 @@
         localStorage.setItem("taskspace-pages-v1", JSON.stringify(db));
         render();
         window.githubSyncMarkDirty?.();
+        window.refreshDeadlineDock?.();
       }
       function toast(s) {
         let x = document.createElement("div");
@@ -1628,6 +1861,7 @@
             .join("") ||
           '<div class="empty">还没有项目，创建你的第一个目标。</div>';
         renderTasks();
+        window.refreshDeadlineDock?.();
       }
       function renderTasks() {
         let ts = filtered();
@@ -1645,7 +1879,7 @@
         }
         if (view === "list") {
           $("#task-content").innerHTML =
-            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>截止日期</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">⚑ ${t.priority}</td><td style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}">${t.due === today ? "今天" : esc(t.due.slice(5).replace("-", " / "))}</td></tr>`).join("")}</tbody></table></div>`;
+            `<div class="table-wrap"><table><thead><tr><th style="width:43%">任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>截止日期</th></tr></thead><tbody>${ts.map((t) => `<tr><td><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}</span></td><td class="sub"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i>${esc(project(t.project)?.title || "未分类")}</td><td>${badge(t)}</td><td style="color:${t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">⚑ ${t.priority}</td><td style="color:${t.due < today && t.status !== "已完成" ? "#d97c7c" : "#8a94a4"}">${t.due === today ? "今天" : esc(t.due.slice(5).replace("-", " / "))}${t.dueTime ? " " + esc(t.dueTime) : ""}</td></tr>`).join("")}</tbody></table></div>`;
         } else if (view === "board") {
           $("#task-content").innerHTML =
             '<div class="board">' +
@@ -1656,7 +1890,7 @@
                     .filter((t) => t.status === s)
                     .map(
                       (t) =>
-                        `<div class="task-card" draggable="true" data-id="${t.id}" onclick="openTask('${t.id}')"><div style="line-height:1.7">${esc(t.title)}</div><div class="row sub" style="margin-top:18px"><span>${esc(project(t.project)?.title || "未分类")}</span><span>${t.due.slice(5)}</span></div></div>`,
+                        `<div class="task-card" draggable="true" data-id="${t.id}" onclick="openTask('${t.id}')"><div style="line-height:1.7">${esc(t.title)}</div><div class="row sub" style="margin-top:18px"><span>${esc(project(t.project)?.title || "未分类")}</span><span>${t.due.slice(5)}${t.dueTime ? " " + esc(t.dueTime) : ""}</span></div></div>`,
                     )
                     .join("")}</div>`,
               )
@@ -1773,6 +2007,7 @@
             project: $("#project-filter").value || db.projects[0]?.id || "",
             start: today,
             due: today,
+            dueTime: "",
             status: "待开始",
             priority: "中",
             note: "",
@@ -1875,6 +2110,7 @@
                 typeof t.title === "string" &&
                 /^\d{4}-\d{2}-\d{2}$/.test(t.start) &&
                 /^\d{4}-\d{2}-\d{2}$/.test(t.due) &&
+                (!t.dueTime || /^([01]\d|2[0-3]):[0-5]\d$/.test(t.dueTime)) &&
                 t.start <= t.due &&
                 ["待开始", "进行中", "已完成"].includes(t.status) &&
                 ["高", "中", "低"].includes(t.priority),
@@ -1893,7 +2129,8 @@
       };
       render();
     </script>
-    <script src="./github-sync.js"></script>
+    <script src="./github-sync.js?v=dock-status-1"></script>
+    <script src="./deadline-dock.js?v=1"></script>
     <script>
       const syncStatus = document.getElementById("gh-status");
       const syncSummary = document.querySelector(".dock-sync-status summary");
