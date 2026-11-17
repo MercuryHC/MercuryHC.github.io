@@ -341,10 +341,11 @@
     changed();
   }
   function app(name) {
-    name = name === "notion" ? "notion" : "task";
+    name = ["notion", "obsidian"].includes(name) ? name : "task";
     document.body.dataset.workspace = name;
     $("task-workspace").hidden = name !== "task";
     $("notebook-workspace").hidden = name !== "notion";
+    $("obsidian-workspace").hidden = name !== "obsidian";
     document.querySelectorAll("[data-app]").forEach((b) => {
       b.classList.toggle("active", b.dataset.app === name);
       b.setAttribute("aria-pressed", String(b.dataset.app === name));

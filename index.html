@@ -2048,7 +2048,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="./workstation.css?v=1" />
+    <link rel="stylesheet" href="./workstation.css?v=obsidian-1" />
   </head>
   <body data-workspace="task">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2067,10 +2067,20 @@
         data-app="notion"
         class="station-app"
         aria-pressed="false"
-        title="Notion · Markdown 笔记"
+        title="Notes · Markdown 笔记"
       >
         <span class="station-icon station-notion-icon">N</span
-        ><span>Notion</span>
+        ><span>Notes</span>
+      </button>
+      <button
+        type="button"
+        data-app="obsidian"
+        class="station-app"
+        aria-pressed="false"
+        title="Obsidian · 本地仓库"
+      >
+        <span class="station-icon" style="color: #8865c5">◇</span
+        ><span>Obsidian</span>
       </button>
       <span class="station-dock-foot">个人<br />工作站</span>
     </nav>
@@ -2094,7 +2104,7 @@
       <header class="workspace-header">
         <div class="header-context">
           <div class="notebook-crumb">
-            个人工作站 <span>/</span> Notion · 我的笔记
+            个人工作站 <span>/</span> Notes · 我的笔记
           </div>
           <div class="crumb">
             我的工作空间 <span style="margin: 0 12px">/</span
@@ -2306,10 +2316,10 @@
           留一点空间，给专注的自己。
         </p>
       </div>
-      <section id="notebook-workspace" hidden aria-label="Notion Markdown 笔记">
+      <section id="notebook-workspace" hidden aria-label="Notes Markdown 笔记">
         <div class="notebook-heading">
           <div>
-            <div class="small">NOTION / PERSONAL NOTES</div>
+            <div class="small">NOTES / PERSONAL NOTES</div>
             <h1>我的笔记</h1>
             <p>记录想法，沉淀工作中的每一步。</p>
           </div>
@@ -2387,7 +2397,104 @@
           </div>
         </div>
       </section>
+      <section id="obsidian-workspace" hidden aria-label="Obsidian 本地笔记">
+        <div class="notebook-heading">
+          <div>
+            <div class="small">OBSIDIAN / LOCAL VAULT</div>
+            <h1>本地知识库</h1>
+            <p>与电脑上的 Obsidian 共用 Markdown 文件。</p>
+          </div>
+          <div class="notebook-actions">
+            <button class="secondary" id="ob-connect-git">连接 GitHub</button
+            ><button class="primary" id="ob-folder">关联本地仓库</button
+            ><button class="secondary" id="ob-rescan">刷新文件</button>
+          </div>
+        </div>
+        <p class="ob-help">
+          使用桌面 Chrome / Edge，选择已在 Obsidian
+          中打开的仓库文件夹，并授权读写。文件直接保存到该文件夹；仅同步 .md
+          文件（含子文件夹），附件、插件和 .obsidian 配置暂不上传。
+        </p>
+        <div class="ob-settings">
+          <label
+            >Obsidian 仓库名称<input
+              id="ob-vault-name"
+              placeholder="与客户端的仓库名称一致" /></label
+          ><label
+            >GitHub 保存目录<input
+              id="ob-remote-path"
+              placeholder="taskspace.obsidian/仓库名称" /></label
+          ><button class="secondary" id="ob-upload-all">
+            上传全部 Markdown</button
+          ><button class="secondary" id="ob-new">新建笔记</button>
+        </div>
+        <div class="notebook-status-line">
+          <span id="ob-status" role="status" aria-live="polite"
+            >尚未关联本地仓库。</span
+          >
+        </div>
+        <div class="notebook-layout">
+          <div class="notebook-sidebar">
+            <input
+              id="ob-search"
+              placeholder="搜索文件路径"
+              aria-label="搜索 Obsidian 笔记"
+            />
+            <div id="ob-list"></div>
+          </div>
+          <div class="notebook-paper">
+            <div id="ob-empty" class="empty">
+              关联仓库后，这里显示电脑上的 Markdown 文件。
+            </div>
+            <div id="ob-document" hidden>
+              <h2 id="ob-file-path"></h2>
+              <div class="notebook-document-bar">
+                <span id="ob-state"></span>
+                <div class="notebook-actions">
+                  <a
+                    class="secondary"
+                    id="ob-open"
+                    href="obsidian://choose-vault"
+                    >用 Obsidian 打开</a
+                  ><button class="secondary" id="ob-reload">
+                    重新读取本地文件</button
+                  ><button class="secondary" id="ob-upload">上传当前笔记</button
+                  ><button class="primary" id="ob-save">保存到本地仓库</button>
+                </div>
+              </div>
+              <div class="notebook-editor ob-editor">
+                <textarea
+                  id="ob-body"
+                  spellcheck="false"
+                  aria-label="Obsidian Markdown 正文"
+                ></textarea>
+                <article id="ob-preview"></article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
+    <dialog id="ob-conflict">
+      <h2>GitHub 上已有不同版本</h2>
+      <p>上传已暂停，此文件的本地内容保持不变。请对比后选择。</p>
+      <div class="nb-conflict-columns">
+        <div>
+          <strong>本地仓库</strong>
+          <pre id="ob-local-version"></pre>
+        </div>
+        <div>
+          <strong>GitHub</strong>
+          <pre id="ob-remote-version"></pre>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button class="secondary" id="ob-conflict-cancel">取消</button
+        ><button class="primary" id="ob-force-upload">
+          采用本地版本并上传
+        </button>
+      </div>
+    </dialog>
     <dialog id="nb-conflict-dialog">
       <div class="row">
         <h2>这篇笔记在两端都有更新</h2>
@@ -3367,8 +3474,10 @@
     <script src="./timeline-view.js?v=1"></script>
     <script src="./merge-core.js?v=1"></script>
     <script src="./project-store.js?v=1"></script>
-    <script src="./github-sync.js?v=note-title-2"></script>
-    <script src="./workstation.js?v=title-2"></script>
+    <script src="./github-sync.js?v=obsidian-1"></script>
+    <script src="./workstation.js?v=obsidian-1"></script>
+    <script src="./obsidian-core.js?v=1"></script>
+    <script src="./obsidian.js?v=1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>
