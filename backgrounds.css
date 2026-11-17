@@ -209,9 +209,9 @@ body[data-background-active="true"] .bookmark-card {
 }
 /* Neutral glass: navigation floats over the wallpaper; reading has its own surface. */
 html body[data-background-active="true"][data-workspace] {
-  --bg-glass: rgba(250, 250, 248, .80);
-  --bg-glass-soft: rgba(250, 250, 248, .24);
-  --bg-glass-control: rgba(250, 250, 248, .64);
+  --bg-glass: rgba(18, 20, 24, .38);
+  --bg-glass-soft: rgba(255, 255, 255, .055);
+  --bg-glass-control: rgba(18, 20, 24, .26);
   --bg-glass-border: rgba(255, 255, 255, .16);
   --bg-chrome: rgba(18, 20, 24, .28);
   --bg-tile: rgba(18, 20, 24, .20);
@@ -220,9 +220,9 @@ html body[data-background-active="true"][data-workspace] {
   --bg-on-image-soft: rgba(255, 255, 255, .78);
 }
 html[data-theme="dark"] body[data-background-active="true"][data-workspace] {
-  --bg-glass: rgba(24, 26, 30, .78);
+  --bg-glass: rgba(18, 20, 24, .54);
   --bg-glass-soft: rgba(255, 255, 255, .06);
-  --bg-glass-control: rgba(24, 26, 30, .66);
+  --bg-glass-control: rgba(18, 20, 24, .38);
   --bg-chrome: rgba(18, 20, 24, .46);
   --bg-tile: rgba(18, 20, 24, .30);
 }
@@ -376,4 +376,158 @@ html body[data-background-active="true"][data-workspace] :is(
   background: var(--app-surface);
   color: var(--app-text);
   text-shadow: none;
+}
+
+/* The wallpaper palette is shared by every workspace, including native controls. */
+html body[data-background-active="true"][data-workspace] {
+  color-scheme: dark;
+  color: #f4f5f7;
+  --ink: #f4f5f7;
+  --muted: #b9c0ca;
+  --line: rgba(255, 255, 255, .14);
+  --blue: #b7c4ff;
+  --app-surface: #23262c;
+  --app-hover: rgba(255, 255, 255, .10);
+  --app-text: #f4f5f7;
+  --app-soft: #bdc5cf;
+  --app-border: rgba(255, 255, 255, .14);
+  --code-fg: #e4e7ec;
+  --code-bg: rgba(10, 12, 16, .48);
+  --code-comment: #aab4c2;
+  --code-keyword: #d1afff;
+  --code-string: #b3dfbc;
+  --code-number: #efc091;
+  --code-title: #b0ceff;
+  --code-meta: #ead399;
+  --code-delete: #ffb1b9;
+  --code-add: #a6dfba;
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .stat, .project, .workspace, .task-card, .notebook-layout, .extension-paper,
+  .br-overview > div, .br-results, .ob-vault-settings,
+  .notebook-paper, #nb-title, #nb-body, #ob-body, #ob-file-path,
+  #nb-preview, #ob-preview, #nr-source, .markdown-notes,
+  .project h3, .stat strong, .extension-empty h2, .notion-document-heading h2,
+  #nb-preview h1, #nb-preview h2, #nb-preview h3,
+  #ob-preview h1, #ob-preview h2, #ob-preview h3,
+  #nr-preview h1, #nr-preview h2, #nr-preview h3
+) {
+  color: var(--app-text);
+  border-color: var(--line);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .sub, .small, .stat-top, .stat small, .project p, .project-navigation,
+  .empty, .footer, .ob-help, .ob-vault-settings summary, .ob-reading-bar,
+  .notebook-document-bar, .notebook-document-foot, .notebook-toolbar button,
+  .ob-view-switch button, .extension-empty p, .extension-empty,
+  .notion-tree-toggle, .br-result-content small, .br-empty, .br-pagination,
+  #nb-preview p, #ob-preview p, .notes-preview-label
+) {
+  color: var(--app-soft);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .secondary, select, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea, .notes-toolbar button
+) {
+  background: var(--bg-glass-control);
+  color: var(--app-text);
+  border-color: var(--line);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  #nb-title, #nb-body, #ob-body, #nr-source
+) {
+  background: transparent;
+}
+html body[data-background-active="true"][data-workspace] :is(input, textarea)::placeholder {
+  color: var(--app-soft);
+}
+html body[data-background-active="true"][data-workspace] option {
+  background: #23262c;
+  color: #f4f5f7;
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .secondary:hover, .tab.active, .notebook-toolbar button.active,
+  .notebook-toolbar button:hover, .ob-view-switch button.active,
+  .notes-toolbar button:hover, .notebook-list-item.active, .notebook-list-item:hover,
+  .br-result:hover
+) {
+  background: var(--bg-chrome-hover);
+  color: #fff;
+  border-color: var(--bg-glass-border);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .primary, .brand b
+) {
+  background: #6374de;
+  color: #fff;
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .section-head h2, .project-navigation > button, .notion-tree-row,
+  .br-overview strong, .notebook-heading h1
+) {
+  color: var(--app-text);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .tools, td, th, .time-row, .notebook-toolbar, .notebook-document-foot,
+  .ob-reading-bar, .notes-section, .merge-record, .merge-options label
+) {
+  border-color: var(--line);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .tab, th, .notebook-toolbar button, .ob-view-switch button
+) {
+  color: var(--app-soft);
+}
+html body[data-background-active="true"][data-workspace] .bar {
+  background: rgba(255, 255, 255, .12);
+}
+html body[data-background-active="true"][data-workspace] .track {
+  background: repeating-linear-gradient(to right, transparent 0,
+    transparent calc(100% / 14 - 1px), var(--line) calc(100% / 14 - 1px), var(--line) calc(100% / 14));
+}
+html body[data-background-active="true"][data-workspace] :is(
+  #nb-preview code, #ob-preview code, .extension-markdown code, .markdown-notes code
+) {
+  color: #d1c7ef;
+  background: rgba(0, 0, 0, .16);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  #nb-preview pre, #ob-preview pre, .extension-markdown pre, .markdown-notes pre,
+  .merge-versions pre, .nb-conflict-columns pre, #note-preview-wrap
+) {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border-color: var(--line);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .extension-markdown a, #nb-preview a, #ob-preview a, .markdown-notes a
+) {
+  color: #bdccff;
+}
+/* Nested dialog panels follow the same neutral palette without changing status colors. */
+html body[data-background-active="true"][data-workspace] :is(
+  .merge-dialog-header, .merge-dialog-footer, .merge-record,
+  .merge-options label, .nb-conflict-columns > div, .dock-sync-status > p
+) {
+  background: var(--app-surface);
+  color: var(--app-text);
+  border-color: var(--line);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .repeat-settings, .timeline-axis-row, .timeline-task-name,
+  .timeline-task-name:hover, .timeline-toolbar button,
+  .project-breadcrumb, .notebook-empty
+) {
+  background: var(--bg-glass-control);
+  color: var(--app-text);
+  border-color: var(--line);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .timeline-label-header, .timeline-tick, .timeline-range, .timeline-tip,
+  .repeat-settings label, .repeat-interval-row, .recurring-item p
+) {
+  color: var(--app-soft);
+}
+html body[data-background-active="true"][data-workspace="bookmarks"] #web-search-query {
+  background: transparent;
 }
