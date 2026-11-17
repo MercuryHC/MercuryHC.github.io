@@ -69,7 +69,7 @@ body[data-background-active="true"] {
   content: "";
   position: absolute;
   inset: 0;
-  background: #cfd6e5;
+  background: #101114;
   opacity: var(--preview-mask, 0.25);
 }
 .bg-preview span {
@@ -207,71 +207,173 @@ body[data-background-active="true"] .bookmark-card {
   width: 100%;
   height: 100%;
 }
-/* Wallpaper surfaces: keep the image continuous behind every workspace. */
+/* Neutral glass: navigation floats over the wallpaper; reading has its own surface. */
 html body[data-background-active="true"][data-workspace] {
-  --bg-glass: rgba(255, 255, 255, .60);
-  --bg-glass-soft: rgba(255, 255, 255, .32);
-  --bg-glass-control: rgba(255, 255, 255, .72);
-  --bg-glass-border: rgba(255, 255, 255, .38);
-  --app-soft: #5e6c80;
+  --bg-glass: rgba(250, 250, 248, .80);
+  --bg-glass-soft: rgba(250, 250, 248, .24);
+  --bg-glass-control: rgba(250, 250, 248, .64);
+  --bg-glass-border: rgba(255, 255, 255, .16);
+  --bg-chrome: rgba(18, 20, 24, .28);
+  --bg-tile: rgba(18, 20, 24, .20);
+  --bg-chrome-hover: rgba(255, 255, 255, .14);
+  --bg-on-image: #fff;
+  --bg-on-image-soft: rgba(255, 255, 255, .78);
 }
 html[data-theme="dark"] body[data-background-active="true"][data-workspace] {
-  --bg-glass: rgba(28, 34, 44, .64);
-  --bg-glass-soft: rgba(28, 34, 44, .35);
-  --bg-glass-control: rgba(28, 34, 44, .78);
-  --bg-glass-border: rgba(170, 190, 220, .20);
-  --app-soft: #b1bfd1;
+  --bg-glass: rgba(24, 26, 30, .78);
+  --bg-glass-soft: rgba(255, 255, 255, .06);
+  --bg-glass-control: rgba(24, 26, 30, .66);
+  --bg-chrome: rgba(18, 20, 24, .46);
+  --bg-tile: rgba(18, 20, 24, .30);
+}
+/* A neutral black scrim preserves the image colors instead of bleaching them. */
+html body[data-background-active="true"][data-workspace] .bg-mask {
+  background: #101114;
 }
 html body[data-background-active="true"][data-workspace] :is(
   .station-dock, #task-sidebar, #notes-sidebar, #obsidian-sidebar,
-  .extension-sidebar, .mac-dock, .stat, .project, .workspace,
-  .notebook-layout, .extension-paper, .bookmark-card, .br-overview > div,
-  .br-results, .ob-vault-settings
+  .extension-sidebar, .mac-dock
+) {
+  background: var(--bg-chrome);
+  color: var(--bg-on-image);
+  border-color: var(--bg-glass-border);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: none;
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .stat, .project, .workspace, .notebook-layout, .extension-paper,
+  .br-overview > div, .br-results, .ob-vault-settings
 ) {
   background: var(--bg-glass);
   border-color: var(--bg-glass-border);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
 }
 html body[data-background-active="true"][data-workspace] :is(
-  .notebook-paper, .notebook-layout > .notebook-sidebar, .bookmark-add,
+  .notebook-paper, .notebook-layout > .notebook-sidebar,
   .notebook-editor, .ob-editor, #nb-body, #ob-body, #nr-source
 ) {
   background: transparent;
 }
 html body[data-background-active="true"][data-workspace] :is(
-  .bookmark-hero, .bookmark-section-heading, .column, th, .task-card,
-  .station-app.active, .station-app:hover
+  .column, th, .task-card
 ) {
   background: var(--bg-glass-soft);
-  border-color: var(--bg-glass-border);
-}
-html body[data-background-active="true"][data-workspace] .bookmark-hero {
-  border: 1px solid var(--bg-glass-border);
-  border-radius: 20px;
-  margin-bottom: 24px;
-}
-html body[data-background-active="true"][data-workspace] .bookmark-section-heading {
-  padding: 10px 14px;
-  border-radius: 10px;
 }
 html body[data-background-active="true"][data-workspace] :is(
-  .bookmark-search, .bookmark-filter, .extension-search,
-  .header-context .search, #notes-sidebar > input, #obsidian-sidebar > input,
-  .br-toolbar input, .br-toolbar select, .dock-action, .sidebar-toggle
+  .br-toolbar input, .br-toolbar select, .header-context .search
 ) {
   background: var(--bg-glass-control);
   border-color: var(--bg-glass-border);
 }
-/* Popovers and dialogs need a stronger surface above the page content. */
+/* Keep all navigation labels readable on light and dark parts of a wallpaper. */
 html body[data-background-active="true"][data-workspace] :is(
-  .github-panel, .account-menu, .deadline-panel, .web-engine-menu,
+  .station-app, .station-mark, .station-dock-foot,
+  .sidebar-toggle, .theme-toggle, .github-menu > summary, .dock-account > summary,
+  .deadline-trigger, #background-toggle, .header-context,
+  .bookmarks-crumb, .cloud-crumb, .obsidian-crumb, .notebook-crumb
+) {
+  color: var(--bg-on-image-soft);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .station-app.active, .station-app:hover, .sidebar-toggle,
+  .theme-toggle:hover, .dock-action
+) {
+  background: var(--bg-chrome-hover);
+  color: var(--bg-on-image);
+  box-shadow: none;
+}
+html body[data-background-active="true"][data-workspace] > aside :is(
+  .brand, .nav, .small, .side-label, .explorer-row, .explorer-current,
+  .extension-sidebar-hint, .secondary, .explorer-actions button
+) {
+  color: var(--bg-on-image-soft);
+}
+html body[data-background-active="true"][data-workspace] > aside :is(
+  .nav.active, .nav:hover, .explorer-row.active, .explorer-row:hover,
+  .explorer-row.folder-current,
+  .notion-tree-row.active, .notion-tree-row:hover, .secondary,
+  .explorer-actions button
+) {
+  background: var(--bg-chrome-hover);
+  color: var(--bg-on-image);
+  border-color: var(--bg-glass-border);
+}
+html body[data-background-active="true"][data-workspace] > aside :is(
+  input, #nb-search, #ob-search, .extension-search
+) {
+  background: rgba(255, 255, 255, .10);
+  color: var(--bg-on-image);
+  border-color: var(--bg-glass-border);
+}
+html body[data-background-active="true"][data-workspace] > aside input::placeholder {
+  color: var(--bg-on-image-soft);
+}
+html body[data-background-active="true"][data-workspace] :is(
+  .hero h1, .hero p, .notebook-heading h1, .notebook-heading p,
+  .notebook-status-line, .extension-status, .header-context > div,
+  #project-section > .row > h2
+) {
+  color: var(--bg-on-image);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .35);
+}
+html body[data-background-active="true"][data-workspace] .workspace-header {
+  border-color: var(--bg-glass-border);
+}
+/* On the launchpad, remove large tinted rectangles around the clock and toolbar. */
+html body[data-background-active="true"][data-workspace="bookmarks"] :is(
+  .bookmark-hero, .bookmark-section-heading
+) {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+html body[data-background-active="true"][data-workspace="bookmarks"] :is(
+  .bookmark-clock, .bookmark-hero h1, .bookmark-section-heading h2,
+  .bookmark-card > a, .bookmark-add-card, .bookmark-edit
+) {
+  color: var(--bg-on-image);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .35);
+}
+html body[data-background-active="true"][data-workspace="bookmarks"] :is(
+  .bookmark-hero > p, .bookmark-hero > .small, .bookmark-host,
+  .notebook-actions > button, .extension-status
+) {
+  color: var(--bg-on-image-soft);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, .4);
+}
+html body[data-background-active="true"][data-workspace="bookmarks"] :is(
+  .bookmark-card, .bookmark-search, .bookmark-filter
+) {
+  background: var(--bg-tile);
+  border-color: var(--bg-glass-border);
+  color: var(--bg-on-image);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .05);
+}
+html body[data-background-active="true"][data-workspace="bookmarks"] :is(
+  .bookmark-card:hover, .bookmark-search:focus-within
+) {
+  background: var(--bg-chrome);
+  border-color: rgba(255, 255, 255, .30);
+}
+html body[data-background-active="true"][data-workspace="bookmarks"] :is(
+  .bookmark-search input, .engine-trigger
+) {
+  color: var(--bg-on-image);
+  background: transparent;
+}
+html body[data-background-active="true"][data-workspace="bookmarks"] input::placeholder {
+  color: var(--bg-on-image-soft);
+}
+/* Popovers retain theme surfaces so text remains legible above other controls. */
+html body[data-background-active="true"][data-workspace] :is(
+  .github-panel, .account-menu, .deadline-panel, .engine-menu,
   .github-upload-progress, dialog
 ) {
   background: var(--app-surface);
-}
-html body[data-background-active="true"][data-workspace] :is(
-  .bookmark-card:hover, .br-result:hover
-) {
-  background: var(--bg-glass-control);
+  color: var(--app-text);
+  text-shadow: none;
 }
