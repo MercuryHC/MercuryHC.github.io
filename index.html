@@ -2058,8 +2058,9 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="./workstation.css?v=ob-preview-1" />
+    <link rel="stylesheet" href="./workstation.css?v=progress-1" />
     <link rel="stylesheet" href="./theme.css?v=1" />
+    <link rel="stylesheet" href="./code-highlight.css?v=1" />
   </head>
   <body data-workspace="task">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2154,6 +2155,31 @@
       <div id="ob-list"></div>
     </aside>
 
+    <section
+      id="github-upload-progress"
+      class="github-upload-progress"
+      hidden
+      aria-label="GitHub 上传进度"
+      aria-live="polite"
+    >
+      <div class="upload-heading">
+        <strong id="upload-title">正在上传</strong
+        ><button
+          id="upload-close"
+          title="收起进度（上传会继续）"
+          aria-label="收起上传进度"
+        >
+          ×
+        </button>
+      </div>
+      <p id="upload-detail"></p>
+      <progress
+        id="upload-bar"
+        max="1"
+        aria-label="GitHub 当前处理进度"
+      ></progress
+      ><small id="upload-count"></small>
+    </section>
     <main>
       <header class="workspace-header">
         <button
@@ -2964,7 +2990,8 @@
       </form>
     </dialog>
     <script src="./vendor/markdown-it.min.js?v=14.1.0"></script>
-    <script src="./notes-core.js?v=1"></script>
+    <script src="./vendor/highlight.min.js?v=11.11.1"></script>
+    <script src="./notes-core.js?v=highlight-1"></script>
     <script src="./task-time.js?v=1"></script>
     <script src="./recurrence-core.js?v=notes-3"></script>
     <script>
@@ -3566,7 +3593,8 @@
     <script src="./timeline-view.js?v=1"></script>
     <script src="./merge-core.js?v=1"></script>
     <script src="./project-store.js?v=1"></script>
-    <script src="./github-sync.js?v=ob-preview-1"></script>
+    <script src="./upload-progress.js?v=1"></script>
+    <script src="./github-sync.js?v=progress-1"></script>
     <script src="./theme.js?v=1"></script>
     <script src="./directory-tree.js?v=1"></script>
     <script src="./workstation.js?v=ob-preview-1"></script>

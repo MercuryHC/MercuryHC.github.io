@@ -186,7 +186,10 @@
     el("gh-status").textContent = text;
     el("gh-dialog-status").textContent = text;
     el("gh-status").style.color = error ? "#c45860" : "#7b8596";
-    if (error) syncError = true;
+    if (error) {
+      syncError = true;
+      window.GitHubUpload?.fail(text);
+    }
   };
   function updateButtons() {
     for (const id of [
@@ -351,11 +354,25 @@
       config.path.split("/").map(encodeURIComponent).join("/")
     );
   }
+  async function withUpload(label, fn) {
+    window.GitHubUpload?.begin(label);
+    try {
+      return await fn();
+    } catch (e) {
+      window.GitHubUpload?.fail(e.message);
+      throw e;
+    } finally {
+      window.GitHubUpload?.finish();
+    }
+  }
+  const uploadOperation = (fn) =>
+    notebookOperation(() => withUpload("保存到 GitHub", fn));
   async function rawApi(url, options = {}) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 25000);
     try {
       let response;
+      window.GitHubUpload?.request(url, options.method || "GET");
       try {
         response = await fetch(url, {
           ...options,
@@ -390,6 +407,7 @@
             `GitHub 请求失败（${response.status}），本地数据已保留。`,
         );
       }
+      window.GitHubUpload?.ack(options.method || "GET");
       return await response.json();
     } finally {
       clearTimeout(timer);
@@ -486,6 +504,10 @@
   }
   async function writeRemote() {
     if (mergeSession || busy || checking) return;
+    return withUpload("保存任务到 GitHub", writeRemoteImpl);
+  }
+  async function writeRemoteImpl() {
+    if (mergeSession || busy || checking) return;
     busy = true;
     updateButtons();
     status("正在逐项目检查远端版本…");
@@ -500,6 +522,7 @@
         if (!merged) {
           remoteChanged = true;
           prepareMerge(file);
+          window.GitHubUpload?.fail("同一记录存在冲突，请选择合并版本后上传。");
           status("同一记录有不同修改，请在弹窗选择合并版本。");
           return;
         }
@@ -792,6 +815,10 @@
     );
   }
   async function confirmMerge() {
+    if (!mergeSession || busy) return;
+    return withUpload("上传合并结果", confirmMergeImpl);
+  }
+  async function confirmMergeImpl() {
     if (!mergeSession || busy) return;
     const session = mergeSession,
       result = mergePreview();
@@ -1106,7 +1133,7 @@
   }
   window.WorkstationGitHub = {
     createFolder: (path) =>
-      notebookOperation(async () => {
+      uploadOperation(async () => {
         if (!window.DirectoryTree.valid(path)) throw Error("文件夹路径无效。");
         if (!(await rawApi(baseUrl())).private)
           throw Error("仅允许写入私有仓库。");
@@ -1188,7 +1215,7 @@
         ),
       ),
     save: (name, text, sha, targetName = name) =>
-      notebookOperation(async () => {
+      uploadOperation(async () => {
         if (new TextEncoder().encode(text).length > 900000)
           throw Error("笔记超过 900 KB，请拆分内容。");
         if (!(await rawApi(baseUrl())).private)
@@ -1286,7 +1313,7 @@
         return { sha: result.content.sha, text, name: targetName };
       }),
     remove: (name, sha) =>
-      notebookOperation(async () => {
+      uploadOperation(async () => {
         if (!(await rawApi(baseUrl())).private)
           throw Error("仅允许写入私有仓库。");
         const url = noteUrl(name),
@@ -1325,7 +1352,7 @@
     path.split("/").map(encodeURIComponent).join("/");
   window.ObsidianGitHub = {
     upload: (prefix, files, baselines = {}, force = {}) =>
-      notebookOperation(async () => {
+      uploadOperation(async () => {
         if (!(await rawApi(baseUrl())).private)
           throw Error("仅允许上传到私有仓库。");
         const refPath = config.branch
@@ -1338,6 +1365,8 @@
         const tree = [],
           saved = {},
           conflicts = [];
+        window.GitHubUpload?.files(files.length);
+        let checkedFiles = 0;
         for (const f of files) {
           const path = vaultPath(prefix, f.path);
           if (new TextEncoder().encode(f.text).length > 900000)
@@ -1347,6 +1376,7 @@
               missingOK: true,
             }),
           );
+          window.GitHubUpload?.checked(++checkedFiles, f.path);
           if (remote?.text === f.text) {
             saved[f.path] = remote.sha;
             continue;
@@ -1365,7 +1395,12 @@
           }
           tree.push({ path, mode: "100644", type: "blob", content: f.text });
         }
-        if (conflicts.length) return { saved: {}, conflicts };
+        if (conflicts.length) {
+          window.GitHubUpload?.fail(
+            conflicts.length + " 个文件存在远端冲突，请对比后再上传。",
+          );
+          return { saved: {}, conflicts };
+        }
         if (!tree.length) return { saved, conflicts: [] };
         const nextTree = await rawApi(baseUrl() + "/git/trees", {
           method: "POST",

@@ -9,6 +9,52 @@
     breaks: true,
     linkify: false,
     typographer: false,
+    highlight(source, language) {
+      const escape = (value) =>
+        value
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      const aliases = {
+        cuda: "cpp",
+        cu: "cpp",
+        triton: "python",
+        py: "python",
+        js: "javascript",
+        ts: "typescript",
+        sh: "bash",
+        html: "xml",
+        yml: "yaml",
+        "c++": "cpp",
+      };
+      const requested = (language || "text").toLowerCase();
+      const lang = aliases[requested] || requested;
+      let content = escape(source),
+        label = "text";
+      const highlighter = root.hljs;
+      if (
+        highlighter &&
+        /^[a-z0-9_+-]{1,30}$/.test(lang) &&
+        highlighter.getLanguage(lang)
+      ) {
+        label = lang;
+        if (source.length <= 40000)
+          try {
+            content = highlighter.highlight(source, {
+              language: lang,
+              ignoreIllegals: true,
+            }).value;
+          } catch {}
+      }
+      return (
+        '<pre class="markdown-codeblock" data-language="' +
+        label +
+        '"><code class="hljs">' +
+        content +
+        "</code></pre>"
+      );
+    },
   });
   md.disable("image");
   const originalValidate = md.validateLink.bind(md);
