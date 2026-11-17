@@ -34,6 +34,27 @@
   }
   function updateDockState() {
     if (
+      document.body?.dataset.workspace === "obsidian" &&
+      window.ObsidianWorkspace?.state
+    ) {
+      const s = window.ObsidianWorkspace.state(),
+        chip = el("gh-dock-state");
+      const label = s.busy
+        ? "处理中"
+        : s.dirty
+          ? "本地待保存"
+          : !s.linked
+            ? "未关联仓库"
+            : s.connected
+              ? "GitHub 已连接"
+              : "GitHub 未连接";
+      chip.textContent = label;
+      chip.dataset.state = s.busy ? "checking" : s.dirty ? "upload" : "offline";
+      chip.title = "Obsidian：本地保存与 GitHub 上传分别操作。";
+      chip.setAttribute("aria-label", label);
+      return;
+    }
+    if (
       document.body?.dataset.workspace === "notion" &&
       window.NotesWorkspace?.state
     ) {
@@ -190,11 +211,13 @@
         ? "读取 GitHub 笔记"
         : "读取 GitHub";
     el("gh-write").textContent =
-      document.body?.dataset.workspace === "notion"
-        ? "保存当前笔记"
-        : dirty
-          ? "保存到 GitHub · 有修改"
-          : "保存到 GitHub";
+      document.body?.dataset.workspace === "obsidian"
+        ? "上传当前 Obsidian 笔记"
+        : document.body?.dataset.workspace === "notion"
+          ? "保存当前笔记"
+          : dirty
+            ? "保存到 GitHub · 有修改"
+            : "保存到 GitHub";
     el("gh-merge").disabled =
       busy || checking || notebookBusy || !!mergeSession || !connected;
     for (const id of ["merge-refresh", "merge-all-local", "merge-all-remote"])
@@ -904,9 +927,11 @@
       ? window.NotesWorkspace?.refresh()
       : readRemote();
   el("gh-write").onclick = () =>
-    document.body?.dataset.workspace === "notion"
-      ? window.NotesWorkspace?.save()
-      : writeRemote();
+    document.body?.dataset.workspace === "obsidian"
+      ? window.ObsidianWorkspace?.uploadCurrent()
+      : document.body?.dataset.workspace === "notion"
+        ? window.NotesWorkspace?.save()
+        : writeRemote();
   el("gh-restore").onclick = () => {
     try {
       const backups = JSON.parse(
@@ -1374,7 +1399,7 @@
   updateButtons();
   el("gh-dock-state").onclick = () => {
     if (
-      document.body?.dataset.workspace !== "notion" &&
+      document.body?.dataset.workspace === "task" &&
       connected &&
       dirty &&
       remoteChanged &&

@@ -1,0 +1,271 @@
+:root {
+  color-scheme: light;
+}
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  flex: none;
+  border-radius: 7px;
+  color: #8c96a6;
+  padding: 0;
+}
+.theme-toggle:hover {
+  background: #edf0f7;
+  color: #536ded;
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid #536ded;
+  outline-offset: 3px;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #151920;
+  --ink: #d6deea;
+  --muted: #8c98ab;
+  --line: #2b3442;
+  --blue: #96a7ff;
+  --dark-panel: #1c222c;
+  --dark-hover: #252e3b;
+}
+html[data-theme="dark"] body {
+  background: var(--bg);
+  color: var(--ink);
+}
+html[data-theme="dark"] body > aside,
+html[data-theme="dark"] body[data-workspace] > aside,
+html[data-theme="dark"] .project,
+html[data-theme="dark"] .stat,
+html[data-theme="dark"] .workspace,
+html[data-theme="dark"] .notebook-layout,
+html[data-theme="dark"] .notebook-paper,
+html[data-theme="dark"] .task-card,
+html[data-theme="dark"] dialog {
+  background: var(--dark-panel);
+  color: var(--ink);
+  border-color: var(--line);
+}
+html[data-theme="dark"] .station-dock {
+  background: #10141b;
+  border-color: var(--line);
+}
+html[data-theme="dark"] .station-app.active {
+  background: #252e3d;
+  color: #a8b5ff;
+}
+html[data-theme="dark"] .station-app:hover {
+  background: #202734;
+}
+html[data-theme="dark"] .brand,
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] #ob-file-path {
+  color: #e1e7f1;
+}
+html[data-theme="dark"] .brand b,
+html[data-theme="dark"] .primary {
+  background: #7185ef;
+  color: #fff;
+}
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background: #171d26;
+  color: #d3dce9;
+  border-color: #354051;
+}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #718096;
+}
+html[data-theme="dark"] .search,
+html[data-theme="dark"] #notes-sidebar > input,
+html[data-theme="dark"] #obsidian-sidebar > input {
+  background: #252d3a;
+  color: #d3dce9;
+}
+html[data-theme="dark"] .secondary,
+html[data-theme="dark"] .sidebar-toggle,
+html[data-theme="dark"] .explorer-actions button {
+  background: #252d3a;
+  color: #b6c1d2;
+  border-color: #354052;
+}
+html[data-theme="dark"] .secondary:hover,
+html[data-theme="dark"] .sidebar-toggle:hover,
+html[data-theme="dark"] .explorer-actions button:hover {
+  background: #303c50;
+  color: #d6dfff;
+}
+html[data-theme="dark"] th {
+  background: #202733;
+  color: #aab7ca;
+}
+html[data-theme="dark"] td,
+html[data-theme="dark"] .tools,
+html[data-theme="dark"] .notebook-sidebar,
+html[data-theme="dark"] .notebook-toolbar,
+html[data-theme="dark"] .notebook-document-foot,
+html[data-theme="dark"] .ob-reading-bar {
+  border-color: var(--line);
+}
+html[data-theme="dark"] .column,
+html[data-theme="dark"] .bar,
+html[data-theme="dark"] .notebook-sidebar {
+  background: #171d26;
+}
+html[data-theme="dark"] .nav.active,
+html[data-theme="dark"] .tab.active,
+html[data-theme="dark"] .explorer-row.active,
+html[data-theme="dark"] .explorer-row.folder-current,
+html[data-theme="dark"] .notebook-list-item.active,
+html[data-theme="dark"] .notebook-toolbar button.active,
+html[data-theme="dark"] .ob-view-switch button.active {
+  background: #2b3651;
+  color: #b5c1ff;
+}
+html[data-theme="dark"] .explorer-row:hover,
+html[data-theme="dark"] .notebook-list-item:hover {
+  background: #273143;
+}
+html[data-theme="dark"] .explorer-row,
+html[data-theme="dark"] .notebook-toolbar button,
+html[data-theme="dark"] .ob-view-switch button {
+  color: #a4b0c3;
+}
+html[data-theme="dark"] .mac-dock {
+  background: #222a36e8;
+  border-color: #3a4556;
+  box-shadow: 0 5px 20px #0003;
+}
+html[data-theme="dark"] .github-panel,
+html[data-theme="dark"] .account-menu,
+html[data-theme="dark"] .deadline-panel,
+html[data-theme="dark"] .dock-sync-status > p {
+  background: #222a36;
+  color: #c2cede;
+  border-color: #3a4556;
+  box-shadow: 0 12px 35px #0005;
+}
+html[data-theme="dark"] .github-menu-heading {
+  color: #d5dfed;
+}
+html[data-theme="dark"] .github-menu > summary,
+html[data-theme="dark"] .dock-menu-action,
+html[data-theme="dark"] .theme-toggle {
+  color: #b7c3d5;
+}
+html[data-theme="dark"] .dock-menu-action:hover:not(:disabled),
+html[data-theme="dark"] .theme-toggle:hover {
+  background: #303d54;
+  color: #b9c6ff;
+}
+html[data-theme="dark"] .menu-separator,
+html[data-theme="dark"] .dock-divider {
+  background: #384252;
+}
+html[data-theme="dark"] .dock-avatar,
+html[data-theme="dark"] .avatar {
+  background: #354263;
+  color: #c4cfff;
+}
+html[data-theme="dark"] .sync-state-chip[data-state="offline"] {
+  background: #303947;
+  color: #acb8ca;
+}
+html[data-theme="dark"] .sync-state-chip[data-state="upload"] {
+  background: #453b28;
+  color: #edc477;
+}
+html[data-theme="dark"] .sync-state-chip[data-state="synced"] {
+  background: #233f35;
+  color: #91cfaf;
+}
+html[data-theme="dark"] .sync-state-chip[data-state="download"] {
+  background: #2b3956;
+  color: #acbcff;
+}
+html[data-theme="dark"] .sync-state-chip[data-state="conflict"] {
+  background: #3c3052;
+  color: #ccb1f2;
+}
+html[data-theme="dark"] .sync-state-chip[data-state="error"] {
+  background: #4d2f37;
+  color: #f4a4ad;
+}
+html[data-theme="dark"] #nb-title,
+html[data-theme="dark"] #nb-body,
+html[data-theme="dark"] #ob-body {
+  background: transparent;
+  color: #c4cfdf;
+}
+html[data-theme="dark"] #nb-preview,
+html[data-theme="dark"] #ob-preview {
+  color: #c4cfdf;
+  border-color: var(--line);
+}
+html[data-theme="dark"] #nb-preview p,
+html[data-theme="dark"] #ob-preview p {
+  color: #b7c3d5;
+}
+html[data-theme="dark"] #nb-preview pre,
+html[data-theme="dark"] #ob-preview pre,
+html[data-theme="dark"] .nb-conflict-columns pre {
+  background: #141b25;
+  color: #becbe0;
+}
+html[data-theme="dark"] #nb-preview code,
+html[data-theme="dark"] #ob-preview code {
+  color: #c4b8ed;
+}
+html[data-theme="dark"] a {
+  color: #a4b6ff;
+}
+html[data-theme="dark"] .ob-vault-settings,
+html[data-theme="dark"] .notebook-layout {
+  border-color: var(--line);
+}
+html[data-theme="dark"] .ob-help,
+html[data-theme="dark"] .notebook-heading p {
+  color: #8c9aaf;
+}
+html[data-theme="dark"] .notebook-document-bar,
+html[data-theme="dark"] .notebook-toolbar,
+html[data-theme="dark"] .notebook-document-foot {
+  border-color: var(--line);
+}
+html[data-theme="dark"] dialog::backdrop {
+  background: #03060baa;
+}
+html[data-theme="dark"] .merge-record,
+html[data-theme="dark"] .merge-versions > div {
+  background: #202936;
+  border-color: #3a4556;
+}
+html[data-theme="dark"] .merge-record[data-conflict="true"] {
+  border-color: #83669e;
+}
+html[data-theme="dark"] .merge-options label {
+  background: #273246;
+  color: #c2cede;
+}
+html[data-theme="dark"] .merge-version-label {
+  color: #a7b6ca;
+}
+html[data-theme="dark"] .merge-versions pre {
+  background: #151c27;
+  color: #c2cede;
+}
+html[data-theme="dark"] .time-row,
+html[data-theme="dark"] .track {
+  border-color: #333d4d;
+}
+html[data-theme="dark"] .done {
+  color: #778398;
+}
+body[data-workspace="obsidian"] .ob-upload-menu {
+  display: flex;
+}
+html[data-theme="dark"] body[data-workspace]>#notes-sidebar,html[data-theme="dark"] body[data-workspace]>#obsidian-sidebar,html[data-theme="dark"] body>#task-sidebar{background:var(--dark-panel);color:var(--ink);border-color:var(--line)}

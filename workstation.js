@@ -397,7 +397,11 @@
     $("gh-read").textContent =
       name === "notion" ? "读取 GitHub 笔记" : "读取 GitHub";
     $("gh-write").textContent =
-      name === "notion" ? "保存当前笔记" : "保存到 GitHub";
+      name === "obsidian"
+        ? "上传当前 Obsidian 笔记"
+        : name === "notion"
+          ? "保存当前笔记"
+          : "保存到 GitHub";
     document.querySelectorAll("[data-app]").forEach((b) => {
       b.classList.toggle("active", b.dataset.app === name);
       b.setAttribute("aria-pressed", String(b.dataset.app === name));

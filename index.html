@@ -4,6 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>个人工作站</title>
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem("workstation-theme") === "dark"
+            ? "dark"
+            : "light";
+      } catch {
+        document.documentElement.dataset.theme = "light";
+      }
+    </script>
     <style>
       :root {
         --bg: #f6f7f9;
@@ -2048,7 +2058,8 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="./workstation.css?v=folders-1" />
+    <link rel="stylesheet" href="./workstation.css?v=ob-preview-1" />
+    <link rel="stylesheet" href="./theme.css?v=1" />
   </head>
   <body data-workspace="task">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2217,6 +2228,12 @@
                 >
                   保存到 GitHub
                 </button>
+                <button
+                  class="dock-menu-action ob-upload-menu"
+                  id="ob-upload-all"
+                >
+                  上传 Obsidian 全部笔记
+                </button>
                 <button class="dock-menu-action dock-backup" id="gh-restore">
                   下载最近一次读取前快照
                 </button>
@@ -2277,6 +2294,15 @@
                 </p>
               </div>
             </details>
+            <button
+              id="theme-toggle"
+              class="theme-toggle"
+              title="切换为黑暗主题"
+              aria-label="切换为黑暗主题"
+              aria-pressed="false"
+            >
+              ☼
+            </button>
             <span class="dock-divider" aria-hidden="true"></span>
             <details class="dock-account">
               <summary aria-label="我的账号" title="我的账号">
@@ -2445,23 +2471,22 @@
       <section id="obsidian-workspace" hidden aria-label="Obsidian 本地笔记">
         <div class="notebook-heading">
           <div>
-            <div class="small">OBSIDIAN / LOCAL VAULT</div>
-            <h1>本地知识库</h1>
-            <p>与电脑上的 Obsidian 共用 Markdown 文件。</p>
+            <h1 id="ob-workspace-title">Obsidian</h1>
+            <p id="ob-vault-summary">关联本地仓库，开始阅读与写作。</p>
           </div>
           <div class="notebook-actions">
-            <button class="secondary" id="ob-connect-git">连接 GitHub</button
-            ><button class="primary" id="ob-folder">关联本地仓库</button
+            <button class="primary" id="ob-folder">关联本地仓库</button
             ><button class="secondary" id="ob-rescan">刷新文件</button>
           </div>
         </div>
-        <p class="ob-help">
-          使用桌面 Chrome / Edge，选择已在 Obsidian
-          中打开的仓库文件夹，并授权读写。文件直接保存到该文件夹；仅同步 .md
-          文件（含子文件夹），附件、插件和 .obsidian 配置暂不上传。
-        </p>
         <details class="ob-vault-settings">
-          <summary>仓库设置与 GitHub 上传</summary>
+          <summary>仓库设置</summary>
+          <p class="ob-help">
+            使用桌面 Chrome / Edge，选择已在 Obsidian
+            中打开的仓库文件夹，并授权读写。文件直接保存到该文件夹；仅同步 .md
+            文件（含子文件夹），附件、插件和 .obsidian 配置暂不上传。
+          </p>
+
           <div class="ob-settings">
             <label
               >Obsidian 仓库名称<input
@@ -2470,10 +2495,8 @@
             ><label
               >GitHub 保存目录<input
                 id="ob-remote-path"
-                placeholder="taskspace.obsidian/仓库名称" /></label
-            ><button class="secondary" id="ob-upload-all">
-              上传全部 Markdown
-            </button>
+                placeholder="taskspace.obsidian/仓库名称"
+            /></label>
           </div>
         </details>
         <div class="notebook-status-line">
@@ -2498,11 +2521,29 @@
                     >用 Obsidian 打开</a
                   ><button class="secondary" id="ob-reload">
                     重新读取本地文件</button
-                  ><button class="secondary" id="ob-upload">上传当前笔记</button
-                  ><button class="primary" id="ob-save">保存到本地仓库</button>
+                  ><button class="primary" id="ob-save">保存本地</button>
                 </div>
               </div>
-              <div class="notebook-editor ob-editor">
+              <div class="ob-reading-bar">
+                <span>MARKDOWN</span>
+                <div
+                  class="ob-view-switch"
+                  role="group"
+                  aria-label="Obsidian 阅读模式"
+                >
+                  <button
+                    data-ob-view="preview"
+                    class="active"
+                    aria-pressed="true"
+                  >
+                    预览</button
+                  ><button data-ob-view="edit" aria-pressed="false">编辑</button
+                  ><button data-ob-view="split" aria-pressed="false">
+                    分栏
+                  </button>
+                </div>
+              </div>
+              <div class="notebook-editor ob-editor" data-mode="preview">
                 <textarea
                   id="ob-body"
                   spellcheck="false"
@@ -3525,11 +3566,12 @@
     <script src="./timeline-view.js?v=1"></script>
     <script src="./merge-core.js?v=1"></script>
     <script src="./project-store.js?v=1"></script>
-    <script src="./github-sync.js?v=folders-remember-1"></script>
+    <script src="./github-sync.js?v=ob-preview-1"></script>
+    <script src="./theme.js?v=1"></script>
     <script src="./directory-tree.js?v=1"></script>
-    <script src="./workstation.js?v=folders-1"></script>
+    <script src="./workstation.js?v=ob-preview-1"></script>
     <script src="./obsidian-core.js?v=folders-1"></script>
-    <script src="./obsidian.js?v=folders-1"></script>
+    <script src="./obsidian.js?v=preview-1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>

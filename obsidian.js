@@ -80,13 +80,18 @@
       : "与本地文件一致";
     for (const id of ["ob-rescan", "ob-new", "ob-upload-all", "ob-folder-new"])
       $(id).disabled = busy || !root;
-    for (const id of ["ob-save", "ob-upload", "ob-reload"])
-      $(id).disabled = busy || !active;
+    for (const id of ["ob-save", "ob-reload"]) $(id).disabled = busy || !active;
     $("ob-folder").disabled = busy;
     $("ob-body").disabled = busy;
     $("ob-vault-name").disabled = busy;
     $("ob-remote-path").disabled = busy;
-    $("ob-connect-git").disabled = busy;
+    $("ob-vault-summary").textContent = root
+      ? root.name +
+        " · " +
+        entries.length +
+        " 篇 Markdown · 与客户端共用本地文件"
+      : "关联本地仓库，开始阅读与写作。";
+    window.refreshGithubDock?.();
   }
   function preview() {
     $("ob-preview").innerHTML = window.Notes.parse($("ob-body").value).html;
@@ -122,10 +127,11 @@
       state();
     }
   }
-  async function open(e) {
+  async function open(e, resetView = true) {
     stash();
     const text = await core.read(e.handle);
     active = e;
+    if (resetView) setView("preview");
     currentFolder = window.DirectoryTree.parent(e.path);
     const draft = drafts()[e.path];
     base = draft?.base ?? text;
@@ -148,7 +154,7 @@
     if (active) {
       const found = entries.find((e) => e.path === active.path);
       if (found) {
-        if (!dirty) await open(found);
+        if (!dirty) await open(found, false);
         else active = found;
       } else {
         status("当前文件已在磁盘删除；网页草稿保留，请另建笔记保存。", true);
@@ -275,13 +281,31 @@
         " 篇 Markdown。保留子文件夹路径；客户端后续修改需再次上传。",
     );
   }
+  function setView(mode) {
+    document.querySelector(".ob-editor").dataset.mode = mode;
+    document.querySelectorAll("[data-ob-view]").forEach((b) => {
+      b.classList.toggle("active", b.dataset.obView === mode);
+      b.setAttribute("aria-pressed", String(b.dataset.obView === mode));
+    });
+  }
+  document
+    .querySelectorAll("[data-ob-view]")
+    .forEach((b) => (b.onclick = () => setView(b.dataset.obView)));
+  window.ObsidianWorkspace = {
+    uploadCurrent: () => run(() => upload()),
+    state: () => ({
+      busy,
+      dirty,
+      active: !!active,
+      linked: !!root,
+      connected: window.WorkstationGitHub.context().connected,
+    }),
+  };
   $("ob-folder").onclick = () => run(connect);
   $("ob-rescan").onclick = () => run(scan);
   $("ob-search").oninput = list;
   $("ob-save").onclick = () => run(save);
-  $("ob-upload").onclick = () => run(() => upload());
   $("ob-upload-all").onclick = () => run(() => upload(true));
-  $("ob-connect-git").onclick = () => $("gh-open").click();
   $("ob-body").oninput = () => {
     dirty = $("ob-body").value !== base;
     stash();
@@ -351,6 +375,7 @@
       const handle = await dir.getFileHandle(parts.at(-1), { create: true });
       await scan();
       await open(entries.find((e) => e.path === path) || { path, handle });
+      setView("edit");
     });
   $("ob-conflict-cancel").onclick = () => {
     $("ob-conflict").close();
