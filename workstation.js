@@ -376,6 +376,17 @@
     applyCollapse(name);
   };
   window.NotesWorkspace = {
+    storageExport: () => ({ notes: notes.map(({id,title,body}) => ({id,title,body})), folders: [...folders] }),
+    storageImport(value) {
+      if (working) throw Error("笔记正在同步，请稍后重试。");
+      const previous = {notes, folders, selected};
+      const existing = new Map(notes.map(n => [n.id, n]));
+      notes = value.notes.map(n => ({...(existing.get(n.id) || {base: "", sha: null}), ...n}));
+      folders = [...value.folders];
+      if (!current()) selected = notes[0]?.id || null;
+      if (!persist()) { ({notes, folders, selected} = previous); throw Error("笔记无法保存到本机。"); }
+      draw();
+    },
     refresh,
     save: saveNote,
     state: () => ({

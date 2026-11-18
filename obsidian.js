@@ -308,6 +308,34 @@
     .querySelectorAll("[data-ob-view]")
     .forEach((b) => (b.onclick = () => setView(b.dataset.obView)));
   window.ObsidianWorkspace = {
+    async storageExport() {
+      if (!root) throw Error("请先在 Obsidian 页面关联本地仓库。");
+      if (busy || dirty || Object.keys(drafts()).length) throw Error("请先保存 Obsidian 网页草稿，再同步。");
+      const files = await core.scan(root);
+      return window.VaultSync.mapLimit(files, 6, async e => ({path:e.path, text:await core.read(e.handle)}));
+    },
+    async storageImport(files, expected) {
+      if (!root || busy || dirty) throw Error("本地 Obsidian 仓库不可用或有未保存草稿。");
+      const before = await this.storageExport();
+      if (!window.StorageCore.equal(before, expected)) throw Error("Obsidian 客户端已修改文件，请重新检查同步差异。");
+      const known = new Map(before.map(f=>[f.path, f.text]));
+      const stamp = new Date().toISOString().replace(/[:.]/g,"-") + "-" + crypto.randomUUID();
+      async function handle(path, backup=false) {
+        const parts = path.split("/"); let dir = root;
+        if (backup) { dir = await dir.getDirectoryHandle(".workstation-history",{create:true}); dir = await dir.getDirectoryHandle(stamp,{create:true}); }
+        for (const p of parts.slice(0,-1)) dir = await dir.getDirectoryHandle(p,{create:true});
+        return dir.getFileHandle(parts.at(-1),{create:true});
+      }
+      for (const f of files) {
+        if (!core.validPath(f.path)) throw Error("Obsidian 文件路径无效。");
+        const old = known.get(f.path);
+        if (old === f.text) continue;
+        if (old !== undefined) { const backup = await handle(f.path,true), w = await backup.createWritable(); await w.write(old); await w.close(); }
+        const h = await handle(f.path); await core.write(h,f.text,old ?? "");
+      }
+      await scan();
+      status("数据仓库内容已写入 Obsidian；旧版本保存在 .workstation-history，磁盘文件不会自动删除。");
+    },
     uploadCurrent: () => run(() => upload()),
     state: () => ({
       busy,

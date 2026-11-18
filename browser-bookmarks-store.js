@@ -63,7 +63,19 @@
         tx.onabort = tx.onerror = () => reject(tx.error);
       });
     }
+    async function replace(records) {
+      const db = await ready;
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(["sources", "history"], "readwrite"), store = tx.objectStore("sources"), r = store.getAll();
+        r.onsuccess = () => {
+          tx.objectStore("history").put({ids:[...new Set([...r.result.map(x=>x.id), ...records.map(x=>x.id)])], previous:r.result}, "undo");
+          store.clear(); records.forEach(x=>store.put(x));
+        };
+        tx.oncomplete = resolve; tx.onerror = tx.onabort = () => reject(tx.error || Error("书签保存失败。"));
+      });
+    }
     return {
+      replace,
       load,
       save: (records) => change(records),
       remove: (id) => change([], [id]),

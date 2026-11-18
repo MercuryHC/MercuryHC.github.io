@@ -409,5 +409,9 @@
       channel?.postMessage("changed");
       return result;
     };
+  window.BrowserBookmarksWorkspace = {
+    storageExport: () => db.load(),
+    async storageImport(records) { await db.replace(records.map(core.validate)); await reload(); channel?.postMessage("changed"); }
+  };
   reload().catch((e) => status("无法打开本机书签存储：" + e.message, true));
 })();

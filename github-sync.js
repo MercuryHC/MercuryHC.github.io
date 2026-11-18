@@ -1536,6 +1536,10 @@
       ),
   };
   status("本地模式 · 可连接私有仓库；勾选记住连接可在刷新后自动重连。");
+  window.WorkstationTaskData = {
+    export: () => validateData(db),
+    import(value) { db = validateData(value); save(); }
+  };
   window.validateTaskspaceData = validateData;
   window.refreshGithubDock = updateDockState;
   updateButtons();

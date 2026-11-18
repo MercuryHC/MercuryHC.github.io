@@ -484,6 +484,8 @@
     }
   };
   window.BookmarksWorkspace = {
+    storageExport: clone,
+    storageImport(value) { if (!commit(value)) throw Error("收藏无法保存到本机。"); },
     add(item) {
       const next = clone();
       if (next.items.some((b) => b.url === item.url)) return false;

@@ -2063,6 +2063,7 @@
     <link rel="stylesheet" href="./code-highlight.css?v=1" />
     <link rel="stylesheet" href="./workspace-apps.css?v=reader-background-1" />
     <link rel="stylesheet" href="./backgrounds.css?v=all-workspaces-4" />
+    <link rel="stylesheet" href="./storage-sync.css?v=1" />
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2392,6 +2393,9 @@
                 </p>
               </div>
             </details>
+            <button id="storage-toggle" class="theme-toggle" type="button" title="数据仓库 · 网盘与 NAS" aria-label="数据仓库 · 网盘与 NAS" aria-haspopup="dialog">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01M16 6.5h2M16 17.5h2"/></svg>
+            </button>
             <button
               id="background-toggle" aria-haspopup="dialog"
               class="theme-toggle"
@@ -2916,6 +2920,22 @@
         </div>
       </section>
     </main>
+    <dialog id="storage-dialog" aria-labelledby="ds-title">
+      <div class="ds-heading"><div><span class="ds-eyebrow">YOUR DATA, YOUR STORAGE</span><h2 id="ds-title">数据仓库</h2><p>将工作站连接到网盘、NAS 或已有 GitHub 仓库</p></div><button id="ds-close" type="button" aria-label="关闭数据仓库">×</button></div>
+      <div id="ds-providers" aria-label="选择数据仓库类型"></div>
+      <div class="ds-section"><h3 id="ds-provider-name">Google Drive</h3><p id="ds-guide">通过电脑同步文件夹接入。</p>
+        <label for="ds-mode">连接方式</label><select id="ds-mode"><option value="folder">客户端同步 / 系统挂载文件夹</option><option value="webdav">HTTPS WebDAV 直连</option></select>
+        <div class="ds-buttons"><button id="ds-folder" type="button" class="secondary">授权 / 选择文件夹</button><button id="ds-select-other" type="button" class="secondary">选择其他文件夹</button><button id="ds-disconnect" type="button" class="secondary">断开连接</button></div>
+        <div id="ds-webdav" hidden><div class="ds-fields"><label>WebDAV 专用目录 URL<input id="ds-url" type="url" placeholder="https://nas.example.com/webdav/workstation/" autocomplete="off"></label><label>账号<input id="ds-user" autocomplete="off"></label><label>第三方应用密码<input id="ds-password" type="password" autocomplete="new-password"></label></div><div class="ds-buttons" style="margin-top:12px"><button id="ds-connect" type="button" class="primary">连接 WebDAV</button></div></div>
+        <label class="ds-remember"><input type="checkbox" id="ds-remember" checked>记住目录或服务器配置（不保存 WebDAV 密码）</label>
+      </div>
+      <div class="ds-section"><h3>本次同步范围</h3><div class="ds-checks"><label><input type="checkbox" data-storage-scope="tasks" checked>Task 任务与项目</label><label><input type="checkbox" data-storage-scope="notes" checked>Notes 笔记与目录</label><label><input type="checkbox" data-storage-scope="bookmarks" checked>主页收藏</label><label><input type="checkbox" data-storage-scope="browser">浏览器书签快照</label><label><input type="checkbox" data-storage-scope="obsidian">已关联的 Obsidian Markdown</label></div><p>只同步勾选的数据；不包含账号 Token、Notion 授权、附件、壁纸原图或 .obsidian 配置。Obsidian 请先关联本地仓库并保存草稿；读取时保留磁盘文件，不自动删除。</p></div>
+      <p id="ds-status" role="status" aria-live="polite">请选择仓库类型并连接。</p><progress id="ds-progress" hidden></progress>
+      <div class="ds-buttons"><button id="ds-check" type="button" class="primary">检查同步差异</button><button id="ds-history" type="button" class="secondary">仓库历史副本</button><button id="ds-undo" type="button" class="secondary">撤销上次本机导入</button></div><div id="ds-history-list"></div>
+      <section id="ds-review" class="ds-section" hidden><h3>确认同步内容</h3><p id="ds-summary"></p><div id="ds-conflicts"></div><label for="ds-direction">执行方式</label><select id="ds-direction"><option value="sync">合并到仓库并更新本机</option><option value="read">只合并到本机</option></select><div class="ds-buttons" style="margin-top:14px"><button id="ds-apply" type="button" class="primary">确认执行</button></div></section>
+      <details class="ds-help"><summary>连接说明与同步文件结构</summary><ul><li>在网盘同步目录或 NAS 共享盘内新建专用的「个人工作站」目录，再授权给浏览器。请将目录设为本机可用；推荐桌面 Chrome / Edge。浏览器不能直接访问 smb:// 地址，请先在系统挂载。</li><li>工作站写入 <code>workstation-data.json</code>，历史版本保存到 <code>workstation-history/</code>。网盘客户端 / NAS 客户端负责继续传输。目录写入完成不代表云端已完成上传；多设备操作前先等待客户端完成同步。</li><li>同步文件是含 Markdown 源文的工作站数据包，不是 Obsidian Vault。读取数据包后，选中的 Obsidian 内容会写回已关联的本地 Vault；原文件备份在 <code>.workstation-history/</code>。</li><li>文件夹保存会再次比对内容并保留历史，但系统目录没有跨设备原子锁；同一目录请避免两台电脑同时写入。WebDAV 使用 ETag 条件写入；无强 ETag 时停止覆盖。</li><li>WebDAV 直连需服务器允许本站来源的 CORS，请求方法包括 GET、PUT、MKCOL、PROPFIND、OPTIONS，允许 Authorization、Content-Type、Depth、If-Match、If-None-Match 请求头并暴露 ETag。需使用可信 HTTPS；私网 NAS 可能还需要浏览器的本地网络访问许可。若无法配置，请用同步目录模式，无需公开 NAS 管理端口。</li><li><a href="https://support.google.com/drive/answer/13401938" target="_blank" rel="noopener noreferrer">Google Drive 目录设置</a> · <a href="https://help.jianguoyun.com/?p=2064" target="_blank" rel="noopener noreferrer">坚果云应用密码</a> · <a href="https://help.fnnas.com/" target="_blank" rel="noopener noreferrer">飞牛帮助</a> · <a href="https://www.zspace.cn/software/index.html" target="_blank" rel="noopener noreferrer">极空间同步功能</a></li></ul></details>
+      <div class="ds-footer"><p>GitHub 保留原有按项目、按笔记同步方式。</p><button type="button" class="secondary" id="ds-github">打开 GitHub 连接</button></div>
+    </dialog>
     <dialog id="background-dialog" aria-labelledby="bg-heading">
       <div class="row">
         <div>
@@ -4153,24 +4173,27 @@
     <script src="./vault-sync.js?v=1"></script>
     <script src="./upload-progress.js?v=diff-1"></script>
     <script src="./wallpaper-library.js?v=1"></script>
-    <script src="./github-sync.js?v=reader-1"></script>
+    <script src="./github-sync.js?v=storage-1"></script>
     <script src="./notion-client.js?v=1"></script>
     <script src="./bookmarks-core.js?v=merge-1"></script>
     <script src="./theme.js?v=1"></script>
     <script src="./directory-tree.js?v=1"></script>
-    <script src="./workstation.js?v=reader-1"></script>
+    <script src="./workstation.js?v=storage-1"></script>
     <script src="./obsidian-core.js?v=folders-1"></script>
-    <script src="./obsidian.js?v=diff-1"></script>
+    <script src="./obsidian.js?v=storage-1"></script>
     <script src="./notion-workspace.js?v=1"></script>
     <script src="./web-search.js?v=icons-1"></script>
-    <script src="./bookmarks.js?v=reader-1"></script>
+    <script src="./bookmarks.js?v=storage-1"></script>
     <script src="./browser-bookmarks-core.js?v=1"></script>
-    <script src="./browser-bookmarks-store.js?v=1"></script>
-    <script src="./browser-bookmarks.js?v=1"></script>
+    <script src="./browser-bookmarks-store.js?v=storage-1"></script>
+    <script src="./browser-bookmarks.js?v=storage-1"></script>
     <script src="./backgrounds.js?v=glass-2"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>
+    <script src="./storage-core.js?v=1"></script>
+    <script src="./storage-adapters.js?v=1"></script>
+    <script src="./storage-sync.js?v=1"></script>
     <script>
       const syncStatus = document.getElementById("gh-status");
       const syncSummary = document.querySelector(".dock-sync-status summary");
