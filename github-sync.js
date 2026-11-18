@@ -352,6 +352,7 @@
       }
     }
     const tasks = data.tasks.map((t) => {
+      if (window.TaskTodos) t = window.TaskTodos.migrate(t);
       if (
         !t ||
         !validId(t.id) ||
@@ -382,6 +383,7 @@
         status: t.status,
         priority: t.priority,
         note: t.note ?? "",
+        ...(window.TaskTodos ? window.TaskTodos.fields(t) : {}),
         ...(window.Recurring ? window.Recurring.taskMetadata(t) : {}),
       };
     });

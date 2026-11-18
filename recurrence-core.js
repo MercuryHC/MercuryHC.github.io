@@ -101,7 +101,7 @@
         throw Error("循环计划 ID、状态或游标无效。");
       ids.add(s.id);
       const rule = normalizeRule(s.rule),
-        t = s.template;
+        t = root.TaskTodos ? root.TaskTodos.migrate(s.template) : s.template;
       if (
         !t ||
         typeof t.title !== "string" ||
@@ -134,6 +134,7 @@
           project: t.project,
           priority: t.priority,
           note: t.note,
+          ...(root.TaskTodos ? root.TaskTodos.fields(t, true) : {}),
           dueTime: t.dueTime,
           startTime: t.startTime || "",
           durationDays: t.durationDays,
@@ -185,7 +186,8 @@
             dueTime: t.dueTime,
             status: "待开始",
             priority: t.priority,
-            note: root.Notes ? root.Notes.resetTodos(t.note) : t.note,
+            note: root.TaskTodos ? root.TaskTodos.migrate(t).note : root.Notes ? root.Notes.resetTodos(t.note) : t.note,
+            ...(root.TaskTodos ? root.TaskTodos.fields(t, true) : {}),
             scheduleId: s.id,
             occurrence,
           });

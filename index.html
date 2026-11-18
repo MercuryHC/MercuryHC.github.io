@@ -2066,6 +2066,7 @@
     <link rel="stylesheet" href="./backgrounds.css?v=all-workspaces-4" />
     <link rel="stylesheet" href="./storage-sync.css?v=1" />
     <link rel="stylesheet" href="./settings.css?v=1" />
+    <link rel="stylesheet" href="./task-todos.css?v=1" />
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -3382,10 +3383,18 @@
             GitHub 才会同步。
           </p>
         </section>
+        <section class="notes-section task-todos-section" aria-labelledby="task-todo-heading">
+          <div class="row"><h3 id="task-todo-heading">TODO 任务分解</h3><button id="task-todo-add" type="button" class="secondary">＋ 添加 TODO</button></div>
+          <p id="task-todo-progress" class="sub" role="status"></p>
+          <div id="task-todo-list"></div><p id="task-todo-empty" class="sub">还没有分解事项；没有 TODO 的任务需要手动完成。</p>
+          <div id="task-todo-composer" hidden><input id="task-todo-new" type="text" maxlength="50000" placeholder="输入分解事项，按 Enter 添加" aria-label="新增 TODO 内容"><button id="task-todo-confirm" type="button" class="secondary">添加</button></div>
+          <p id="task-todo-hint" class="sub"></p>
+          <details id="task-todo-archive" hidden><summary>查看旧版备注迁移留档</summary><pre id="task-todo-source"></pre></details>
+        </section>
         <section class="notes-section">
           <div class="row">
             <label for="task-note" style="margin: 0"
-              >任务备注 · Markdown / TODO</label
+              >任务过程记录 · Markdown</label
             ><select id="notes-view" aria-label="备注显示方式">
               <option value="split">编辑与预览</option>
               <option value="edit">仅编辑</option>
@@ -3416,13 +3425,6 @@
               S̶</button
             ><button
               type="button"
-              data-note-format="todo"
-              title="TODO 清单"
-              aria-label="TODO 清单"
-            >
-              ☑</button
-            ><button
-              type="button"
               data-note-format="list"
               title="无序列表"
               aria-label="无序列表"
@@ -3451,17 +3453,19 @@
               ↗
             </button>
           </div>
+          <label class="task-time-preference"><input type="checkbox" id="task-note-time-enabled" checked>换行时提示插入当前时间（Tab 接受）</label>
           <div class="notes-panels">
             <div id="note-editor">
               <textarea
                 id="task-note"
                 name="note"
                 maxlength="50000"
-                placeholder="- [ ] 阶段一：调研&#10;- [ ] 阶段二：实现&#10;&#10;**加粗**、*斜体*，支持常用 Markdown。"
+                placeholder="记录调研、实施、验证等推进过程，支持 Markdown。&#10;换行后可按 Tab 插入当前时间，精确到秒。"
               ></textarea>
+              <div id="task-note-time-hint" role="status" hidden><span id="task-note-time-text"></span><button id="task-note-time-accept" type="button">插入时间</button><button id="task-note-time-dismiss" type="button">不添加</button></div>
             </div>
             <div id="note-preview-wrap">
-              <div class="notes-preview-label">预览 · 可直接勾选</div>
+              <div class="notes-preview-label">Markdown 过程记录预览</div>
               <div id="note-preview" class="markdown-notes"></div>
             </div>
           </div>
@@ -3469,7 +3473,7 @@
             <span id="note-checklist-progress" class="sub"></span>
           </div>
           <p id="notes-save-hint" class="sub" style="margin-top: 6px">
-            勾选现有任务的清单会自动保存备注和状态；取消勾选会将已完成任务恢复为进行中。其余修改请点击保存任务。
+            记录任务完成过程，支持 Markdown；修改后点击保存任务。
           </p>
         </section>
         <div class="dialog-actions">
@@ -3624,8 +3628,9 @@
     <script src="./vendor/markdown-it.min.js?v=14.1.0"></script>
     <script src="./vendor/highlight.min.js?v=11.11.1"></script>
     <script src="./notes-core.js?v=highlight-1"></script>
+    <script src="./task-todos-core.js?v=1"></script>
     <script src="./task-time.js?v=1"></script>
-    <script src="./recurrence-core.js?v=notes-3"></script>
+    <script src="./recurrence-core.js?v=todos-4"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         esc = (s) =>
@@ -3726,6 +3731,17 @@
       } catch {
         db = seed;
       }
+      let todoMigrationWarning = "";
+      try {
+        const converted = window.TaskTodos.migrateData(db);
+        if (JSON.stringify(converted) !== JSON.stringify(db)) {
+          if (!localStorage.getItem("taskspace-todo-migration-backup-v1"))
+            localStorage.setItem("taskspace-todo-migration-backup-v1", JSON.stringify(db));
+          localStorage.setItem("taskspace-pages-v1", JSON.stringify(converted));
+          db = converted;
+          localStorage.setItem("taskspace-local-dirty", "true");
+        }
+      } catch { todoMigrationWarning = "任务分解迁移未能保存，请先导出备份并检查浏览器存储空间。"; }
       let view = "list",
         nav = "overview",
         editing = null,
@@ -3825,6 +3841,10 @@
                   .includes(q)),
           )
           .sort((a, b) => a.due.localeCompare(b.due));
+      }
+      function todoProgress(t) {
+        const items = t.todos || [];
+        return items.length ? `<small class="task-todo-badge" title="任务分解完成进度">${items.filter(item => item.done).length}/${items.length} TODO</small>` : "";
       }
       function badge(t) {
         let c =
@@ -3935,7 +3955,7 @@
         }
         if (view === "list") {
           $("#task-content").innerHTML =
-            `<div class="table-wrap task-table-wrap"><table class="task-list-table"><colgroup><col><col style="width:180px"><col style="width:100px"><col style="width:100px"><col style="width:180px"><col style="width:180px"></colgroup><thead><tr><th>任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>开始时间</th><th>截止时间</th></tr></thead><tbody>${ts.map((t) => `<tr><td><div class="task-name-content"><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span title="${esc(t.title)}" class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span></div></td><td class="task-project-cell sub" title="${esc(projectPath(project(t.project)) || "未分类")}"><span class="task-project-content"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i><span class="task-project-label">${esc(project(t.project)?.title || "未分类")}</span></span></td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td class="task-datetime-cell sub"><span class="task-date">${esc(t.start.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.startTime || "—")}</span></td><td class="task-datetime-cell" style="color:${isTaskOverdue(t) ? "#d97c7c" : "#8a94a4"}"><span class="task-date">${esc(t.due.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.dueTime || "—")}</span></td></tr>`).join("")}</tbody></table></div>`;
+            `<div class="table-wrap task-table-wrap"><table class="task-list-table"><colgroup><col><col style="width:180px"><col style="width:100px"><col style="width:100px"><col style="width:180px"><col style="width:180px"></colgroup><thead><tr><th>任务名称</th><th>所属项目</th><th>状态</th><th>优先级</th><th>开始时间</th><th>截止时间</th></tr></thead><tbody>${ts.map((t) => `<tr><td><div class="task-name-content"><input type="checkbox" aria-label="完成 ${esc(t.title)}" class="check" ${t.status === "已完成" ? "checked" : ""} onchange="toggle('${t.id}')"><span title="${esc(t.title)}" class="task-title ${t.status === "已完成" ? "done" : ""}" onclick="openTask('${t.id}')">${esc(t.title)}${t.scheduleId ? " ↻" : ""}</span>${todoProgress(t)}</div></td><td class="task-project-cell sub" title="${esc(projectPath(project(t.project)) || "未分类")}"><span class="task-project-content"><i class="dot" style="background:${project(t.project)?.color || "#aaa"}"></i><span class="task-project-label">${esc(project(t.project)?.title || "未分类")}</span></span></td><td>${badge(t)}</td><td style="color:${t.priority === "加急⚡" ? "#d74454" : t.priority === "高" ? "#d97c7c" : t.priority === "中" ? "#c39c56" : "#92a0b4"}">${t.priority === "加急⚡" ? "" : "⚑ "}${t.priority}</td><td class="task-datetime-cell sub"><span class="task-date">${esc(t.start.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.startTime || "—")}</span></td><td class="task-datetime-cell" style="color:${isTaskOverdue(t) ? "#d97c7c" : "#8a94a4"}"><span class="task-date">${esc(t.due.replaceAll("-", "/"))}</span><span class="task-clock">${esc(t.dueTime || "—")}</span></td></tr>`).join("")}</tbody></table></div>`;
         } else if (view === "board") {
           $("#task-content").innerHTML =
             '<div class="board">' +
@@ -3979,6 +3999,11 @@
 
       function toggle(id) {
         let t = db.tasks.find((t) => t.id === id);
+        if (window.TaskTodos.migrate(t).todos.length) {
+          toast("主任务由 TODO 自动完成，请在任务分解中勾选或取消事项。");
+          renderTasks();
+          return;
+        }
         t.status = t.status === "已完成" ? "待开始" : "已完成";
         save();
       }
@@ -4065,7 +4090,7 @@
         $("#dialog-title").textContent = id ? "编辑任务" : "新建任务";
         $("#delete-task").style.visibility = id ? "visible" : "hidden";
         window.loadTaskRecurrence?.(t);
-        window.loadTaskNotes?.();
+        window.loadTaskNotes?.(t);
         $("#task-dialog").showModal();
       }
       $("#task-form").onsubmit = (e) => {
@@ -4079,10 +4104,8 @@
         const candidate = existing
           ? { ...existing, ...v }
           : { ...v, id: crypto.randomUUID() };
-        candidate.status = window.Notes.statusFor(
-          candidate.note,
-          candidate.status,
-        );
+        Object.assign(candidate, window.TaskTodoEditor.value());
+        candidate.status = window.TaskTodos.statusFor(candidate.todos, candidate.status);
         try {
           window.applyTaskRecurrence?.(candidate, !existing);
         } catch (error) {
@@ -4221,6 +4244,7 @@
         e.target.value = "";
       };
       render();
+      if (todoMigrationWarning) toast(todoMigrationWarning);
     </script>
     <script src="./timeline-view.js?v=1"></script>
     <script src="./merge-core.js?v=1"></script>
@@ -4228,7 +4252,7 @@
     <script src="./vault-sync.js?v=1"></script>
     <script src="./upload-progress.js?v=diff-1"></script>
     <script src="./wallpaper-library.js?v=1"></script>
-    <script src="./github-sync.js?v=storage-1"></script>
+    <script src="./github-sync.js?v=todos-2"></script>
     <script src="./notion-client.js?v=1"></script>
     <script src="./bookmarks-core.js?v=merge-1"></script>
     <script src="./theme.js?v=settings-1"></script>
@@ -4244,8 +4268,8 @@
     <script src="./browser-bookmarks.js?v=storage-1"></script>
     <script src="./backgrounds.js?v=settings-1"></script>
     <script src="./deadline-dock.js?v=urgent-red-4"></script>
-    <script src="./recurring-tasks.js?v=start-time-2"></script>
-    <script src="./task-notes.js?v=1"></script>
+    <script src="./recurring-tasks.js?v=todos-3"></script>
+    <script src="./task-notes.js?v=todos-time-2"></script>
     <script src="./storage-core.js?v=1"></script>
     <script src="./storage-adapters.js?v=1"></script>
     <script src="./storage-sync.js?v=settings-1"></script>

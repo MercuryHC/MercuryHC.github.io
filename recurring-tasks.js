@@ -96,6 +96,7 @@
         project: task.project,
         priority: task.priority,
         note: task.note || "",
+        ...(window.TaskTodos ? window.TaskTodos.fields(task, true) : {}),
         dueTime: task.dueTime || "",
         startTime: task.startTime || "",
         durationDays,
