@@ -565,6 +565,6 @@
   });
   load();
   draw();
-  localStorage.setItem("workstation-sidebar:bookmarks", "true");
+  localStorage.setItem("workstation-sidebar:bookmarks", localStorage.getItem("workstation-home-sidebar-default") === "expanded" ? "false" : "true");
   app("bookmarks");
 })();

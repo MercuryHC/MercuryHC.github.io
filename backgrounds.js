@@ -267,20 +267,28 @@
     };
     $("bg-presets").append(b);
   }
-  $("background-toggle").onclick = () => {
+  function initializeSettings() {
     discard();
     $("bg-scope").value = draft.scope;
     $("bg-blur").value = draft.blur;
     $("bg-mask").value = draft.mask;
     preview();
-    $("background-dialog").showModal();
     loadCatalog()
       .then(gallery)
       .catch((e) => message(e.message, true));
+  }
+  function closeSettings() {
+    if (window.WorkstationSettings) window.WorkstationSettings.close();
+    else $("background-dialog").close();
+  }
+  window.BackgroundSettings = { initialize: initializeSettings, discard };
+  $("background-toggle").onclick = () => {
+    if (window.WorkstationSettings) window.WorkstationSettings.open("background");
+    else { initializeSettings(); $("background-dialog").showModal(); }
   };
   $("bg-close").onclick = () => {
     discard();
-    $("background-dialog").close();
+    closeSettings();
   };
   $("background-dialog").addEventListener("cancel", discard);
   $("bg-prev").onclick = () => {
@@ -341,7 +349,7 @@
         draftBlob = null;
       }
       apply();
-      $("background-dialog").close();
+      closeSettings();
     } catch (e) {
       message("背景未保存：" + e.message, true);
     } finally {
@@ -357,7 +365,7 @@
       savedUrl = "";
       apply();
       await imageStore("readwrite");
-      $("background-dialog").close();
+      closeSettings();
     } catch (e) {
       message(e.message, true);
     }

@@ -7,7 +7,8 @@
     <script>
       try {
         document.documentElement.dataset.theme =
-          localStorage.getItem("workstation-theme") === "dark"
+          localStorage.getItem("workstation-theme") === "dark" ||
+          (localStorage.getItem("workstation-theme") === "system" && window.matchMedia?.("(prefers-color-scheme: dark)").matches)
             ? "dark"
             : "light";
       } catch {
@@ -2064,6 +2065,7 @@
     <link rel="stylesheet" href="./workspace-apps.css?v=reader-background-1" />
     <link rel="stylesheet" href="./backgrounds.css?v=all-workspaces-4" />
     <link rel="stylesheet" href="./storage-sync.css?v=1" />
+    <link rel="stylesheet" href="./settings.css?v=1" />
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2393,37 +2395,8 @@
                 </p>
               </div>
             </details>
-            <button id="storage-toggle" class="theme-toggle" type="button" title="数据仓库 · 网盘与 NAS" aria-label="数据仓库 · 网盘与 NAS" aria-haspopup="dialog">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01M16 6.5h2M16 17.5h2"/></svg>
-            </button>
-            <button
-              id="background-toggle" aria-haspopup="dialog"
-              class="theme-toggle"
-              title="页面背景"
-              aria-label="设置页面背景"
-            >
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                aria-hidden="true"
-              >
-                <rect x="3" y="4" width="18" height="16" rx="3" />
-                <circle cx="8" cy="9" r="1.5" />
-                <path d="m3 17 6-5 4 4 4-6 4 7" />
-              </svg>
-            </button>
-            <button
-              id="theme-toggle"
-              class="theme-toggle"
-              title="切换为黑暗主题"
-              aria-label="切换为黑暗主题"
-              aria-pressed="false"
-            >
-              ☼
+            <button id="settings-toggle" class="theme-toggle" type="button" aria-label="设置" title="设置" aria-haspopup="dialog">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.2 3-.6 2.3-2 .9-2.2-.6-2 3.4 1.7 1.7-.1 2.4L2.5 15l2 3.4 2.3-.6 2 .9.5 2.3h4l.6-2.3 2-.9 2.2.6 2-3.4-1.6-1.8v-2.4l1.6-1.7-2-3.4-2.2.6-2-.9L13.2 3Z"/><circle cx="11.2" cy="12" r="3"/></svg>
             </button>
             <span class="dock-divider" aria-hidden="true"></span>
             <details class="dock-account">
@@ -2920,6 +2893,89 @@
         </div>
       </section>
     </main>
+    <div id="settings-legacy-controls" hidden>
+            <button id="storage-toggle" class="theme-toggle" type="button" title="数据仓库 · 网盘与 NAS" aria-label="数据仓库 · 网盘与 NAS" aria-haspopup="dialog">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01M16 6.5h2M16 17.5h2"/></svg>
+            </button>
+            <button
+              id="background-toggle" aria-haspopup="dialog"
+              class="theme-toggle"
+              title="页面背景"
+              aria-label="设置页面背景"
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="16" rx="3" />
+                <circle cx="8" cy="9" r="1.5" />
+                <path d="m3 17 6-5 4 4 4-6 4 7" />
+              </svg>
+            </button>
+            <button
+              id="theme-toggle"
+              class="theme-toggle"
+              title="切换为黑暗主题"
+              aria-label="切换为黑暗主题"
+              aria-pressed="false"
+            >
+              ☼
+            </button>
+    </div>
+    <dialog id="settings-dialog" class="settings-dialog" aria-labelledby="settings-section-title">
+      <div class="settings-shell">
+        <nav class="settings-nav" role="tablist" aria-label="设置分类" aria-orientation="vertical">
+          <div class="settings-brand">设置<small>PERSONAL WORKSTATION</small></div>
+          <button id="settings-tab-appearance" type="button" role="tab" data-settings-section="appearance" aria-controls="settings-panel-appearance" aria-selected="true"><span aria-hidden="true">◫</span><span>界面设置</span></button>
+          <button id="settings-tab-background" type="button" role="tab" data-settings-section="background" aria-controls="settings-panel-background" aria-selected="false" tabindex="-1"><span aria-hidden="true">▧</span><span>桌面背景</span></button>
+          <button id="settings-tab-storage" type="button" role="tab" data-settings-section="storage" aria-controls="settings-panel-storage" aria-selected="false" tabindex="-1"><span aria-hidden="true">⇄</span><span>数据与同步</span></button>
+          <button id="settings-tab-help" type="button" role="tab" data-settings-section="help" aria-controls="settings-panel-help" aria-selected="false" tabindex="-1"><span aria-hidden="true">ⓘ</span><span>帮助说明</span></button>
+          <div class="settings-nav-foot">让工作站，成为你的样子。<br>设置自动保存在此浏览器</div>
+        </nav>
+        <div class="settings-body">
+          <div class="settings-header"><div><h2 id="settings-section-title">界面设置</h2><p>按你的习惯，调整每一次打开的体验</p></div><button id="settings-close" type="button" aria-label="关闭设置">×</button></div>
+          <div class="settings-main">
+            <section id="settings-panel-appearance" class="settings-panel" role="tabpanel" data-settings-panel="appearance" aria-labelledby="settings-tab-appearance">
+              <p class="settings-intro">主题、导航与主页显示集中管理，修改后即时生效。</p>
+              <div class="settings-group"><h3>外观主题</h3><div class="settings-themes" aria-label="选择外观主题">
+                <button type="button" data-setting-theme="light" aria-pressed="true"><span class="settings-theme-swatch" aria-hidden="true"></span>明亮</button>
+                <button type="button" data-setting-theme="dark" aria-pressed="false"><span class="settings-theme-swatch settings-theme-dark" aria-hidden="true"></span>黑暗</button>
+                <button type="button" data-setting-theme="system" aria-pressed="false"><span class="settings-theme-swatch settings-theme-auto" aria-hidden="true"></span>跟随系统</button>
+              </div></div>
+              <div class="settings-group"><h3>布局与阅读</h3>
+                <div class="settings-row"><div><strong>左侧 Dock 密度</strong><p>调整应用图标的间距与导航宽度</p></div><select id="setting-density" aria-label="左侧 Dock 密度"><option value="comfortable">舒适</option><option value="compact">紧凑</option></select></div>
+                <div class="settings-row"><div><strong>主页默认目录状态</strong><p>其他工作区继续分别记住折叠状态</p></div><select id="setting-homeSidebar" aria-label="主页默认目录状态"><option value="collapsed">收起目录</option><option value="expanded">展开目录</option></select></div>
+                <div class="settings-row"><div><strong>Markdown 阅读字号</strong><p>应用于 Notes、Obsidian 和 Notion 正文预览</p></div><select id="setting-reader" aria-label="Markdown 阅读字号"><option value="14">标准 · 14px</option><option value="16">适中 · 16px</option><option value="18">较大 · 18px</option></select></div>
+              </div>
+              <div class="settings-group"><h3>主页显示</h3>
+                <label class="settings-row"><div><strong>显示时钟</strong><p>主页中央的大号时间</p></div><input id="setting-clock" type="checkbox" checked aria-label="显示时钟"></label>
+                <label class="settings-row"><div><strong>显示日期</strong><p>时钟下方的日期与星期</p></div><input id="setting-date" type="checkbox" checked aria-label="显示日期"></label>
+                <label class="settings-row"><div><strong>显示主页标语</strong><p>搜索框上方的简短问候</p></div><input id="setting-motto" type="checkbox" checked aria-label="显示主页标语"></label>
+                <label class="settings-row"><div><strong>显示收藏域名</strong><p>网站卡片标题下方的网址</p></div><input id="setting-hosts" type="checkbox" checked aria-label="显示收藏域名"></label>
+              </div>
+              <button id="settings-reset" type="button" class="secondary">恢复界面默认</button>
+            </section>
+            <section id="settings-panel-background" class="settings-panel" role="tabpanel" data-settings-panel="background" aria-labelledby="settings-tab-background" hidden><div id="settings-background-content"></div></section>
+            <section id="settings-panel-storage" class="settings-panel" role="tabpanel" data-settings-panel="storage" aria-labelledby="settings-tab-storage" hidden>
+              <div class="settings-group"><h3>GitHub 数据仓库</h3><p class="settings-intro">管理仓库连接与记住连接选项。读取、保存等日常同步操作仍可从顶部 GitHub 菜单执行。</p><button id="settings-github" type="button" class="secondary">管理 GitHub 连接</button></div>
+              <div id="settings-storage-content"></div>
+            </section>
+            <section id="settings-panel-help" class="settings-panel settings-help" role="tabpanel" data-settings-panel="help" aria-labelledby="settings-tab-help" hidden>
+              <h3>所有偏好，一个入口</h3><p>右上角齿轮集中管理界面、主题、壁纸和数据仓库配置。GitHub 的读取与保存保留快捷入口。</p>
+              <h3>自动保存与恢复</h3><p>界面选项即时生效，刷新后保留。恢复界面默认会重置主题、Dock 密度、阅读字号与主页显示，不会清除任务、笔记、壁纸和连接授权。</p>
+              <h3>桌面背景</h3><p>支持自带图片库、渐变和本地图片；可调整模糊、遮罩及应用范围。选择后点击「应用背景」，切换分类或关闭设置会丢弃未应用的壁纸草稿。</p>
+              <h3>网盘与 NAS</h3><p>Google Drive 和 iCloud 使用电脑同步目录；坚果云、飞牛、极空间及其他仓库可使用同步目录或 HTTPS WebDAV。详细连接要求见「数据与同步」。</p>
+            </section>
+          </div>
+          <div id="settings-status" class="settings-footer" role="status" aria-live="polite">设置保存在此浏览器，修改后立即生效。</div>
+        </div>
+      </div>
+    </dialog>
     <dialog id="storage-dialog" aria-labelledby="ds-title">
       <div class="ds-heading"><div><span class="ds-eyebrow">YOUR DATA, YOUR STORAGE</span><h2 id="ds-title">数据仓库</h2><p>将工作站连接到网盘、NAS 或已有 GitHub 仓库</p></div><button id="ds-close" type="button" aria-label="关闭数据仓库">×</button></div>
       <div id="ds-providers" aria-label="选择数据仓库类型"></div>
@@ -4176,9 +4232,9 @@
     <script src="./github-sync.js?v=storage-1"></script>
     <script src="./notion-client.js?v=1"></script>
     <script src="./bookmarks-core.js?v=merge-1"></script>
-    <script src="./theme.js?v=1"></script>
+    <script src="./theme.js?v=settings-1"></script>
     <script src="./directory-tree.js?v=1"></script>
-    <script src="./workstation.js?v=storage-1"></script>
+    <script src="./workstation.js?v=settings-1"></script>
     <script src="./obsidian-core.js?v=folders-1"></script>
     <script src="./obsidian.js?v=storage-1"></script>
     <script src="./notion-workspace.js?v=1"></script>
@@ -4187,13 +4243,14 @@
     <script src="./browser-bookmarks-core.js?v=1"></script>
     <script src="./browser-bookmarks-store.js?v=storage-1"></script>
     <script src="./browser-bookmarks.js?v=storage-1"></script>
-    <script src="./backgrounds.js?v=glass-2"></script>
+    <script src="./backgrounds.js?v=settings-1"></script>
     <script src="./deadline-dock.js?v=start-time-3"></script>
     <script src="./recurring-tasks.js?v=start-time-2"></script>
     <script src="./task-notes.js?v=1"></script>
     <script src="./storage-core.js?v=1"></script>
     <script src="./storage-adapters.js?v=1"></script>
-    <script src="./storage-sync.js?v=1"></script>
+    <script src="./storage-sync.js?v=settings-1"></script>
+    <script src="./settings.js?v=1"></script>
     <script>
       const syncStatus = document.getElementById("gh-status");
       const syncSummary = document.querySelector(".dock-sync-status summary");
