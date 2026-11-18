@@ -30,6 +30,7 @@
   function reminderLevel(task, now = Date.now()) {
     if (!["高", "加急⚡"].includes(task.priority) || task.status === "已完成")
       return null;
+    if (task.priority === "加急⚡") return "red";
     const end = deadlineAt(task),
       remaining = end - now;
     if (!Number.isFinite(remaining)) return null;
@@ -59,6 +60,7 @@
       );
   }
   function remainingLabel(ms) {
+    if (!Number.isFinite(ms)) return "未设置有效截止时间";
     if (ms <= 0) {
       const minutes = Math.max(1, Math.floor(-ms / 60000));
       return minutes >= 60

@@ -1,0 +1,15 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const node=()=>({dataset:{},children:[],hidden:false,textContent:'',open:false,classList:{values:new Set(),toggle(k,on){on?this.values.add(k):this.values.delete(k)}},addEventListener(){},setAttribute(k,v){this[k]=v},replaceChildren(){this.children=[]},append(...nodes){this.children.push(...nodes)},contains(){return true}});
+const ids=new Map(),menus=new Map(['.deadline-menu','.github-menu','.dock-account'].map(s=>[s,node()]));
+const $=id=>{if(!ids.has(id))ids.set(id,node());return ids.get(id)};
+const c={Date,Number,document:{getElementById:$,querySelector:s=>menus.get(s),createElement:node,addEventListener(){}},window:{TaskTime:require('./task-time'),addEventListener(){}},db:{tasks:[]},setInterval(){},openTask(){}};
+vm.createContext(c);const source=fs.readFileSync(__dirname+'/deadline-dock.js','utf8').replace('  window.refreshDeadlineDock = refreshDeadlineDock;','  window.testReminders = {reminderLevel, urgentTasks, remainingLabel};\n  window.refreshDeadlineDock = refreshDeadlineDock;');vm.runInContext(source,c);
+const api=c.window.testReminders,now=new Date(2026,10,18,12).getTime();const base={id:'a',title:'Task',priority:'加急⚡',status:'待开始',start:'2026-12-01',due:'2026-12-31',dueTime:'20:00'};
+for(const x of [base,{...base,status:'进行中'},{...base,due:'2026-11-18',dueTime:'17:00'},{...base,due:'2026-11-18',dueTime:'12:30'},{...base,due:'2026-11-01'},{...base,due:'',dueTime:''},{...base,due:'invalid'}])assert.equal(api.reminderLevel(x,now),'red');
+assert.equal(api.reminderLevel({...base,status:'已完成'},now),null);
+const high={...base,priority:'高',start:'2026-11-16'};
+assert.equal(api.reminderLevel(high,now),null);assert.equal(api.reminderLevel({...high,due:'2026-11-19'},now),'green');assert.equal(api.reminderLevel({...high,due:'2026-11-18',dueTime:'17:00'},now),'yellow');assert.equal(api.reminderLevel({...high,due:'2026-11-18',dueTime:'12:30'},now),'red');assert.equal(api.reminderLevel({...high,due:'2026-11-17'},now),'red');assert.equal(api.reminderLevel({...high,status:'已完成'},now),null);
+for(const priority of ['中','低'])assert.equal(api.reminderLevel({...base,priority,due:'2026-11-17'},now),null);
+assert.equal(api.remainingLabel(NaN),'未设置有效截止时间');
+c.db.tasks=[{...base,due:'2099-01-01'},{...high,id:'b',due:'2099-01-01'},{...base,id:'c',status:'已完成'}];c.window.refreshDeadlineDock();assert.equal(menus.get('.deadline-menu').dataset.level,'red');assert(menus.get('.deadline-menu').classList.values.has('urgent'));assert.equal($('deadline-count').textContent,'1');assert.equal($('deadline-list').children[0].dataset.level,'red');assert($('deadline-trigger')['aria-label'].includes('红色 1 项'));c.db.tasks[0].status='已完成';c.window.refreshDeadlineDock();assert.equal(menus.get('.deadline-menu').dataset.level,'none');assert.equal($('deadline-count').hidden,true);assert(!menus.get('.deadline-menu').classList.values.has('urgent'));
+console.log('PASS: urgent always red before start/far deadline/near deadline/overdue/missing date; completed excluded; high-priority time tiers unchanged; Dock/list colors and counters update.');
