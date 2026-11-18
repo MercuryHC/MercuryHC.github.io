@@ -47,6 +47,7 @@
     const builtin = Object.hasOwn(core.icons, value) ? core.icons[value] : null;
     if (value.startsWith("http")) {
       const img = document.createElement("img");
+      img.draggable = false;
       img.src = core.url(value);
       img.alt = "";
       img.loading = "lazy";
@@ -94,17 +95,16 @@
       const tile = document.createElement("div");
       tile.className = "bookmark-card";
       tile.draggable = true;
+      tile.dataset.bookmarkId = b.id;
       const a = document.createElement("a");
+      a.draggable = false;
       a.href = b.url;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       a.title = b.url;
-      const title = document.createElement("strong"),
-        host = document.createElement("small");
+      const title = document.createElement("strong");
       title.textContent = b.title;
-      host.textContent = new URL(b.url).hostname;
-      host.className = "bookmark-host";
-      a.append(icon(b), title, host);
+      a.append(icon(b), title);
       const edit = document.createElement("button");
       edit.className = "bookmark-edit";
       edit.textContent = "•••";
@@ -113,25 +113,21 @@
       edit.onclick = () => open(b.id);
       tile.append(a, edit);
       tile.ondragstart = (e) => {
+        if (syncBusy) { e.preventDefault(); return; }
         dragging = b.id;
         e.dataTransfer.setData("text/plain", b.id);
+        e.dataTransfer.effectAllowed = "move";
         tile.classList.add("dragging");
       };
-      tile.ondragend = () => {
-        ((dragging = null), (syncBusy = false), (syncSession = null));
-        tile.classList.remove("dragging");
-      };
-      tile.ondragover = (e) => e.preventDefault();
-      tile.ondrop = (e) => {
+      tile.ondragend = clearDrag;
+      a.onkeydown = e => {
+        if (!e.altKey || !["ArrowLeft", "ArrowRight"].includes(e.key) || syncBusy) return;
         e.preventDefault();
-        if (!dragging || dragging === b.id) return;
-        const next = clone(),
-          from = next.items.findIndex((x) => x.id === dragging),
-          to = next.items.findIndex((x) => x.id === b.id);
-        if (from < 0 || to < 0) return;
-        const moved = next.items.splice(from, 1)[0];
-        next.items.splice(to, 0, moved);
-        commit(next);
+        const visible = [...$("bm-grid").children].filter(x => x.dataset.bookmarkId);
+        const i = visible.indexOf(tile), next = visible[i + (e.key === "ArrowLeft" ? -1 : 1)];
+        if (next && moveBookmark(b.id, next.dataset.bookmarkId, e.key === "ArrowRight")) {
+          [...$("bm-grid").children].find(x => x.dataset.bookmarkId === b.id)?.firstElementChild?.focus();
+        }
       };
       $("bm-grid").append(tile);
     }
@@ -141,6 +137,52 @@
     add.onclick = () => open();
     $("bm-grid").append(add);
   }
+  let dropTarget = null;
+  function clearDrag() {
+    for (const tile of $("bm-grid").children) {
+      tile.classList.remove("dragging");
+      delete tile.dataset.dropSide;
+    }
+    dragging = null;
+    dropTarget = null;
+  }
+  function moveBookmark(source, target, after) {
+    const next = clone(), from = next.items.findIndex(x => x.id === source);
+    if (source === target || from < 0 || !next.items.some(x => x.id === target)) return false;
+    const [moved] = next.items.splice(from, 1);
+    const to = next.items.findIndex(x => x.id === target) + (after ? 1 : 0);
+    next.items.splice(to, 0, moved);
+    if (next.items.every((x, i) => x.id === data.items[i].id)) return false;
+    return commit(next);
+  }
+  // Resolve gaps and row endings too, so dropping does not require hitting a tile.
+  $("bm-grid").ondragover = e => {
+    if (!dragging || syncBusy) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    let nearest = null, distance = Infinity;
+    for (const tile of $("bm-grid").children) {
+      delete tile.dataset.dropSide;
+      if (!tile.dataset.bookmarkId || tile.dataset.bookmarkId === dragging) continue;
+      const r = tile.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+      const d = Math.hypot(e.clientX - x, (e.clientY - y) * 2);
+      if (d < distance) { distance = d; nearest = {tile, after:e.clientX > x}; }
+    }
+    dropTarget = nearest;
+    if (nearest) nearest.tile.dataset.dropSide = nearest.after ? "after" : "before";
+  };
+  $("bm-grid").ondrop = e => {
+    if (!dragging) return;
+    e.preventDefault();
+    if (dropTarget && !syncBusy) moveBookmark(dragging, dropTarget.tile.dataset.bookmarkId, dropTarget.after);
+    clearDrag();
+  };
+  $("bm-grid").ondragleave = e => {
+    if (!$("bm-grid").contains(e.relatedTarget)) {
+      dropTarget = null;
+      for (const tile of $("bm-grid").children) delete tile.dataset.dropSide;
+    }
+  };
   function open(id) {
     editing = id || null;
     const item = data.items.find((x) => x.id === id),

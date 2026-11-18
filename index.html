@@ -2062,10 +2062,10 @@
     <link rel="stylesheet" href="./workstation.css?v=progress-1" />
     <link rel="stylesheet" href="./theme.css?v=1" />
     <link rel="stylesheet" href="./code-highlight.css?v=1" />
-    <link rel="stylesheet" href="./workspace-apps.css?v=frameless-bookmarks-2" />
+    <link rel="stylesheet" href="./workspace-apps.css?v=icon-layout-3" />
     <link rel="stylesheet" href="./backgrounds.css?v=all-workspaces-4" />
     <link rel="stylesheet" href="./storage-sync.css?v=1" />
-    <link rel="stylesheet" href="./settings.css?v=1" />
+    <link rel="stylesheet" href="./settings.css?v=icon-layout-2" />
     <link rel="stylesheet" href="./task-todos.css?v=timestamp-pill-2" />
     <link rel="stylesheet" href="./responsive.css?v=1" />
   </head>
@@ -2957,7 +2957,7 @@
                 <label class="settings-row"><div><strong>显示时钟</strong><p>主页中央的大号时间</p></div><input id="setting-clock" type="checkbox" checked aria-label="显示时钟"></label>
                 <label class="settings-row"><div><strong>显示日期</strong><p>时钟下方的日期与星期</p></div><input id="setting-date" type="checkbox" checked aria-label="显示日期"></label>
                 <label class="settings-row"><div><strong>显示主页标语</strong><p>搜索框上方的简短问候</p></div><input id="setting-motto" type="checkbox" checked aria-label="显示主页标语"></label>
-                <label class="settings-row"><div><strong>显示收藏域名</strong><p>网站卡片标题下方的网址</p></div><input id="setting-hosts" type="checkbox" checked aria-label="显示收藏域名"></label>
+                <div class="settings-row"><div><strong>收藏图标间距</strong><p>拖动滑块调整间距；主页可拖动图标调整排列顺序，自动保存。</p></div><div class="settings-gap-control"><input id="setting-iconGap" type="range" min="8" max="64" step="1" value="16" aria-label="收藏图标间距"><output id="setting-iconGap-value" for="setting-iconGap">16 px</output></div></div>
               </div>
               <button id="settings-reset" type="button" class="secondary">恢复界面默认</button>
             </section>
@@ -4263,7 +4263,7 @@
     <script src="./obsidian.js?v=storage-1"></script>
     <script src="./notion-workspace.js?v=1"></script>
     <script src="./web-search.js?v=icons-1"></script>
-    <script src="./bookmarks.js?v=storage-1"></script>
+    <script src="./bookmarks.js?v=icon-layout-2"></script>
     <script src="./browser-bookmarks-core.js?v=1"></script>
     <script src="./browser-bookmarks-store.js?v=storage-1"></script>
     <script src="./browser-bookmarks.js?v=storage-1"></script>
@@ -4274,7 +4274,7 @@
     <script src="./storage-core.js?v=1"></script>
     <script src="./storage-adapters.js?v=1"></script>
     <script src="./storage-sync.js?v=settings-1"></script>
-    <script src="./settings.js?v=1"></script>
+    <script src="./settings.js?v=icon-layout-2"></script>
     <script>
       const syncStatus = document.getElementById("gh-status");
       const syncSummary = document.querySelector(".dock-sync-status summary");

@@ -1049,3 +1049,11 @@ html body[data-workspace="bookmarks"] #bm-grid .bookmark-card:hover {
 }
 html body[data-workspace="bookmarks"] #bm-grid .bookmark-host { display: none; }
 html body[data-workspace="bookmarks"] #bm-grid .bookmark-add-card { min-height: 130px; }
+
+#bm-grid.bookmark-grid{grid-template-columns:repeat(auto-fill,minmax(0,clamp(110px,8vw,160px)));gap:var(--bookmark-gap,16px);justify-content:start}
+#bm-grid .bookmark-card{position:relative}
+#bm-grid .bookmark-card[draggable=true]{cursor:grab}
+#bm-grid .bookmark-card.dragging{opacity:.35;cursor:grabbing}
+#bm-grid .bookmark-card[data-drop-side]::after{content:"";position:absolute;top:12px;bottom:12px;width:3px;background:var(--blue);border-radius:3px;pointer-events:none}
+#bm-grid .bookmark-card[data-drop-side=before]::after{left:-5px}
+#bm-grid .bookmark-card[data-drop-side=after]::after{right:-5px}
