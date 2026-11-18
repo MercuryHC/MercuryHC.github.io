@@ -3,8 +3,8 @@
   const notes=window.Notes,todos=window.TaskTodos,$=id=>document.getElementById(id),form=$('task-form'),area=form.elements.note,preview=$('note-preview'),TIME_KEY='workstation-task-timestamp-hints-v1';
   let draft=[],archive='',baseline='',pending=null,enter=false;
   function dismissTime(){pending=null;$('task-note-time-hint').hidden=true;}
-  function refresh(){const result=notes.parse(area.value);preview.innerHTML=result.html||'<p class="notes-placeholder">记录任务推进过程，支持 Markdown。</p>';$('note-checklist-progress').textContent=`Markdown 过程记录 · ${area.value.length} 字符`;}
-  function hintTime(){if(!$('task-note-time-enabled').checked||area.selectionStart!==area.selectionEnd)return;const pos=area.selectionStart;if(pos===0||area.value[pos-1]!=='\n')return;pending={value:area.value,pos};$('task-note-time-text').textContent=todos.timestamp()+' · 按 Tab 插入，继续输入或 Esc 跳过';$('task-note-time-hint').hidden=false;}
+  function refresh(){const result=notes.parse(area.value,{timeBadges:true});preview.innerHTML=result.html||'<p class="notes-placeholder">记录任务推进过程，支持 Markdown。</p>';$('note-checklist-progress').textContent=`Markdown 过程记录 · ${area.value.length} 字符`;}
+  function hintTime(){if(!$('task-note-time-enabled').checked||area.selectionStart!==area.selectionEnd)return;const pos=area.selectionStart;if(pos===0||area.value[pos-1]!=='\n')return;pending={value:area.value,pos};$('task-note-time-text').textContent=todos.timestamp().trim().slice(1,-1);$('task-note-time-hint').hidden=false;}
   function acceptTime(){if(!pending||area.value!==pending.value||area.selectionStart!==pending.pos||area.selectionEnd!==pending.pos){dismissTime();return false;}const stamp=todos.timestamp();if(area.value.length+stamp.length>50000){dismissTime();toast('备注已达到 50000 字符限制。');return false;}area.setRangeText(stamp,pending.pos,pending.pos,'end');dismissTime();area.focus();refresh();return true;}
   function snapshot(task){return JSON.stringify(todos.fields(task));}
   function syncStatus(){form.elements.status.value=todos.statusFor(draft,form.elements.status.value);}

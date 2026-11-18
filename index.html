@@ -2066,7 +2066,7 @@
     <link rel="stylesheet" href="./backgrounds.css?v=all-workspaces-4" />
     <link rel="stylesheet" href="./storage-sync.css?v=1" />
     <link rel="stylesheet" href="./settings.css?v=1" />
-    <link rel="stylesheet" href="./task-todos.css?v=1" />
+    <link rel="stylesheet" href="./task-todos.css?v=timestamp-pill-2" />
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -3462,7 +3462,7 @@
                 maxlength="50000"
                 placeholder="记录调研、实施、验证等推进过程，支持 Markdown。&#10;换行后可按 Tab 插入当前时间，精确到秒。"
               ></textarea>
-              <div id="task-note-time-hint" role="status" hidden><span id="task-note-time-text"></span><button id="task-note-time-accept" type="button">插入时间</button><button id="task-note-time-dismiss" type="button">不添加</button></div>
+              <div id="task-note-time-hint" role="status" hidden><span id="task-note-time-text"></span><span>按 Tab 插入，继续输入或 Esc 跳过</span><button id="task-note-time-accept" type="button">插入时间</button><button id="task-note-time-dismiss" type="button">不添加</button></div>
             </div>
             <div id="note-preview-wrap">
               <div class="notes-preview-label">Markdown 过程记录预览</div>
@@ -3627,7 +3627,7 @@
     </dialog>
     <script src="./vendor/markdown-it.min.js?v=14.1.0"></script>
     <script src="./vendor/highlight.min.js?v=11.11.1"></script>
-    <script src="./notes-core.js?v=highlight-1"></script>
+    <script src="./notes-core.js?v=timestamp-pill-2"></script>
     <script src="./task-todos-core.js?v=1"></script>
     <script src="./task-time.js?v=1"></script>
     <script src="./recurrence-core.js?v=todos-4"></script>
@@ -4269,7 +4269,7 @@
     <script src="./backgrounds.js?v=settings-1"></script>
     <script src="./deadline-dock.js?v=urgent-red-4"></script>
     <script src="./recurring-tasks.js?v=todos-3"></script>
-    <script src="./task-notes.js?v=todos-time-2"></script>
+    <script src="./task-notes.js?v=timestamp-pill-3"></script>
     <script src="./storage-core.js?v=1"></script>
     <script src="./storage-adapters.js?v=1"></script>
     <script src="./storage-sync.js?v=settings-1"></script>

@@ -68,6 +68,20 @@
     tokens[i].attrSet("rel", "noopener noreferrer");
     return defaultLinkOpen(tokens, i, options, env, self);
   };
+  // Style process-log timestamps at render time; keep stored Markdown unchanged.
+  md.renderer.rules.text = (tokens, i, options, env) => {
+    const escape = md.utils.escapeHtml;
+    const text = tokens[i].content;
+    if (!env.timeBadges) return escape(text);
+    const stamp = /\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/g;
+    let html = "", start = 0;
+    for (const match of text.matchAll(stamp)) {
+      html += escape(text.slice(start, match.index));
+      html += '<span class="task-log-timestamp">' + escape(match[1]) + '</span>';
+      start = match.index + match[0].length;
+    }
+    return html + escape(text.slice(start));
+  };
   md.core.ruler.after("inline", "taskspace_todos", (state) => {
     state.env.todos = [];
     state.tokens.forEach((token, i) => {
@@ -93,8 +107,8 @@
       state.env.todos.push({ line, checked });
     });
   });
-  function parse(text) {
-    const env = {};
+  function parse(text, options = {}) {
+    const env = { timeBadges: !!options.timeBadges };
     const html = md.render(typeof text === "string" ? text : "", env),
       todos = env.todos || [];
     return {
