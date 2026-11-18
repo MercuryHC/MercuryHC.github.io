@@ -1032,3 +1032,20 @@ body[data-workspace="browser-bookmarks"] #gh-restore {
   }
 }
 body.sidebar-collapsed[data-workspace="browser-bookmarks"]>main{margin-left:var(--station-rail)}
+
+/* Website shortcuts sit directly on the desktop; only icons keep their tile. */
+html body[data-workspace="bookmarks"] #bm-grid .bookmark-card {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  min-height: 0;
+}
+html body[data-workspace="bookmarks"] #bm-grid .bookmark-card:hover {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+html body[data-workspace="bookmarks"] #bm-grid .bookmark-host { display: none; }
+html body[data-workspace="bookmarks"] #bm-grid .bookmark-add-card { min-height: 130px; }
