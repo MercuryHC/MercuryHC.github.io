@@ -2065,7 +2065,7 @@
     <link rel="stylesheet" href="./workspace-apps.css?v=icon-layout-3" />
     <link rel="stylesheet" href="./backgrounds.css?v=all-workspaces-4" />
     <link rel="stylesheet" href="./storage-sync.css?v=1" />
-    <link rel="stylesheet" href="./settings.css?v=icon-layout-2" />
+    <link rel="stylesheet" href="./settings.css?v=serverchan-3" />
     <link rel="stylesheet" href="./task-todos.css?v=timestamp-pill-2" />
     <link rel="stylesheet" href="./responsive.css?v=1" />
   </head>
@@ -2935,6 +2935,7 @@
           <button id="settings-tab-appearance" type="button" role="tab" data-settings-section="appearance" aria-controls="settings-panel-appearance" aria-selected="true"><span aria-hidden="true">◫</span><span>界面设置</span></button>
           <button id="settings-tab-background" type="button" role="tab" data-settings-section="background" aria-controls="settings-panel-background" aria-selected="false" tabindex="-1"><span aria-hidden="true">▧</span><span>桌面背景</span></button>
           <button id="settings-tab-storage" type="button" role="tab" data-settings-section="storage" aria-controls="settings-panel-storage" aria-selected="false" tabindex="-1"><span aria-hidden="true">⇄</span><span>数据与同步</span></button>
+          <button id="settings-tab-notifications" type="button" role="tab" data-settings-section="notifications" aria-controls="settings-panel-notifications" aria-selected="false" tabindex="-1"><span aria-hidden="true">♧</span><span>微信提醒</span></button>
           <button id="settings-tab-help" type="button" role="tab" data-settings-section="help" aria-controls="settings-panel-help" aria-selected="false" tabindex="-1"><span aria-hidden="true">ⓘ</span><span>帮助说明</span></button>
           <div class="settings-nav-foot">让工作站，成为你的样子。<br>设置自动保存在此浏览器</div>
         </nav>
@@ -2965,6 +2966,17 @@
             <section id="settings-panel-storage" class="settings-panel" role="tabpanel" data-settings-panel="storage" aria-labelledby="settings-tab-storage" hidden>
               <div class="settings-group"><h3>GitHub 数据仓库</h3><p class="settings-intro">管理仓库连接与记住连接选项。读取、保存等日常同步操作仍可从顶部 GitHub 菜单执行。</p><button id="settings-github" type="button" class="secondary">管理 GitHub 连接</button></div>
               <div id="settings-storage-content"></div>
+            </section>
+            <section id="settings-panel-notifications" class="settings-panel" role="tabpanel" data-settings-panel="notifications" aria-labelledby="settings-tab-notifications" hidden>
+              <p class="settings-intro">使用 Server酱 Turbo 推送到微信。先在 NAS / 云服务器部署提醒后台，将 SCT 开头的 SendKey 放在后台环境变量中。本网页无需填写 SendKey。</p>
+              <div class="settings-group"><h3>提醒后台</h3>
+                <label for="sc-url">后台 HTTPS 地址</label><input id="sc-url" type="url" placeholder="https://remind.example.com" autocomplete="off">
+                <label for="sc-token">后台访问密钥（仅当前标签页使用）</label><input id="sc-token" type="password" placeholder="后台 BRIDGE_TOKEN，不是 SendKey" autocomplete="off">
+                <p class="settings-intro" style="margin-top:14px">启用将把本机任务名称、完成状态、优先级及提醒时间发送到你的后台，并以此覆盖提醒快照；不发送备注、TODO 内容或仓库凭证。仅高优先级 / 加急任务触发自动推送。间隔检查与网络可能产生延迟。</p>
+                <div class="ds-buttons"><button id="sc-connect" type="button" class="secondary">连接并查看状态</button><button id="sc-enable" type="button" class="primary">启用并同步本机任务</button><button id="sc-test" type="button" class="secondary">发送测试消息</button><button id="sc-pause" type="button" class="secondary">暂停后台推送</button></div>
+              </div>
+              <p id="sc-status" class="settings-intro" role="status" aria-live="polite">尚未连接。接入代码已提供，后台部署并配置凭证后才能发送。</p>
+              <div class="settings-help"><h3>运行规则</h3><p>加急任务未完成即提醒一次；高优先级沿用绿色、黄色、红色阶段，每阶段去重。后台默认每天最多 5 次发送尝试（含测试），可按你的服务额度调整。新任务触发后最短约 5 分钟一个批次。</p><p>本页启用后，每 10 秒检查本机变更并同步；关闭或刷新页面后不再上传新变化，后台继续使用最近快照。其他设备修改、任务完成后需重新连接并同步。循环任务只提醒已生成的实例，不在后台补建。</p><p>首次启用会提醒当前符合条件的历史未完成任务；暂停只停止后续发送，已发送消息不能撤回。</p><p><a href="https://github.com/MercuryHC/MercuryHC.github.io/blob/main/serverchan-bridge/README.md" target="_blank" rel="noopener noreferrer">后台 Docker 部署说明</a> · <a href="https://sct.ftqq.com/" target="_blank" rel="noopener noreferrer">Server酱 Turbo 官网</a></p></div>
             </section>
             <section id="settings-panel-help" class="settings-panel settings-help" role="tabpanel" data-settings-panel="help" aria-labelledby="settings-tab-help" hidden>
               <h3>所有偏好，一个入口</h3><p>右上角齿轮集中管理界面、主题、壁纸和数据仓库配置。GitHub 的读取与保存保留快捷入口。</p>
@@ -4274,7 +4286,9 @@
     <script src="./storage-core.js?v=1"></script>
     <script src="./storage-adapters.js?v=1"></script>
     <script src="./storage-sync.js?v=settings-1"></script>
-    <script src="./settings.js?v=icon-layout-2"></script>
+    <script src="./notification-core.js?v=1"></script>
+    <script src="./serverchan-settings.js?v=1"></script>
+    <script src="./settings.js?v=serverchan-3"></script>
     <script>
       const syncStatus = document.getElementById("gh-status");
       const syncSummary = document.querySelector(".dock-sync-status summary");

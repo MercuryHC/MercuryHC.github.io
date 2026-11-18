@@ -12,3 +12,5 @@ body[data-reader-size="16"] :is(#nb-preview,#ob-preview,.extension-markdown){fon
 #settings-storage-content>.ds-footer{display:none}
 
 .settings-gap-control{display:flex;align-items:center;gap:12px;max-width:100%;flex-wrap:wrap}.settings-gap-control input[type=range]{width:160px;max-width:100%;accent-color:var(--blue);padding:0}.settings-gap-control output{font-size:12px;min-width:42px;font-variant-numeric:tabular-nums}
+
+#sc-status[data-error=true]{color:#d77c89}

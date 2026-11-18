@@ -1,0 +1,18 @@
+services:
+  reminders:
+    build:
+      context: ..
+      dockerfile: serverchan-bridge/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"
+    environment:
+      SERVERCHAN_SENDKEY: ${SERVERCHAN_SENDKEY:?请设置 Turbo SendKey}
+      BRIDGE_TOKEN: ${BRIDGE_TOKEN:?请设置至少32字符后台访问密钥}
+      ALLOWED_ORIGIN: https://mercuryhc.github.io
+      SITE_URL: https://mercuryhc.github.io/
+      DAILY_LIMIT: ${DAILY_LIMIT:-5}
+    volumes:
+      - reminder-data:/data
+volumes:
+  reminder-data:

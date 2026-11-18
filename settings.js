@@ -6,7 +6,7 @@
   const clean=v=>({density:v?.density==='compact'?'compact':'comfortable',reader:[14,16,18].includes(Number(v?.reader))?Number(v.reader):14,clock:v?.clock!==false,date:v?.date!==false,motto:v?.motto!==false,iconGap:Number.isFinite(Number(v?.iconGap))?Math.max(8,Math.min(64,Math.round(Number(v.iconGap)))):16,homeSidebar:v?.homeSidebar==='expanded'?'expanded':'collapsed'});
   let prefs={...defaults},section='appearance';
   try{prefs=clean(JSON.parse(localStorage.getItem(KEY)));}catch{}
-  const labels={appearance:'界面设置',background:'桌面背景',storage:'数据与同步',help:'帮助说明'};
+  const labels={appearance:'界面设置',background:'桌面背景',storage:'数据与同步',notifications:'微信提醒',help:'帮助说明'};
   // Relocate the live controls, preserving event handlers and in-progress state.
   for(const [from,to]of [['background-dialog','settings-background-content'],['storage-dialog','settings-storage-content']]){
     const source=$(from),target=$(to);while(source.firstChild)target.append(source.firstChild);
