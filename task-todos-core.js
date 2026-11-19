@@ -10,5 +10,7 @@
   function migrateData(data){return {...data,tasks:(data.tasks||[]).map(migrate),...(data.schedules?{schedules:data.schedules.map(s=>{const {status,...template}=migrate(s.template);return {...s,template};})}:{})};}
   const pad=n=>String(n).padStart(2,'0');
   const timestamp=(date=new Date())=>`[${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}] `;
-  const api={normalize,statusFor,migrate,fields,migrateData,timestamp};if(typeof module!=='undefined')module.exports=api;else root.TaskTodos=api;
+  function completionLine(previous,next,date=new Date()){return next.status==='已完成'&&previous?.status!=='已完成'?timestamp(date)+'任务已完成':'';}
+  function appendLog(note,line){const source=typeof note==='string'?note:'';if(!line)return source;const result=source+(source?(source.endsWith('\n\n')?'':source.endsWith('\n')?'\n':'\n\n'):'')+line;if(result.length>50000)throw Error('过程记录已接近 50000 字符，无法追加完成时间；请先整理记录再完成任务。');return result;}
+  const api={normalize,statusFor,migrate,fields,migrateData,timestamp,completionLine,appendLog};if(typeof module!=='undefined')module.exports=api;else root.TaskTodos=api;
 })(typeof window!=='undefined'?window:globalThis);

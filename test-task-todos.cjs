@@ -11,7 +11,24 @@ const validate=vm.runInNewContext('('+validateCode+')',{window:{TaskTodos:core,R
 const record={id:'t',title:'任务',project:'',start:'2026-11-18',due:'2026-11-18',status:'进行中',priority:'中',note:source};let canonical=validate({projects:[],tasks:[record]});assert.equal(canonical.tasks[0].todos.length,2);assert.equal(canonical.tasks[0].todoSourceNote,source);const roundtrip=validate(JSON.parse(JSON.stringify(canonical)));assert.equal(JSON.stringify(roundtrip),JSON.stringify(canonical));
 class E{constructor(){this.value='';this.checked=false;this.hidden=false;this.children=[];this.dataset={};this.handlers={};this.selectionStart=this.selectionEnd=0;this.classList={toggle(){}};}addEventListener(n,fn){this.handlers[n]=fn}setAttribute(k,v){this[k]=v}append(...n){this.children.push(...n)}replaceChildren(){this.children=[]}focus(){}blur(){this.onchange?.()}setSelectionRange(s,e){this.selectionStart=s;this.selectionEnd=e}setRangeText(text,start,end,mode){this.value=this.value.slice(0,start)+text+this.value.slice(end);this.selectionStart=mode==='select'?start:start+text.length;this.selectionEnd=start+text.length}}
 const els=new Map(),el=id=>{if(!els.has(id))els.set(id,new E());return els.get(id)};const status=new E(),area=el('task-note');el('task-form').elements={note:area,status};const saved=new Map(),task={...record,todoVersion:1,todos:[],note:''};let saves=0;const c={console,crypto,Date,JSON,Map,Set,document:{getElementById:el,createElement:()=>new E(),querySelectorAll:()=>[]},window:{Notes:notes,TaskTodos:core},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},db:{tasks:[task]},editing:'t',save:()=>saves++,toast:()=>{}};vm.createContext(c);vm.runInContext(fs.readFileSync(__dirname+'/task-notes.js','utf8'),c);status.value='待开始';c.window.loadTaskNotes(task);
-el('task-todo-add').onclick();el('task-todo-new').value='独立事项';el('task-todo-confirm').onclick();assert.equal(task.todos.length,1);assert(saves>0);let check=el('task-todo-list').children[0].children[0];check.checked=true;check.onchange();assert.equal(task.status,'已完成');check=el('task-todo-list').children[0].children[0];check.checked=false;check.onchange();assert.equal(task.status,'进行中');
+const finishDate=new Date(2026,10,19,10,11,12),line=core.completionLine({status:'进行中'},{status:'已完成'},finishDate);
+assert.equal(line,'[2026-11-19 10:11:12] 任务已完成');
+assert.equal(core.completionLine({status:'已完成'},{status:'已完成'},finishDate),'');
+assert.equal(core.completionLine({status:'已完成'},{status:'进行中'},finishDate),'');
+assert.equal(core.completionLine(undefined,{status:'已完成'},finishDate),line);
+assert.equal(core.appendLog('**已有日志**',line),'**已有日志**\n\n'+line);
+assert.equal(core.appendLog('已有日志\n',line),'已有日志\n\n'+line);
+assert.throws(()=>core.appendLog('a'.repeat(49999),line),/50000/);
+const twice=core.appendLog(core.appendLog('',line),core.completionLine({status:'已完成'},{status:'已完成'},finishDate));assert.equal(twice,line);
+el('task-todo-add').onclick();el('task-todo-new').value='独立事项';el('task-todo-confirm').onclick();assert.equal(task.todos.length,1);assert(saves>0);let check=el('task-todo-list').children[0].children[0];area.value='尚未保存的过程记录';
+check.checked=true;check.onchange();assert.equal(task.status,'已完成');
+assert.match(task.note,/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] 任务已完成$/);
+assert(!task.note.includes('尚未保存'));assert(area.value.startsWith('尚未保存的过程记录\n\n'));
+assert.equal((area.value.match(/任务已完成/g)||[]).length,1);
+const firstCompletion=task.note;
+check=el('task-todo-list').children[0].children[0];check.checked=false;check.onchange();assert.equal(task.status,'进行中');assert.equal(task.note,firstCompletion);
+check=el('task-todo-list').children[0].children[0];check.checked=true;check.onchange();assert.equal((task.note.match(/任务已完成/g)||[]).length,2);
+check=el('task-todo-list').children[0].children[0];check.checked=false;check.onchange();
 area.value='- [x] 日志中的清单';area.selectionStart=area.selectionEnd=area.value.length;area.handlers.input({inputType:'insertText'});assert.equal(task.todos[0].done,false);assert.equal(task.status,'进行中');
 area.value='完成调研\n';area.selectionStart=area.selectionEnd=area.value.length;area.handlers.input({inputType:'insertLineBreak'});assert.equal(el('task-note-time-hint').hidden,false);let prevented=false;area.handlers.keydown({key:'Tab',preventDefault(){prevented=true}});assert(prevented);assert.match(area.value,/完成调研\n\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] $/);assert.equal(el('task-note-time-hint').hidden,true);
 area.value+='\n';area.selectionStart=area.selectionEnd=area.value.length;area.handlers.input({inputType:'insertLineBreak'});area.handlers.keydown({key:'a',preventDefault(){}});assert.equal(el('task-note-time-hint').hidden,true);const without=area.value;area.handlers.keydown({key:'Tab',preventDefault(){throw Error('Tab must retain normal navigation')}});assert.equal(area.value,without);

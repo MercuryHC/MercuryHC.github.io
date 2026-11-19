@@ -8,7 +8,20 @@
   function acceptTime(){if(!pending||area.value!==pending.value||area.selectionStart!==pending.pos||area.selectionEnd!==pending.pos){dismissTime();return false;}const stamp=todos.timestamp();if(area.value.length+stamp.length>50000){dismissTime();toast('备注已达到 50000 字符限制。');return false;}area.setRangeText(stamp,pending.pos,pending.pos,'end');dismissTime();area.focus();refresh();return true;}
   function snapshot(task){return JSON.stringify(todos.fields(task));}
   function syncStatus(){form.elements.status.value=todos.statusFor(draft,form.elements.status.value);}
-  function persistTodos(){syncStatus();const task=db.tasks.find(t=>t.id===editing);if(task){const current=todos.migrate(task);if(snapshot(current)!==baseline)throw Error('分解事项已由其他操作更新，请重新打开任务后再修改。');Object.assign(task,{note:current.note,...todos.fields({todoVersion:1,todos:draft,todoSourceNote:archive||undefined}),status:form.elements.status.value});baseline=snapshot(task);save();$('task-todo-hint').textContent='分解事项已自动保存；任务其他字段及过程记录请点击保存任务。';}else $('task-todo-hint').textContent='新任务的分解事项将在点击保存任务后保存。';}
+  function persistTodos(){
+    syncStatus();const task=db.tasks.find(t=>t.id===editing);
+    if(task){
+      const current=todos.migrate(task);
+      if(snapshot(current)!==baseline)throw Error('分解事项已由其他操作更新，请重新打开任务后再修改。');
+      const next={note:current.note,...todos.fields({todoVersion:1,todos:draft,todoSourceNote:archive||undefined}),status:form.elements.status.value};
+      const line=todos.completionLine(task,next),draftNote=todos.appendLog(area.value,line);
+      next.note=todos.appendLog(next.note,line);
+      Object.assign(task,next);baseline=snapshot(task);save();
+      if(line){area.value=draftNote;dismissTime();refresh();}
+      $('task-todo-hint').textContent='分解事项与自动完成时间已保存；任务其他字段及过程记录请点击保存任务。';
+    }else $('task-todo-hint').textContent='新任务的分解事项将在点击保存任务后保存。';
+  }
+
   function change(fn){const before=draft.map(t=>({...t})),status=form.elements.status.value;try{fn();draft=todos.normalize(draft);persistTodos();}catch(e){draft=before;form.elements.status.value=status;toast(e.message);}drawTodos();}
   function drawTodos(){const box=$('task-todo-list');box.replaceChildren();const done=draft.filter(t=>t.done).length;$('task-todo-progress').textContent=draft.length?`${done} / ${draft.length} 已完成`:'暂无分解事项';$('task-todo-empty').hidden=!!draft.length;
     for(const item of draft){const row=document.createElement('div');row.className='task-todo-row';row.dataset.done=String(item.done);row.dataset.todoId=item.id;const check=document.createElement('input');check.type='checkbox';check.checked=item.done;check.setAttribute('aria-label','完成 TODO：'+item.text);check.onchange=()=>{change(()=>item.done=check.checked);const next=[...$('task-todo-list').children].find(r=>r.dataset.todoId===item.id);next?.firstElementChild?.focus({preventScroll:true});};const text=document.createElement('input');text.type='text';text.value=item.text;text.maxLength=50000;text.className='task-todo-text';text.setAttribute('aria-label','TODO 内容');text.onchange=()=>change(()=>item.text=text.value);text.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();text.blur();}};const remove=document.createElement('button');remove.type='button';remove.className='task-todo-remove';remove.textContent='×';remove.title='删除此 TODO';remove.setAttribute('aria-label','删除 TODO：'+item.text);remove.onclick=()=>change(()=>draft=draft.filter(t=>t.id!==item.id));row.append(check,text,remove);box.append(row);}

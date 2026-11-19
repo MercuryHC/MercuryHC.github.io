@@ -3641,7 +3641,7 @@
     <script src="./vendor/markdown-it.min.js?v=14.1.0"></script>
     <script src="./vendor/highlight.min.js?v=11.11.1"></script>
     <script src="./notes-core.js?v=timestamp-pill-2"></script>
-    <script src="./task-todos-core.js?v=1"></script>
+    <script src="./task-todos-core.js?v=completion-log-2"></script>
     <script src="./task-time.js?v=1"></script>
     <script src="./recurrence-core.js?v=todos-4"></script>
     <script>
@@ -4017,7 +4017,10 @@
           renderTasks();
           return;
         }
-        t.status = t.status === "已完成" ? "待开始" : "已完成";
+        const next = { ...t, status: t.status === "已完成" ? "待开始" : "已完成" };
+        try { next.note = window.TaskTodos.appendLog(next.note, window.TaskTodos.completionLine(t, next)); }
+        catch (error) { toast(error.message); return; }
+        Object.assign(t, next);
         save();
       }
       function filterProject(id, forceTasks = false) {
@@ -4120,7 +4123,9 @@
         Object.assign(candidate, window.TaskTodoEditor.value());
         candidate.status = window.TaskTodos.statusFor(candidate.todos, candidate.status);
         try {
+          const completionNote = window.TaskTodos.appendLog(candidate.note, window.TaskTodos.completionLine(existing, candidate));
           window.applyTaskRecurrence?.(candidate, !existing);
+          candidate.note = completionNote;
         } catch (error) {
           toast(error.message);
           return;
@@ -4282,7 +4287,7 @@
     <script src="./backgrounds.js?v=settings-1"></script>
     <script src="./deadline-dock.js?v=urgent-red-4"></script>
     <script src="./recurring-tasks.js?v=todos-3"></script>
-    <script src="./task-notes.js?v=timestamp-pill-3"></script>
+    <script src="./task-notes.js?v=completion-log-4"></script>
     <script src="./storage-core.js?v=1"></script>
     <script src="./storage-adapters.js?v=1"></script>
     <script src="./storage-sync.js?v=settings-1"></script>
