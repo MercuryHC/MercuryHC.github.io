@@ -6,14 +6,18 @@
   function error(message = '') { $('reminder-error').textContent = message; }
   function show(mode) {
     const reminders = mode === 'reminders';
-    $('task-main').hidden = reminders;
+    $('task-main').hidden = mode !== 'tasks';
+    const calendar = $('calendar-workspace');
+    if (calendar) calendar.hidden = mode !== 'calendar';
     $('reminder-workspace').hidden = !reminders;
-    for (const name of ['tasks', 'reminders']) {
+    for (const name of ['tasks', 'reminders', 'calendar']) {
       const button = $('task-mode-' + name), active = name === mode;
+      if (!button) continue;
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
     }
     if (reminders) renderList();
+    if (mode === 'calendar') window.TaskCalendar?.render();
   }
   function reset() {
     editingId = editingSnapshot = null;
@@ -30,6 +34,7 @@
     window.githubSyncMarkDirty?.();
     window.refreshDeadlineDock?.();
     renderList();
+    window.TaskCalendar?.render();
   }
   function act(fn) {
     try { error(); fn(); }
@@ -120,7 +125,7 @@
   $('task-mode-tasks').onclick = () => show('tasks');
   $('task-mode-reminders').onclick = () => show('reminders');
   $('reminder-cancel').onclick = reset;
-  window.RemindersWorkspace = {render:renderList, show, open};
+  window.RemindersWorkspace = {render:renderList, show, open, toggle(id) {const item=items().find(r=>r.id===id);if(item)commit(items().map(r=>r.id===id?Core.complete(r,!r.completed):r));}, createAt(value) {reset();show('reminders');$('reminder-time').value=value;$('reminder-title').focus();}};
   renderList();
   setInterval(() => { if (!$('reminder-workspace').hidden) renderList(); }, 15000);
   window.addEventListener('focus', renderList);

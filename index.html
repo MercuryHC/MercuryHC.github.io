@@ -2069,6 +2069,7 @@
     <link rel="stylesheet" href="./task-todos.css?v=timestamp-pill-2" />
     <link rel="stylesheet" href="./responsive.css?v=1" />
       <link rel="stylesheet" href="./reminders.css?v=1">
+    <link rel="stylesheet" href="./task-calendar.css?v=complete-1">
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2420,10 +2421,11 @@
       </header>
       <div id="task-workspace" hidden>
         <nav class="reminder-switch" aria-label="Task 内切换">
-          <button type="button" class="tab active" id="task-mode-tasks" aria-pressed="true">任务</button>
+          <button type="button" class="tab active" id="task-mode-calendar" aria-pressed="true">日历</button>
+          <button type="button" class="tab" id="task-mode-tasks" aria-pressed="false">任务</button>
           <button type="button" class="tab" id="task-mode-reminders" aria-pressed="false">提醒事项</button>
         </nav>
-        <div id="task-main">
+        <div id="task-main" hidden>
         <div class="hero">
           <div>
             <h1 id="heading">让每一件事，有序发生。</h1>
@@ -2513,6 +2515,30 @@
           </div><span id="reminder-count" role="status" aria-live="polite"></span></div>
           <ul id="reminder-list" aria-label="提醒事项清单"></ul>
           <p class="reminder-hint">按本机时区显示。到时会出现在顶部提醒栏；关闭网页后的微信提醒需在设置中连接并启用后台。</p>
+        </section>
+        <section id="calendar-workspace" aria-label="任务与提醒日历">
+          <div class="calendar-header"><div><h1 id="calendar-period" aria-live="polite"></h1><p>任务与提醒，一眼掌握。</p></div>
+            <div class="calendar-controls">
+              <button type="button" class="secondary" id="calendar-prev" aria-label="上一月或周">‹</button>
+              <button type="button" class="secondary" id="calendar-today">今天</button>
+              <button type="button" class="secondary" id="calendar-next" aria-label="下一月或周">›</button>
+              <div class="calendar-view-switch" role="group" aria-label="日历视图">
+              <button type="button" class="tab active" data-calendar-mode="month" aria-pressed="true">月</button>
+              <button type="button" class="tab" data-calendar-mode="week" aria-pressed="false">周</button>
+              </div>
+            </div>
+          </div>
+          <div class="calendar-filters" role="group" aria-label="日历显示内容">
+            <label><input type="checkbox" id="calendar-tasks" checked>任务</label>
+            <label><input type="checkbox" id="calendar-reminders" checked><i class="calendar-legend reminder" aria-hidden="true"></i>提醒事项</label>
+            <label><input type="checkbox" id="calendar-completed" checked>显示已完成</label>
+          </div>
+          <div id="calendar-project-legend" class="calendar-project-legend" aria-label="当前日历项目颜色图例"></div>
+          <div class="calendar-layout">
+            <div class="calendar-month"><div class="calendar-weekdays" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div><div id="calendar-grid" role="group" aria-label="选择日期，方向键移动，PageUp 和 PageDown 切换月份"></div></div>
+            <section class="calendar-agenda-panel" aria-labelledby="calendar-agenda-heading"><h2 id="calendar-agenda-heading" tabindex="-1"></h2><p id="calendar-day-count" role="status"></p><div id="calendar-agenda"></div></section>
+          </div>
+          <p class="reminder-hint">任务按起止日期显示，提醒事项显示在提醒当天。点击安排可编辑；时间按本机时区显示。</p>
         </section>
       </div>
       <section id="notebook-workspace" hidden aria-label="Notes Markdown 笔记">
@@ -3295,6 +3321,15 @@
         ><button class="primary" id="nb-use-local">保存本机版本</button>
       </div>
     </dialog>
+    <dialog id="calendar-create-dialog" aria-labelledby="calendar-create-title">
+      <form method="dialog" class="calendar-create-form">
+        <h2 id="calendar-create-title">添加安排</h2>
+        <p>选择类型，继续填写名称和详情。</p>
+        <label>开始／提醒时间<input id="calendar-create-time" type="datetime-local" required></label>
+        <p id="calendar-create-error" role="alert"></p>
+        <div class="calendar-create-actions"><button type="button" class="primary" id="calendar-create-task">＋ 任务</button><button type="button" class="secondary" id="calendar-create-reminder">＋ 提醒事项</button><button class="secondary" value="cancel">取消</button></div>
+      </form>
+    </dialog>
     <dialog id="task-dialog">
       <form id="task-form">
         <div class="row">
@@ -3896,6 +3931,7 @@
       }
       function render() {
         window.RemindersWorkspace?.render();
+        window.TaskCalendar?.render();
         window.refreshDeadlineDock?.();
         let done = db.tasks.filter((t) => t.status === "已完成").length,
           late = db.tasks.filter((t) => isTaskOverdue(t)).length;
@@ -4108,7 +4144,7 @@
       $("#search").oninput = render;
       $("#project-filter").onchange = renderTasks;
       $("#status-filter").onchange = renderTasks;
-      function openTask(id) {
+      function openTask(id, defaults = {}) {
         editing = id || null;
         let t = db.tasks.find((t) => t.id === id) || {
             title: "",
@@ -4120,6 +4156,7 @@
             status: "待开始",
             priority: "中",
             note: "",
+            ...defaults,
           },
           f = $("#task-form");
         f.reset();
@@ -4315,7 +4352,9 @@
     <script src="./browser-bookmarks-store.js?v=storage-1"></script>
     <script src="./browser-bookmarks.js?v=storage-1"></script>
     <script src="./backgrounds.js?v=settings-1"></script>
-    <script src="./reminders.js?v=1"></script>
+    <script src="./reminders.js?v=complete-1"></script>
+    <script src="./calendar-core.js?v=daily-1"></script>
+    <script src="./task-calendar.js?v=complete-1"></script>
     <script src="./deadline-dock.js?v=reminders-1"></script>
     <script src="./recurring-tasks.js?v=todos-3"></script>
     <script src="./task-notes.js?v=completion-log-4"></script>
