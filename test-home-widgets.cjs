@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{parseHTML}=require('linkedom'),Core=require('./home-widgets-core'),C=require('./calendar-core');
+const now=Date.now(),day=C.key(new Date(now));
+const db={projects:[{id:'p',title:'Project',color:'#123456'},{id:'child',parentId:'p',title:'Child'}],tasks:[{id:'t',title:'<img src=x>',project:'child',start:C.add(day,-1),due:C.add(day,1),status:'进行中'}],reminders:[{id:'r',title:'Reminder',remindAt:new Date(now-60000).toISOString(),completed:false},{id:'future',title:'Later',remindAt:C.date(C.add(day,8)).toISOString(),completed:false}]};
+assert.equal(Core.preferences(null).widgets.filter(w=>w.enabled).length,2);
+assert.equal(Core.preferences({version:1,widgets:[{id:'today',enabled:false,size:'bad'}]}).widgets[0].size,'1x2');
+let data=Core.summary(db,now,C);assert.equal(data.today.length,2);assert.equal(data.reminders.length,1);assert.equal(data.projects[0].total,1);assert.equal(data.counts.progress,1);
+assert.equal(Core.summary({},now,C).today.length,0);
+const {document}=parseHTML(fs.readFileSync('index.html','utf8'));const $=id=>document.getElementById(id),storage=new Map([['workstation-home-widgets-v1',JSON.stringify({version:1,widgets:[{id:'today',enabled:true,size:'2x2'}]})]]);let fail=false,opened=[];
+const context={document,db,Date,JSON,setInterval(){},localStorage:{getItem:k=>storage.get(k)||null,setItem(k,v){if(fail)throw Error('quota');storage.set(k,v)}},window:{HomeWidgetsCore:Core,CalendarCore:C,addEventListener(){},TaskCalendar:{openToday:()=>opened.push('today')},RemindersWorkspace:{toggle(id){db.reminders.find(r=>r.id===id).completed=!db.reminders.find(r=>r.id===id).completed},open:id=>opened.push(id),show:id=>opened.push(id)}},toggle:id=>opened.push('toggle:'+id),openTask:id=>opened.push(id),openTaskStat:id=>opened.push(id),filterProject:id=>opened.push(id),setNav:id=>opened.push(id)};
+vm.createContext(context);vm.runInContext(fs.readFileSync('home-widgets.js','utf8'),context);
+assert.equal($('home-widgets-grid').children.length,2);assert.equal($('home-widgets-grid').querySelector('img'),null);
+$('home-widgets-grid').querySelector('.home-widget-link').onclick();assert.deepEqual(opened,['today']);
+const circles=$('home-widgets-grid').querySelectorAll('.home-widget-check');$('home-widgets-grid').querySelector('[aria-label="完成：Reminder"]').onclick();assert.equal(db.reminders[0].completed,true);context.window.HomeWidgets.refresh();
+$('home-widgets-customize').onclick();assert.equal($('home-widget-settings').hidden,false);
+function change(id,enabled,size){const check=document.querySelector('[data-widget="'+id+'"] input')||document.querySelector('input[data-widget="'+id+'"]');const select=document.querySelector('select[data-size="'+id+'"]');Object.defineProperty(select,'value',{value:size,configurable:true});check.checked=enabled;check.onchange();}
+change('projects',true,'2x2');assert.equal(document.querySelector('section[data-widget="projects"]').dataset.size,'2x2');assert.equal(JSON.parse(storage.get('workstation-home-widgets-v1')).widgets[3].enabled,true);
+fail=true;change('today',false,'1x1');assert(document.querySelector('section[data-widget="today"]'));assert($('home-widgets-error').textContent);fail=false;
+for(const id of ['today','tasks','reminders','projects'])change(id,false,'1x2');assert($('home-widgets-grid').querySelector('.home-widgets-empty'));
+vm.runInContext(fs.readFileSync('home-widgets.js','utf8'),context);assert($('home-widgets-grid').querySelector('.home-widgets-empty'),'preferences survive reload');
+console.log('PASS: date projections, project totals, safe rendering, completion, routing, size persistence, empty state and failed-save rollback');
+
+for(const size of ['1x1','1x2','1x4','2x2'])assert.equal(Core.preferences({version:1,widgets:[{id:'today',size}]}).widgets[0].size,size);
+assert.equal(Core.preferences({version:1,widgets:[{id:'today',size:'large'}]}).widgets[0].size,'2x2');

@@ -2071,6 +2071,7 @@
       <link rel="stylesheet" href="./reminders.css?v=1">
     <link rel="stylesheet" href="./task-calendar.css?v=complete-1">
     <link rel="stylesheet" href="./task-appearance.css?v=1">
+    <link rel="stylesheet" href="./home-widgets.css?v=2">
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2845,6 +2846,15 @@
             </button>
           </form>
         </div>
+        <section class="home-widgets" aria-label="主页卡片">
+          <div class="home-widgets-toolbar"><div><span class="home-widgets-eyebrow">MY DAY</span><h2>我的一天</h2></div><button id="home-widgets-customize" type="button" aria-expanded="false" aria-controls="home-widget-settings">自定义卡片</button></div>
+          <div id="home-widget-settings" class="home-widget-settings" hidden>
+            <div class="home-widget-settings-heading"><div><h3>让主页更适合你</h3><p>按行 × 列选择尺寸，设置自动保存在本机。</p></div><button id="home-widgets-close" type="button">完成</button></div>
+            <div id="home-widget-options"></div>
+          </div>
+          <p id="home-widgets-error" role="alert"></p>
+          <div id="home-widgets-grid"></div>
+        </section>
         <div class="bookmark-section-heading">
           <div class="bookmark-title-tools">
             <h2 id="bm-heading">全部收藏</h2>
@@ -3933,6 +3943,7 @@
       function render() {
         window.RemindersWorkspace?.render();
         window.TaskCalendar?.render();
+        window.HomeWidgets?.refresh();
         window.refreshDeadlineDock?.();
         let done = db.tasks.filter((t) => t.status === "已完成").length,
           late = db.tasks.filter((t) => isTaskOverdue(t)).length;
@@ -4356,6 +4367,8 @@
     <script src="./reminders.js?v=complete-1"></script>
     <script src="./calendar-core.js?v=daily-1"></script>
     <script src="./task-calendar.js?v=complete-1"></script>
+    <script src="./home-widgets-core.js?v=2"></script>
+    <script src="./home-widgets.js?v=2"></script>
     <script src="./deadline-dock.js?v=reminders-1"></script>
     <script src="./recurring-tasks.js?v=todos-3"></script>
     <script src="./task-notes.js?v=completion-log-4"></script>

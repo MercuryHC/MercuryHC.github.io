@@ -35,6 +35,7 @@
     window.refreshDeadlineDock?.();
     renderList();
     window.TaskCalendar?.render();
+    window.HomeWidgets?.refresh();
   }
   function act(fn) {
     try { error(); fn(); }
