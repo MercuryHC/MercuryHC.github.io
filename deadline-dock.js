@@ -76,7 +76,9 @@
       : "剩余 " + minutes + " 分钟";
   }
   function refreshDeadlineDock() {
-    const entries = urgentTasks(db.tasks),
+    const entries = [...(db.reminders || []).filter(r => !r.completed && Date.parse(r.remindAt) <= Date.now()).map(r => ({
+      task:r, remaining:Date.parse(r.remindAt)-Date.now(), level:"red", kind:"reminder"
+    })), ...urgentTasks(db.tasks)].sort((a,b) => ({red:0,yellow:1,green:2}[a.level] - {red:0,yellow:1,green:2}[b.level]) || a.remaining-b.remaining),
       menu = document.querySelector(".deadline-menu");
     const trigger = document.getElementById("deadline-trigger"),
       count = document.getElementById("deadline-count"),
@@ -89,19 +91,19 @@
     const counts = { red: 0, yellow: 0, green: 0 };
     entries.forEach((item) => counts[item.level]++);
     const message = entries.length
-      ? `高/加急任务提醒：红色 ${counts.red} 项，黄色 ${counts.yellow} 项，绿色 ${counts.green} 项`
-      : "暂无需要提醒的高或加急任务";
+      ? `任务与事项提醒：红色 ${counts.red} 项，黄色 ${counts.yellow} 项，绿色 ${counts.green} 项`
+      : "暂无到期事项或需要提醒的高或加急任务";
     trigger.title = message;
     trigger.setAttribute("aria-label", message);
     list.replaceChildren();
     if (!entries.length) {
       const empty = document.createElement("p");
       empty.className = "deadline-empty";
-      empty.textContent = "暂无满足提醒条件的高或加急任务。";
+      empty.textContent = "暂无到期事项或满足提醒条件的高或加急任务。";
       list.append(empty);
       return;
     }
-    for (const { task, remaining, level } of entries) {
+    for (const { task, remaining, level, kind } of entries) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "deadline-task";
@@ -120,10 +122,12 @@
         task.due +
         " " +
         (task.dueTime || "23:59");
+      if (kind === "reminder") meta.textContent = "提醒事项 · " + remainingLabel(remaining) + " · " + new Date(task.remindAt).toLocaleString("zh-CN");
       button.append(name, meta);
       button.onclick = () => {
         menu.open = false;
-        openTask(task.id);
+        if (kind === "reminder") window.RemindersWorkspace?.open(task.id);
+        else openTask(task.id);
       };
       list.append(button);
     }

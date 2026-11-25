@@ -23,11 +23,11 @@
   async function upload(){
     const value=snapshot(),fingerprint=JSON.stringify(value);if(active&&fingerprint===last)return;
     const result=await request('/tasks','PUT',{...value,enabled:true});revision=result.revision;last=fingerprint;active=true;
-    status('已启用：后台保存 '+result.taskCount+' 项任务的提醒快照。后续本页任务变更自动同步；网页关闭后由后台继续检查。');
+    status('已启用：后台保存 '+result.taskCount+' 项任务、'+(result.reminderCount||0)+' 项提醒事项的快照。后续本页任务变更自动同步；网页关闭后由后台继续检查。');
   }
   $('sc-connect').onclick=()=>run(async()=>{
     const result=await request('/health');revision=result.revision;active=false;last='';
-    status('后台已连接，提醒'+(result.enabled?'已启用':'未启用')+'，快照 '+result.taskCount+' 项；最近同步：'+(result.updatedAt?new Date(result.updatedAt).toLocaleString():'无')+'。'+(result.lastError?'最近推送提示：'+result.lastError+'。':'')+'点击“启用并同步本机任务”后才会覆盖后台快照。');
+    status('后台已连接，提醒'+(result.enabled?'已启用':'未启用')+'，快照 '+result.taskCount+' 项任务、'+(result.reminderCount||0)+' 项提醒事项；最近同步：'+(result.updatedAt?new Date(result.updatedAt).toLocaleString():'无')+'。'+(result.lastError?'最近推送提示：'+result.lastError+'。':'')+'点击“启用并同步本机任务”后才会覆盖后台快照。');
   });
   $('sc-enable').onclick=()=>run(async()=>{if(revision===null)throw Error('请先连接后台，查看当前快照状态。');last='';await upload();});
   $('sc-test').onclick=()=>run(async()=>{await request('/test','POST');status('Server酱已接受测试消息，请在微信中确认收到；此结果不等于手机已送达。');});

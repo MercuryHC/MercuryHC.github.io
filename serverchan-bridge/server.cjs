@@ -31,11 +31,11 @@ function createBridge({sendKey,token,origin,dir,site='https://mercuryhc.github.i
   async function tick(){await ready;return serial(async()=>{
     if(!state.enabled)return;
     const now=clock();if(state.lastAttempt&&now-state.lastAttempt<300000)return;
-    const items=Core.pending(state.tasks,state.sent,now).slice(0,20);if(!items.length)return;
+    const items=Core.pendingAll(state,state.sent,now).slice(0,20);if(!items.length)return;
     state.lastAttempt=now;await persist();
     const clean=s=>s.replace(/[\\`*_{}\[\]()<>!#|]/g,'').replace(/[\r\n]+/g,' ');
     const stamp=ms=>new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',dateStyle:'short',timeStyle:'medium',hour12:false}).format(ms);
-    const body=items.map(x=>`- ${clean(x.task.title)} · ${x.task.priority} · ${{red:'红色',yellow:'黄色',green:'绿色'}[x.level]}提醒${x.task.dueAt===null?'':' · 截止 '+stamp(x.task.dueAt)}`).join('\n')+'\n\n[打开个人工作站]('+site+')\n\n时间显示为北京时间；依据最近同步的提醒快照。';
+    const body=items.map(x=>`- ${clean(x.task.title)} · ${x.task.priority} · ${{red:'红色',yellow:'黄色',green:'绿色'}[x.level]}提醒${x.task.dueAt===null?'':(x.task.kind==='reminder'?' · 提醒时间 ':' · 截止 ')+stamp(x.task.dueAt)}`).join('\n')+'\n\n[打开个人工作站]('+site+')\n\n时间显示为北京时间；依据最近同步的提醒快照。';
     try{await send('个人工作站：'+items.length+' 项任务提醒',body);for(const x of items)state.sent[x.key]=Core.levels[x.level];}
     catch(e){state.lastError=e.message;}
     await persist();
@@ -51,7 +51,7 @@ function createBridge({sendKey,token,origin,dir,site='https://mercuryhc.github.i
     try{
       await ready;
       await serial(async()=>{
-        if(req.method==='GET'&&req.url==='/health')return reply(200,{revision:state.revision,enabled:state.enabled,taskCount:state.tasks.length,updatedAt:state.updatedAt,lastSuccess:state.lastSuccess,lastError:state.lastError,dailyLimit});
+        if(req.method==='GET'&&req.url==='/health')return reply(200,{revision:state.revision,enabled:state.enabled,taskCount:state.tasks.length,reminderCount:(state.reminders||[]).length,updatedAt:state.updatedAt,lastSuccess:state.lastSuccess,lastError:state.lastError,dailyLimit});
         if(req.method==='POST'&&req.url==='/pause'){state.enabled=false;state.revision++;await persist();return reply(200,{enabled:false,revision:state.revision});}
         if(req.method==='POST'&&req.url==='/test'){
           if(state.lastTest&&clock()-state.lastTest<60000)return reply(429,{error:'测试消息请间隔一分钟'});
@@ -63,9 +63,9 @@ function createBridge({sendKey,token,origin,dir,site='https://mercuryhc.github.i
           let value;try{value=JSON.parse(Buffer.concat(chunks).toString());}catch{return reply(400,{error:'JSON 无效'});}
           let clean;try{clean=Core.validate(value);}catch(e){return reply(400,{error:e.message});}
           if(typeof value.enabled!=='boolean')return reply(400,{error:'启用状态无效'});
-          state.tasks=clean.tasks;state.enabled=value.enabled;state.revision++;state.updatedAt=clock();
-          const keys=new Set(state.tasks.map(Core.signature));state.sent=Object.fromEntries(Object.entries(state.sent).filter(([k])=>keys.has(k)));
-          await persist();return reply(200,{revision:state.revision,enabled:state.enabled,taskCount:state.tasks.length,updatedAt:state.updatedAt});
+          state.tasks=clean.tasks;state.reminders=clean.reminders;state.enabled=value.enabled;state.revision++;state.updatedAt=clock();
+          const keys=new Set([...state.tasks.map(Core.signature),...(state.reminders||[]).map(Core.reminderSignature)]);state.sent=Object.fromEntries(Object.entries(state.sent).filter(([k])=>keys.has(k)));
+          await persist();return reply(200,{revision:state.revision,enabled:state.enabled,taskCount:state.tasks.length,reminderCount:(state.reminders||[]).length,updatedAt:state.updatedAt});
         }
         reply(404,{error:'接口不存在'});
       });

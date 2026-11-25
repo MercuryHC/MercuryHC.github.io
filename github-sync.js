@@ -390,6 +390,7 @@
     return {
       projects,
       tasks,
+      reminders: window.ReminderCore ? window.ReminderCore.normalize(data.reminders) : (data.reminders === undefined ? [] : (() => { throw Error("提醒事项模块未加载，请刷新后重试。"); })()),
       schedules: window.Recurring
         ? window.Recurring.normalizeSchedules({ ...data, projects, tasks })
         : [],
@@ -530,7 +531,7 @@
     }
     if (
       !confirm(
-        "读取 GitHub 将读取所有项目文件并替换本地项目和任务。建议先点「导出」备份；本次读取也会保留最近三次本地快照。继续？",
+        "读取 GitHub 将读取所有项目文件并替换本地项目、任务和提醒事项。建议先点「导出」备份；本次读取也会保留最近三次本地快照。继续？",
       )
     )
       return;
@@ -647,7 +648,7 @@
   }
   let mergeSession = null,
     lastMergePromptKey = "";
-  const mergeNames = { tasks: "任务", projects: "项目", schedules: "循环计划" };
+  const mergeNames = { tasks: "任务", projects: "项目", schedules: "循环计划", reminders: "提醒事项" };
   function mergeError(text) {
     el("merge-error").textContent = text;
   }
@@ -659,7 +660,7 @@
     el("merge-confirm").disabled = busy || !!result.unresolved.length;
     el("merge-summary").textContent = result.unresolved.length
       ? `还有 ${result.unresolved.length} 项冲突需要选择；相同的 ${mergeSession.plan.unchanged} 条记录自动保留。`
-      : `合并后：${result.data.tasks.length} 项任务、${result.data.projects.length} 个项目、${result.data.schedules.length} 个循环计划。`;
+      : `合并后：${result.data.tasks.length} 项任务、${result.data.projects.length} 个项目、${result.data.schedules.length} 个循环计划、${result.data.reminders.length} 项提醒事项。`;
     const warnings = el("merge-warnings");
     warnings.replaceChildren();
     for (const text of result.warnings) {
@@ -689,6 +690,7 @@
         `颜色：${record.color}`,
         `说明：${record.description || "（空）"}`,
       ].join("\n");
+    if (group === "reminders") return [`事项：${record.title}`, `提醒：${new Date(record.remindAt).toLocaleString()}`, `状态：${record.completed ? "已完成" : "待完成"}`, `更新时间：${record.updatedAt}`].join("\n");
     const rule = record.rule;
     return [
       `计划：${record.template.title}`,
@@ -706,7 +708,7 @@
     mergeError("");
     el("merge-context").textContent =
       `${config.owner}/${config.repo} · ${config.path.replace(/\.json$/, ".projects")} · 按一级项目存储 · 远端版本 ${session.remoteSha.slice(0, 8)}。${session.plan.hasBase ? "已参考上次同步版本判断单边修改及删除。" : "未找到共同版本：独有记录默认保留，同 ID 的不同版本需要你选择。"}`;
-    for (const group of ["tasks", "projects", "schedules"]) {
+    for (const group of ["tasks", "projects", "schedules", "reminders"]) {
       const rows = session.plan.rows.filter(
         (r) => r.group === group && r.kind !== "same",
       );

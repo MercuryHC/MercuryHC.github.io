@@ -4,7 +4,7 @@ const core=require('./storage-core');global.StorageCore=core;const adapters=requ
 const bookmarks=require('./bookmarks-core');const browser=require('./browser-bookmarks-core');
 const hooks={tasks:v=>v,bookmarks:bookmarks.validate,browser:browser.validate};
 const task=id=>({id,title:id});
-const bundle=tasks=>({tasks:{projects:[],tasks,schedules:[]},notes:{notes:[],folders:[]},bookmarks:bookmarks.defaults()});
+const bundle=tasks=>({tasks:{projects:[],tasks,schedules:[],reminders:[]},notes:{notes:[],folders:[]},bookmarks:bookmarks.defaults()});
 const conflict=(v)=>v.rows.filter(x=>x.conflict);
 (async()=>{
  let base=bundle([task('a')]),local=bundle([{...task('a'),title:'local'},task('l')]),remote=bundle([task('a'),task('r')]);

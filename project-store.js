@@ -1,11 +1,11 @@
 /* Per-root-project storage, with atomic commits and per-file optimistic locking. */
 (function (root) {
   "use strict";
-  const empty = () => ({ projects: [], tasks: [], schedules: [] });
+  const empty = () => ({ projects: [], tasks: [], schedules: [], reminders: [] });
   const stable = (data) =>
     JSON.stringify(
       Object.fromEntries(
-        ["projects", "tasks", "schedules"].map((k) => [
+        ["projects", "tasks", "schedules", "reminders"].map((k) => [
           k,
           [...(data[k] || [])].sort((a, b) => a.id.localeCompare(b.id)),
         ]),
@@ -23,6 +23,7 @@
       group(roots.get(t.project) || null).tasks.push(t);
     for (const s of data.schedules || [])
       group(roots.get(s.template.project) || null).schedules.push(s);
+    for (const r of data.reminders || []) group("@reminders").reminders.push(r);
     return groups;
   }
   function create({ request, baseUrl, config, validate, encode, decode }) {
@@ -37,7 +38,7 @@
         missingOK: true,
       });
     const filename = (key) =>
-      key === null ? "unassigned.json" : "project-" + key + ".json";
+      key === "@reminders" ? "reminders.json" : key === null ? "unassigned.json" : "project-" + key + ".json";
     async function inspect(ref) {
       const dir = await get(directory(), ref);
       const files = new Map();
@@ -49,7 +50,7 @@
         if (!marker)
           throw Error("项目目录缺少存储标记，已停止读取以保护数据。");
         const entries = dir.filter((f) =>
-          /^(project-[a-zA-Z0-9_-]{1,100}|unassigned)\.json$/.test(f.name),
+          /^(project-[a-zA-Z0-9_-]{1,100}|unassigned|reminders)\.json$/.test(f.name),
         );
         // Read every file at the same commit, never a mixture of branch versions.
         for (const entry of entries) {
@@ -73,7 +74,7 @@
       if (legacy) data = validate(decode(legacy.content));
       else
         for (const file of files.values())
-          for (const k of Object.keys(data)) data[k].push(...file.data[k]);
+          for (const k of Object.keys(data)) data[k].push(...(file.data[k] || []));
       data = validate(JSON.parse(stable(data)));
       return {
         files,

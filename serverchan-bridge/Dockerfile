@@ -1,5 +1,6 @@
 FROM node:22-alpine
 WORKDIR /app
+COPY reminders-core.js /app/reminders-core.js
 COPY notification-core.js /app/notification-core.js
 COPY serverchan-bridge/server.cjs /app/serverchan-bridge/server.cjs
 RUN mkdir /data && chown node:node /data

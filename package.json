@@ -1,0 +1,7 @@
+{
+  "name": "self-station",
+  "private": true,
+  "scripts": { "test": "node --test test-*.cjs serverchan-bridge/test*.cjs" },
+  "engines": { "node": ">=22" },
+  "devDependencies": { "fake-indexeddb": "6.0.0", "linkedom": "0.18.12" }
+}

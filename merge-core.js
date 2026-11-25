@@ -1,6 +1,6 @@
 /* Three-way, record-level merge; selections are explicit for real conflicts. */
 (function (root) {
-  const groups = ["tasks", "projects", "schedules"];
+  const groups = ["tasks", "projects", "schedules", "reminders"];
   const equal = (a, b) =>
     JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
   const clone = (value) =>
@@ -58,7 +58,7 @@
     return { rows, unchanged, hasBase: !!base };
   }
   function build(plan, makeId) {
-    const result = { projects: [], tasks: [], schedules: [] },
+    const result = { projects: [], tasks: [], schedules: [], reminders: [] },
       warnings = [],
       unresolved = [];
     for (const row of plan.rows) {

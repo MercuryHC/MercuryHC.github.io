@@ -2068,6 +2068,7 @@
     <link rel="stylesheet" href="./settings.css?v=serverchan-3" />
     <link rel="stylesheet" href="./task-todos.css?v=timestamp-pill-2" />
     <link rel="stylesheet" href="./responsive.css?v=1" />
+      <link rel="stylesheet" href="./reminders.css?v=1">
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2386,9 +2387,9 @@
                 ><span id="deadline-count" hidden>0</span>
               </summary>
               <div class="deadline-panel">
-                <div class="deadline-heading">高与加急任务提醒</div>
+                <div class="deadline-heading">任务与事项提醒</div>
                 <p class="deadline-hint">
-                  加急⚡未完成即红色提醒；高优先级按时间分级：绿色跨天预告、黄色不足6小时、红色不足1小时或逾期
+                  提醒事项到时显示红色；加急⚡未完成即红色提醒；高优先级按时间分级：绿色跨天预告、黄色不足6小时、红色不足1小时或逾期
                 </p>
                 <div id="deadline-list"></div>
                 <p class="deadline-footnote">
@@ -2418,6 +2419,11 @@
         </div>
       </header>
       <div id="task-workspace" hidden>
+        <nav class="reminder-switch" aria-label="Task 内切换">
+          <button type="button" class="tab active" id="task-mode-tasks" aria-pressed="true">任务</button>
+          <button type="button" class="tab" id="task-mode-reminders" aria-pressed="false">提醒事项</button>
+        </nav>
+        <div id="task-main">
         <div class="hero">
           <div>
             <h1 id="heading">让每一件事，有序发生。</h1>
@@ -2490,6 +2496,24 @@
         <p style="font-size: 11px; margin-top: 20px; text-align: center">
           留一点空间，给专注的自己。
         </p>
+        </div>
+        <section id="reminder-workspace" hidden aria-labelledby="reminder-heading">
+          <div class="hero"><div><h1 id="reminder-heading">提醒事项</h1><p>记下一件事，在合适的时间提醒自己。</p></div></div>
+          <form id="reminder-form" class="reminder-form">
+            <label>事项名称<input id="reminder-title" required maxlength="500" placeholder="输入新的提醒事项…" autocomplete="off"></label>
+            <label>提醒时间<input id="reminder-time" type="datetime-local" required></label>
+            <button type="submit" class="primary" id="reminder-submit">添加提醒事项</button>
+            <button type="button" class="secondary" id="reminder-cancel" hidden>取消编辑</button>
+          </form>
+          <p id="reminder-error" role="alert"></p>
+          <div class="reminder-toolbar"><div class="tabs" role="group" aria-label="筛选提醒事项">
+            <button type="button" class="tab active" data-reminder-filter="pending" aria-pressed="true">待完成</button>
+            <button type="button" class="tab" data-reminder-filter="completed" aria-pressed="false">已完成</button>
+            <button type="button" class="tab" data-reminder-filter="all" aria-pressed="false">全部</button>
+          </div><span id="reminder-count" role="status" aria-live="polite"></span></div>
+          <ul id="reminder-list" aria-label="提醒事项清单"></ul>
+          <p class="reminder-hint">按本机时区显示。到时会出现在顶部提醒栏；关闭网页后的微信提醒需在设置中连接并启用后台。</p>
+        </section>
       </div>
       <section id="notebook-workspace" hidden aria-label="Notes Markdown 笔记">
         <div class="notebook-heading">
@@ -3643,6 +3667,7 @@
     <script src="./notes-core.js?v=timestamp-pill-2"></script>
     <script src="./task-todos-core.js?v=completion-log-2"></script>
     <script src="./task-time.js?v=1"></script>
+    <script src="./reminders-core.js?v=1"></script>
     <script src="./recurrence-core.js?v=todos-4"></script>
     <script>
       const $ = (s) => document.querySelector(s),
@@ -3744,6 +3769,7 @@
       } catch {
         db = seed;
       }
+      if (db.reminders === undefined) db.reminders = [];
       let todoMigrationWarning = "";
       try {
         const converted = window.TaskTodos.migrateData(db);
@@ -3869,6 +3895,8 @@
         return `<span class="tag" style="color:${c};background:${c}13">${t.status}</span>`;
       }
       function render() {
+        window.RemindersWorkspace?.render();
+        window.refreshDeadlineDock?.();
         let done = db.tasks.filter((t) => t.status === "已完成").length,
           late = db.tasks.filter((t) => isTaskOverdue(t)).length;
         $("#stats").innerHTML = [
@@ -4024,6 +4052,7 @@
         save();
       }
       function filterProject(id, forceTasks = false) {
+        window.RemindersWorkspace?.show("tasks");
         if (!project(id)) return;
         nav = "projects";
         projectFocus = id;
@@ -4038,6 +4067,7 @@
         render();
       }
       function setNav(n) {
+        window.RemindersWorkspace?.show("tasks");
         projectFocus = null;
         projectTaskMode = false;
         nav = n;
@@ -4265,12 +4295,12 @@
       if (todoMigrationWarning) toast(todoMigrationWarning);
     </script>
     <script src="./timeline-view.js?v=1"></script>
-    <script src="./merge-core.js?v=1"></script>
-    <script src="./project-store.js?v=1"></script>
+    <script src="./merge-core.js?v=reminders-1"></script>
+    <script src="./project-store.js?v=reminders-1"></script>
     <script src="./vault-sync.js?v=1"></script>
     <script src="./upload-progress.js?v=diff-1"></script>
     <script src="./wallpaper-library.js?v=1"></script>
-    <script src="./github-sync.js?v=todos-2"></script>
+    <script src="./github-sync.js?v=reminders-1"></script>
     <script src="./notion-client.js?v=1"></script>
     <script src="./bookmarks-core.js?v=merge-1"></script>
     <script src="./theme.js?v=settings-1"></script>
@@ -4285,14 +4315,15 @@
     <script src="./browser-bookmarks-store.js?v=storage-1"></script>
     <script src="./browser-bookmarks.js?v=storage-1"></script>
     <script src="./backgrounds.js?v=settings-1"></script>
-    <script src="./deadline-dock.js?v=urgent-red-4"></script>
+    <script src="./reminders.js?v=1"></script>
+    <script src="./deadline-dock.js?v=reminders-1"></script>
     <script src="./recurring-tasks.js?v=todos-3"></script>
     <script src="./task-notes.js?v=completion-log-4"></script>
-    <script src="./storage-core.js?v=1"></script>
+    <script src="./storage-core.js?v=reminders-1"></script>
     <script src="./storage-adapters.js?v=1"></script>
     <script src="./storage-sync.js?v=settings-1"></script>
-    <script src="./notification-core.js?v=1"></script>
-    <script src="./serverchan-settings.js?v=1"></script>
+    <script src="./notification-core.js?v=reminders-1"></script>
+    <script src="./serverchan-settings.js?v=reminders-1"></script>
     <script src="./settings.js?v=serverchan-3"></script>
     <script>
       const syncStatus = document.getElementById("gh-status");

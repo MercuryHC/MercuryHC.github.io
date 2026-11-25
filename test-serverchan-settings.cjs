@@ -9,7 +9,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
     if(url.endsWith('/pause'))return{ok:true,json:async()=>({revision:++revision})};
     return{ok:true,json:async()=>({accepted:true})};
   }};
-  vm.createContext(c);for(const file of ['task-time.js','notification-core.js','serverchan-settings.js'])vm.runInContext(fs.readFileSync(__dirname+'/'+file,'utf8'),c);
+  vm.createContext(c);for(const file of ['task-time.js','reminders-core.js','notification-core.js','serverchan-settings.js'])vm.runInContext(fs.readFileSync(__dirname+'/'+file,'utf8'),c);
   el('sc-url').value='https://remind.example.com';el('sc-token').value='t'.repeat(40);
   await el('sc-enable').onclick();assert.equal(requests.length,0,'connect before replacing snapshot');
   await el('sc-connect').onclick();await el('sc-enable').onclick();
@@ -17,6 +17,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
   assert.equal(store.size,1);assert.equal(store.get('workstation-reminder-endpoint'),'https://remind.example.com');
   let count=requests.length;interval();await new Promise(r=>setImmediate(r));assert.equal(requests.length,count,'unchanged snapshot does not upload');
   c.db.tasks[0].status='已完成';interval();await new Promise(r=>setImmediate(r));assert.equal(JSON.parse(requests.at(-1).opts.body).tasks[0].status,'已完成');
+  c.db.reminders=[require('./reminders-core').create('单次提醒','2026-11-26T12:00:00Z','reminder-bridge')];interval();await new Promise(r=>setImmediate(r));assert.equal(JSON.parse(requests.at(-1).opts.body).reminders.length,1);
+  c.db.reminders=[];interval();await new Promise(r=>setImmediate(r));assert.equal(JSON.parse(requests.at(-1).opts.body).reminders.length,0);
   c.db.tasks[0].title='changed';rejectNext=true;interval();await new Promise(r=>setImmediate(r));count=requests.length;interval();await new Promise(r=>setImmediate(r));assert.equal(requests.length,count,'conflict stops auto sync');
   await el('sc-pause').onclick();assert(requests.at(-1).url.endsWith('/pause'));
   await el('sc-test').onclick();assert(requests.at(-1).url.endsWith('/test'));assert(!requests.at(-1).opts.body);
