@@ -22,11 +22,17 @@
           const next={...state};delete next.note;save(next);
         }
       }
+      const actions=node('div',undefined,'quick-note-actions'),picker=node('select');
+      picker.setAttribute('aria-label','切换快速便签');
+      const updatePicker=()=>{picker.replaceChildren();for(const note of api?.list?.()||[]){const option=node('option',note.title);option.value=note.id;picker.append(option);}picker.value=api?.selected?.()||'';};
+      updatePicker();picker.onchange=()=>{if(api.select(picker.value)){input.value=api.read();status.textContent='已切换笔记';}else{updatePicker();status.textContent='切换失败，请重试';}};
+      const add=button('＋',()=>{if(api?.create()){updatePicker();input.value='';input.focus();status.textContent='新便签 · 自动保存到笔记';}else status.textContent='新建失败，请稍后重试';});
+      add.setAttribute('aria-label','新建便签');add.title='新建便签';actions.append(picker,add);
       input.value=api?api.read():(state.note||'');input.placeholder='记下此刻的想法…';
       input.setAttribute('aria-label','快速便签');input.disabled=!api;
       status.textContent=api?'关联笔记 · 自动保存到本机':'笔记暂不可用';
       input.oninput=()=>{status.textContent=api.write(input.value)?'已保存到笔记':'保存失败，请保留当前内容后重试';};
-      body.append(input,status,button('在笔记中打开 ↗',()=>api?.open()));
+      body.append(actions,input,status,button('在笔记中打开 ↗',()=>api?.open()));
     }
     if(id==='focus'){
       const clock=node('strong','','extra-timer');clock.dataset.focusClock='true';const actions=node('div',undefined,'extra-actions');

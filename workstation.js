@@ -10,7 +10,8 @@
     conflict = null,
     view = "edit",
     folders = [],
-    currentFolder = "";
+    currentFolder = "",
+    quickNoteId = "quick-note.md";
   const storageKey = () => "workstation-notes-v1:" + context.key;
   const serialize = (n) =>
     "# " +
@@ -34,7 +35,7 @@
     try {
       localStorage.setItem(
         storageKey(),
-        JSON.stringify({ notes, selected, folders, currentFolder }),
+        JSON.stringify({ notes, selected, folders, currentFolder, quickNoteId }),
       );
       return true;
     } catch {
@@ -54,10 +55,12 @@
           )
         : [];
       selected = data?.selected || null;
+      quickNoteId = typeof data?.quickNoteId === "string" ? data.quickNoteId : "quick-note.md";
       folders = Array.isArray(data?.folders) ? data.folders : [];
       currentFolder = data?.currentFolder || "";
     } catch {
       notes = [];
+      quickNoteId = "quick-note.md";
       selected = null;
       folders = [];
       currentFolder = "";
@@ -380,19 +383,35 @@
   };
   window.NotesWorkspace = {
     quickNote: {
-      read: () => notes.find(n => n.id === 'quick-note.md')?.body || '',
+      list: () => notes.map(n => ({id:n.id,title:n.title || '未命名笔记'})),
+      selected: () => quickNoteId,
+      select(id) {
+        if (!notes.some(n => n.id === id)) return false;
+        const before=quickNoteId;quickNoteId=id;
+        if (!persist()) {quickNoteId=before;return false;}
+        return true;
+      },
+      create() {
+        if (working) return false;
+        const previous=quickNoteId;
+        quickNoteId='quick-note-'+crypto.randomUUID()+'.md';
+        if (!this.write('')) {quickNoteId=previous;return false;}
+        return true;
+      },
+      read: () => notes.find(n => n.id === quickNoteId)?.body || '',
       write(body) {
         if (working) return false;
-        const old = notes, existing = notes.find(n => n.id === 'quick-note.md');
-        const next = {...(existing || {id:'quick-note.md',title:'快速便签',sha:null,base:null}), body, updatedAt:new Date().toISOString()};
+        const old = notes, existing = notes.find(n => n.id === quickNoteId);
+        const next = {...(existing || {id:quickNoteId,title:'快速便签',sha:null,base:null}), body, updatedAt:new Date().toISOString()};
+        if (next.title === '快速便签' && body.trim()) next.title = body.trim().split('\n')[0].slice(0,30);
         notes = existing ? notes.map(n => n === existing ? next : n) : [next, ...notes];
         if (!persist()) { notes = old; return false; }
         draw();
         return true;
       },
       open() {
-        if (!notes.some(n => n.id === 'quick-note.md') && !this.write('')) return;
-        selected = 'quick-note.md'; currentFolder = ''; persist(); draw(); app('notion');
+        if (!notes.some(n => n.id === quickNoteId) && !this.write('')) return;
+        selected = quickNoteId; currentFolder = window.DirectoryTree.parent(selected); persist(); draw(); app('notion');
         $('nb-body').focus();
       },
     },

@@ -7,7 +7,7 @@
     const heading=document.createElement('div');heading.className='context-title';heading.textContent=card.querySelector('h3')?.textContent||'组件';menu.append(heading);
     const label=document.createElement('div');label.className='context-label';label.textContent='布局';menu.append(label);
     const sizes=document.createElement('div');sizes.className='context-sizes';sizes.setAttribute('role','group');sizes.setAttribute('aria-label','卡片尺寸');menu.append(sizes);
-    for(const size of ['1x1','1x2','1x4','2x2']){
+    for(const size of ['1x1','1x2','1x4','2x2','2x4','4x4']){
       const b=document.createElement('button');b.type='button';b.className='context-size';b.setAttribute('role','menuitemradio');b.setAttribute('aria-label',size.replace('x',' × '));b.setAttribute('aria-checked',String(card.dataset.size===size));
       const icon=document.createElement('span');icon.className='context-size-icon';icon.dataset.size=size;icon.setAttribute('aria-hidden','true');const [rows,cols]=size.split('x').map(Number);icon.style.gridTemplateColumns='repeat('+cols+',1fr)';for(let i=0;i<rows*cols;i++)icon.append(document.createElement('i'));
       const text=document.createElement('span');text.textContent=size.replace('x','×');b.append(icon,text);b.onclick=()=>{if(window.HomeWidgets.update(card.dataset.widget,{size})){close(true);const tile=host.querySelector('[data-widget="'+card.dataset.widget+'"]');tile?.animate?.([{opacity:.65,transform:'scale(.98)'},{opacity:1,transform:'scale(1)'}],{duration:170});}};sizes.append(b);

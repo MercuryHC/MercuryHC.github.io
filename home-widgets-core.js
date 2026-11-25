@@ -14,7 +14,7 @@
   const defaults=()=>({version:1,widgets:catalog.map(({id})=>({id,enabled:id==='today'||id==='tasks',size:id==='today'?'1x2':'1x1'}))});
   function preferences(value){
     if(!value||value.version!==1||!Array.isArray(value.widgets))return defaults();
-    return {version:1,widgets:catalog.map(({id})=>{const item=value.widgets.find(w=>w&&w.id===id);return {id,enabled:typeof item?.enabled==='boolean'?item.enabled:defaults().widgets.find(w=>w.id===id).enabled,size:['1x1','1x2','1x4','2x2'].includes(item?.size)?item.size:({small:'1x1',medium:'1x2',large:'2x2'}[item?.size]||(id==='today'?'1x2':'1x1'))};})};
+    return {version:1,widgets:catalog.map(({id})=>{const item=value.widgets.find(w=>w&&w.id===id);return {id,enabled:typeof item?.enabled==='boolean'?item.enabled:defaults().widgets.find(w=>w.id===id).enabled,size:['1x1','1x2','1x4','2x2','2x4','4x4'].includes(item?.size)?item.size:({small:'1x1',medium:'1x2',large:'2x2'}[item?.size]||(id==='today'?'1x2':'1x1'))};})};
   }
   function summary(db,now,Calendar){
     const day=Calendar.key(new Date(now)),all=Calendar.events(db),today=Calendar.onDay(all,day).sort((a,b)=>Number(a.done)-Number(b.done)||Number(b.allDay)-Number(a.allDay)||a.start-b.start);

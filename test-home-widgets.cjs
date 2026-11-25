@@ -19,7 +19,7 @@ for(const id of ['today','tasks','reminders','projects'])change(id,false,'1x2');
 vm.runInContext(fs.readFileSync('home-widgets.js','utf8'),context);assert($('home-widgets-grid').querySelector('.home-widgets-empty'),'preferences survive reload');
 console.log('PASS: date projections, project totals, safe rendering, completion, routing, size persistence, empty state and failed-save rollback');
 
-for(const size of ['1x1','1x2','1x4','2x2'])assert.equal(Core.preferences({version:1,widgets:[{id:'today',size}]}).widgets[0].size,size);
+for(const size of ['1x1','1x2','1x4','2x2','2x4','4x4'])assert.equal(Core.preferences({version:1,widgets:[{id:'today',size}]}).widgets[0].size,size);
 assert.equal(Core.preferences({version:1,widgets:[{id:'today',size:'large'}]}).widgets[0].size,'2x2');
 $('home-widgets-close').onclick();$('home-widgets-customize').onclick();
 change('today',true,'1x2');
@@ -38,3 +38,5 @@ assert.equal(document.querySelector('.home-inline-size'),null);
 assert.equal(context.window.HomeWidgets.update('today',{size:'1x4'}),true);assert.equal(document.querySelector('section[data-widget="today"]').dataset.size,'1x4');
 fail=true;assert.equal(context.window.HomeWidgets.update('today',{size:'1x1'}),false);assert.equal(document.querySelector('section[data-widget="today"]').dataset.size,'1x4');fail=false;
 console.log('PASS: menu resize API persists and rolls back on quota failure');
+
+for(const size of ['2x4','4x4']){assert.equal(context.window.HomeWidgets.update('today',{size}),true);assert.equal(document.querySelector('section[data-widget="today"]').dataset.size,size);assert.equal(JSON.parse(storage.get('workstation-home-widgets-v1')).widgets[0].size,size);}

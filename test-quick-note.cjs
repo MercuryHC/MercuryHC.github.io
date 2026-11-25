@@ -11,3 +11,5 @@ store.set('workstation-home-extras-v1',JSON.stringify({note:'legacy'}));vm.runIn
 const body=document.createElement('div');window.HomeExtras.render('note',body,'1x2');assert.equal(api.read(),'from notebook\n\nlegacy');assert.equal(JSON.parse(store.get('workstation-home-extras-v1')).note,undefined);
 body.replaceChildren();window.HomeExtras.render('note',body,'1x2');assert.equal(api.read(),'from notebook\n\nlegacy');assert.equal(window.NotesWorkspace.storageExport().notes.length,1);
 console.log('PASS: shared note editing, quota rollback, legacy migration without duplicates and normal backup export');
+
+assert(api.create());assert.equal(api.read(),'');assert(api.write('second'));const second=api.selected();assert.equal(api.list().length,2);assert(api.select('quick-note.md'));assert.equal(api.read(),'from notebook\n\nlegacy');assert(api.select(second));assert.equal(api.read(),'second');fail=true;assert.equal(api.create(),false);assert.equal(api.selected(),second);fail=false;

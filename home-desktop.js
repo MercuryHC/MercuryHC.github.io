@@ -11,7 +11,7 @@
   function key(n){return n.dataset.widget?'widget:'+n.dataset.widget:'bookmark:'+n.dataset.bookmarkId;}
   function measureTiles(){
     const grid=$('home-widgets-grid'),width=grid.clientWidth;if(!width)return;
-    const gap=12,columns=width>=520?4:2,unit=(width-gap*(columns-1))/columns;
+    const gap=12,columns=width>=520?8:4,unit=(width-gap*(columns-1))/columns;
     grid.style.gridTemplateColumns=`repeat(${columns},minmax(0,1fr))`;
     for(const tile of grid.querySelectorAll('.home-widget')){
       const [rows,cols]=tile.dataset.size.split('x').map(Number),span=Math.min(cols,columns),tileWidth=unit*span+gap*(span-1),height=tileWidth*rows/cols;

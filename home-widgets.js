@@ -25,7 +25,7 @@
       const check=el('input');check.type='checkbox';check.checked=config.enabled;check.dataset.widget=definition.id;check.hidden=true;
       const preview=el('div','library-stage'),tile=el('div','library-preview-tile');tile.dataset.kind=definition.id;tile.setAttribute('aria-hidden','true');preview.append(tile);
       const select=el('select');select.dataset.size=definition.id;select.setAttribute('aria-label',definition.title+'卡片大小');
-      for(const value of ['1x1','1x2','1x4','2x2']){const option=el('option','',value.replace('x',' × '));option.value=value;option.selected=config.size===value;select.append(option);}
+      for(const value of ['1x1','1x2','1x4','2x2','2x4','4x4']){const option=el('option','',value.replace('x',' × '));option.value=value;option.selected=config.size===value;select.append(option);}
       function draw(){tile.dataset.size=select.value||config.size;tile.replaceChildren();tile.append(el('b','',definition.title));for(const line of samples[definition.id]||[])tile.append(el('span','',line));}
       const action=el('button','library-add'),badge=el('span','library-added');action.type='button';
       function state(){action.textContent=check.checked?'移除':'＋ 添加';action.dataset.added=String(check.checked);action.setAttribute('aria-label',(check.checked?'移除':'添加')+definition.title);badge.textContent=check.checked?'✓ 已在桌面':'可添加';row.dataset.added=String(check.checked);}
