@@ -18,7 +18,7 @@
       "收藏数据读取失败，已显示预置入口；原数据仍在本机。";
   }
   function clone() {
-    return JSON.parse(JSON.stringify(data));
+    return JSON.parse(JSON.stringify({...data,...(window.HomeDesktop?.storageExport?{layout:window.HomeDesktop.storageExport()}: {})}));
   }
   function status(s, error = false) {
     $("bm-status").textContent = s;
@@ -27,8 +27,11 @@
   function commit(next) {
     try {
       const clean = core.validate(next);
-      localStorage.setItem(UNDO, JSON.stringify(data));
-      localStorage.setItem(KEY, JSON.stringify(clean));
+      localStorage.setItem(UNDO, JSON.stringify(clone()));
+      const oldLayout=window.HomeDesktop?.storageExport?.();
+      if(clean.layout)window.HomeDesktop?.storageImport?.(clean.layout);
+      try {localStorage.setItem(KEY, JSON.stringify(clean));}
+      catch(e){if(oldLayout)window.HomeDesktop.storageImport(oldLayout);throw e;}
       data = clean;
       if (group && !data.groups.includes(group)) group = "";
       render();
@@ -368,7 +371,7 @@
       connected: window.WorkstationGitHub.context().connected,
       known: !!base,
       dirty: base
-        ? snapshot(data) !== snapshot(base.data)
+        ? snapshot(clone()) !== snapshot(base.data)
         : !!localStorage.getItem(KEY),
     };
   }
@@ -401,7 +404,7 @@
       const card = document.createElement("section"),
         heading = document.createElement("strong");
       card.className = "bm-sync-record";
-      heading.textContent = row.local?.title || row.remote?.title || row.id;
+      heading.textContent = row.kind==='layout'?'主页布局（排序、尺寸与显示设置）':row.local?.title || row.remote?.title || row.id;
       card.append(heading);
       for (const [side, label] of [
         ["local", "本机版本"],
@@ -420,7 +423,7 @@
         text.textContent =
           label +
           "：" +
-          (b ? b.title + " · " + b.url + " · " + b.group : "删除此收藏");
+          (row.kind==='layout' ? (b ? b.widgets.filter(w=>w.enabled).map(w=>w.id+' '+w.size).join('、')+'；顺序：'+b.order.join(' → ') : '无布局设置') : b ? b.title + " · " + b.url + " · " + b.group : "删除此收藏");
         option.append(radio, text);
         card.append(option);
       }
@@ -431,14 +434,14 @@
   }
   async function readCloud() {
     return syncRun(async () => {
-      const before = snapshot(data);
+      const before = snapshot(clone());
       status("正在读取 GitHub 主页收藏…");
       const file = await window.BookmarksGitHub.read();
       if (!file) {
         status("远端尚无收藏文件；点击 GitHub 菜单中的「保存主页收藏」创建。");
         return;
       }
-      if (snapshot(data) !== before)
+      if (snapshot(clone()) !== before)
         throw Error("读取期间本机收藏有新修改，已保留；请重新读取。");
       if (
         syncState().dirty &&
@@ -454,11 +457,11 @@
   }
   async function saveCloud(resolution = null) {
     return syncRun(async () => {
-      const before = snapshot(data),
+      const before = snapshot(clone()),
         base = getBase();
       status("正在检查 GitHub 收藏版本…");
       const remote = await window.BookmarksGitHub.read();
-      if (snapshot(data) !== before)
+      if (snapshot(clone()) !== before)
         throw Error("检查期间本机收藏有更新，请再次保存。");
       let target;
       if (resolution) {
@@ -473,7 +476,7 @@
           status("主页收藏与 GitHub 一致，无需上传。");
           return;
         }
-        const plan = core.plan(data, remote.data, base?.data || null);
+        const plan = core.plan(clone(), remote.data, base?.data || null);
         if (plan.conflicts.length) {
           previewSync(plan, remote, before);
           return;
@@ -485,14 +488,14 @@
           !confirm("远端收藏文件已删除，是否用当前本机收藏重新创建？")
         )
           return;
-        target = core.validate(data);
+        target = core.validate(clone());
       }
       const result = await window.BookmarksGitHub.save(
         target,
         remote?.sha || null,
       );
       rememberBase(result);
-      const newer = snapshot(data) !== before;
+      const newer = snapshot(clone()) !== before;
       if (!newer && !commit(result.data)) {
         status("GitHub 已保存，但本机存储失败；请导出备份或重新读取。", true);
         return;

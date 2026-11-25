@@ -15,3 +15,12 @@ body.replaceChildren();context.window.HomeExtras.render('month',body,'2x2');asse
 console.log('PASS: separate column ordering, quota rollback, stable controls, note persistence, timer start/pause, date countdown and month calendar');
 
 body.replaceChildren();context.window.HomeExtras.render('focus',body,'1x1');assert(body.querySelector('.extra-compact'));assert.equal(body.querySelector('.extra-actions'),null);
+context.window.HomeWidgetsCore=require('./home-widgets-core');context.window.BookmarksCore=require('./bookmarks-core');
+const layout=context.window.HomeDesktop.storageExport();assert.equal(layout.widgets.length,9);
+const reversed={version:1,order:['widget:tasks','widget:today','bookmark:b','bookmark:c'],widgets:layout.widgets.map(w=>({...w,size:w.id==='today'?'4x4':w.size}))};
+context.window.HomeDesktop.storageImport(reversed);assert.equal(JSON.parse(saved.get('workstation-home-widgets-v1')).widgets[0].size,'4x4');assert.equal(document.querySelector('[data-widget="tasks"]').style.order,'0');
+fail=true;assert.throws(()=>context.window.HomeDesktop.storageImport({...reversed,order:[]}));fail=false;assert.equal(context.window.HomeDesktop.storageExport().order[0],'widget:tasks');
+const source=document.querySelector('[data-widget="tasks"]'),target=document.querySelector('[data-widget="today"]');source.setPointerCapture=()=>{};target.getBoundingClientRect=()=>({left:0,width:100});document.elementFromPoint=()=>target;
+function pointer(type){const e=new document.defaultView.Event(type,{bubbles:true,cancelable:true});Object.assign(e,{button:0,pointerId:7,clientX:90,clientY:10});source.dispatchEvent(e);}
+pointer('pointerdown');assert.equal(source.dataset.dragging,'true');pointer('pointermove');pointer('pointerup');assert.equal(context.window.HomeDesktop.storageExport().order[0],'widget:today');
+console.log('PASS: whole-card pointer drag and layout import/export including sizes and quota rollback');

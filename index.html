@@ -2068,12 +2068,12 @@
     <link rel="stylesheet" href="./settings.css?v=serverchan-3" />
     <link rel="stylesheet" href="./task-todos.css?v=timestamp-pill-2" />
     <link rel="stylesheet" href="./responsive.css?v=1" />
-      <link rel="stylesheet" href="./reminders.css?v=1">
+      <link rel="stylesheet" href="./reminders.css?v=2">
     <link rel="stylesheet" href="./task-calendar.css?v=complete-1">
     <link rel="stylesheet" href="./task-appearance.css?v=1">
     <link rel="stylesheet" href="./home-widgets.css?v=2">
     <link rel="stylesheet" href="./modern-ui.css?v=ios-3">
-    <link rel="stylesheet" href="./home-desktop.css?v=11">
+    <link rel="stylesheet" href="./home-desktop.css?v=12">
     <link rel="stylesheet" href="./widget-library.css?v=8">
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
@@ -2506,18 +2506,25 @@
         </div>
         <section id="reminder-workspace" hidden aria-labelledby="reminder-heading">
           <div class="hero"><div><h1 id="reminder-heading">提醒事项</h1><p>记下一件事，在合适的时间提醒自己。</p></div></div>
+          <div class="reminder-overview" aria-label="提醒概览">
+            <div class="reminder-stat"><span>待完成</span><strong id="reminder-pending-total">0</strong><small>留给接下来的自己</small></div>
+            <div class="reminder-stat" data-tone="today"><span>今天</span><strong id="reminder-today-total">0</strong><small>今天需要记住的事</small></div>
+            <div class="reminder-stat" data-tone="overdue"><span>已超时</span><strong id="reminder-overdue-total">0</strong><small>值得优先关注</small></div>
+          </div>
+          <div class="reminder-compose">
+          <h2 id="reminder-form-heading">＋ 新提醒</h2>
           <form id="reminder-form" class="reminder-form">
             <label>事项名称<input id="reminder-title" required maxlength="500" placeholder="输入新的提醒事项…" autocomplete="off"></label>
             <label>提醒时间<input id="reminder-time" type="datetime-local" required></label>
             <button type="submit" class="primary" id="reminder-submit">添加提醒事项</button>
             <button type="button" class="secondary" id="reminder-cancel" hidden>取消编辑</button>
           </form>
-          <p id="reminder-error" role="alert"></p>
+          <p id="reminder-error" role="alert"></p></div>
           <div class="reminder-toolbar"><div class="tabs" role="group" aria-label="筛选提醒事项">
             <button type="button" class="tab active" data-reminder-filter="pending" aria-pressed="true">待完成</button>
             <button type="button" class="tab" data-reminder-filter="completed" aria-pressed="false">已完成</button>
             <button type="button" class="tab" data-reminder-filter="all" aria-pressed="false">全部</button>
-          </div><span id="reminder-count" role="status" aria-live="polite"></span></div>
+          </div><input id="reminder-search" type="search" placeholder="搜索提醒事项" aria-label="搜索提醒事项"><span id="reminder-count" role="status" aria-live="polite"></span></div>
           <ul id="reminder-list" aria-label="提醒事项清单"></ul>
           <p class="reminder-hint">按本机时区显示。到时会出现在顶部提醒栏；关闭网页后的微信提醒需在设置中连接并启用后台。</p>
         </section>
@@ -3069,7 +3076,7 @@
         <div id="ds-webdav" hidden><div class="ds-fields"><label>WebDAV 专用目录 URL<input id="ds-url" type="url" placeholder="https://nas.example.com/webdav/workstation/" autocomplete="off"></label><label>账号<input id="ds-user" autocomplete="off"></label><label>第三方应用密码<input id="ds-password" type="password" autocomplete="new-password"></label></div><div class="ds-buttons" style="margin-top:12px"><button id="ds-connect" type="button" class="primary">连接 WebDAV</button></div></div>
         <label class="ds-remember"><input type="checkbox" id="ds-remember" checked>记住目录或服务器配置（不保存 WebDAV 密码）</label>
       </div>
-      <div class="ds-section"><h3>本次同步范围</h3><div class="ds-checks"><label><input type="checkbox" data-storage-scope="tasks" checked>Task 任务与项目</label><label><input type="checkbox" data-storage-scope="notes" checked>Notes 笔记与目录</label><label><input type="checkbox" data-storage-scope="bookmarks" checked>主页收藏</label><label><input type="checkbox" data-storage-scope="browser">浏览器书签快照</label><label><input type="checkbox" data-storage-scope="obsidian">已关联的 Obsidian Markdown</label></div><p>只同步勾选的数据；不包含账号 Token、Notion 授权、附件、壁纸原图或 .obsidian 配置。Obsidian 请先关联本地仓库并保存草稿；读取时保留磁盘文件，不自动删除。</p></div>
+      <div class="ds-section"><h3>本次同步范围</h3><div class="ds-checks"><label><input type="checkbox" data-storage-scope="tasks" checked>Task 任务与项目</label><label><input type="checkbox" data-storage-scope="notes" checked>Notes 笔记与目录</label><label><input type="checkbox" data-storage-scope="bookmarks" checked>主页收藏与布局</label><label><input type="checkbox" data-storage-scope="browser">浏览器书签快照</label><label><input type="checkbox" data-storage-scope="obsidian">已关联的 Obsidian Markdown</label></div><p>只同步勾选的数据；不包含账号 Token、Notion 授权、附件、壁纸原图或 .obsidian 配置。Obsidian 请先关联本地仓库并保存草稿；读取时保留磁盘文件，不自动删除。</p></div>
       <p id="ds-status" role="status" aria-live="polite">请选择仓库类型并连接。</p><progress id="ds-progress" hidden></progress>
       <div class="ds-buttons"><button id="ds-check" type="button" class="primary">检查同步差异</button><button id="ds-history" type="button" class="secondary">仓库历史副本</button><button id="ds-undo" type="button" class="secondary">撤销上次本机导入</button></div><div id="ds-history-list"></div>
       <section id="ds-review" class="ds-section" hidden><h3>确认同步内容</h3><p id="ds-summary"></p><div id="ds-conflicts"></div><label for="ds-direction">执行方式</label><select id="ds-direction"><option value="sync">合并到仓库并更新本机</option><option value="read">只合并到本机</option></select><div class="ds-buttons" style="margin-top:14px"><button id="ds-apply" type="button" class="primary">确认执行</button></div></section>
@@ -4361,7 +4368,7 @@
     <script src="./wallpaper-library.js?v=1"></script>
     <script src="./github-sync.js?v=reminders-1"></script>
     <script src="./notion-client.js?v=1"></script>
-    <script src="./bookmarks-core.js?v=merge-1"></script>
+    <script src="./bookmarks-core.js?v=layout-2"></script>
     <script src="./theme.js?v=settings-1"></script>
     <script src="./directory-tree.js?v=notes-1"></script>
     <script src="./workstation.js?v=notes-3"></script>
@@ -4369,23 +4376,23 @@
     <script src="./obsidian.js?v=storage-1"></script>
     <script src="./notion-workspace.js?v=1"></script>
     <script src="./web-search.js?v=icons-1"></script>
-    <script src="./bookmarks.js?v=icon-layout-2"></script>
+    <script src="./bookmarks.js?v=layout-2"></script>
     <script src="./browser-bookmarks-core.js?v=1"></script>
     <script src="./browser-bookmarks-store.js?v=storage-1"></script>
-    <script src="./browser-bookmarks.js?v=storage-1"></script>
+    <script src="./browser-bookmarks.js?v=layout-2"></script>
     <script src="./backgrounds.js?v=settings-1"></script>
-    <script src="./reminders.js?v=complete-1"></script>
+    <script src="./reminders.js?v=design-2"></script>
     <script src="./calendar-core.js?v=daily-1"></script>
     <script src="./task-calendar.js?v=complete-1"></script>
     <script src="./home-widgets-core.js?v=detail-4"></script>
     <script src="./home-extras.js?v=5"></script>
-    <script src="./home-widgets.js?v=12"></script>
-    <script src="./home-desktop.js?v=7"></script>
+    <script src="./home-widgets.js?v=13"></script>
+    <script src="./home-desktop.js?v=8"></script>
     <script src="./home-context.js?v=3"></script>
     <script src="./deadline-dock.js?v=reminders-1"></script>
     <script src="./recurring-tasks.js?v=todos-3"></script>
     <script src="./task-notes.js?v=completion-log-4"></script>
-    <script src="./storage-core.js?v=reminders-1"></script>
+    <script src="./storage-core.js?v=layout-2"></script>
     <script src="./storage-adapters.js?v=1"></script>
     <script src="./storage-sync.js?v=settings-1"></script>
     <script src="./notification-core.js?v=reminders-1"></script>

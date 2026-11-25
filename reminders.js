@@ -24,6 +24,8 @@
     $('reminder-form').reset();
     $('reminder-submit').textContent = '添加提醒事项';
     $('reminder-cancel').hidden = true;
+    $('reminder-form-heading').textContent = '＋ 新提醒';
+    renderList();
     error();
   }
   function commit(next) {
@@ -53,23 +55,30 @@
     $('reminder-time').value = Core.toLocal(item.remindAt);
     $('reminder-submit').textContent = '保存修改';
     $('reminder-cancel').hidden = false;
+    $('reminder-form-heading').textContent = '编辑提醒';
+    renderList();
     error();
     $('reminder-title').focus();
   }
   function renderList() {
-    const list = $('reminder-list'), selected = Core.select(items(), filter);
+    const list = $('reminder-list'), query=$('reminder-search').value.trim().toLowerCase(), selected = Core.select(items(), filter).filter(item=>item.title.toLowerCase().includes(query));
+    const pending=items().filter(r=>!r.completed),today=new Date().toDateString();
+    $('reminder-pending-total').textContent=String(pending.length);
+    $('reminder-today-total').textContent=String(pending.filter(r=>new Date(r.remindAt).toDateString()===today).length);
+    $('reminder-overdue-total').textContent=String(pending.filter(r=>Core.overdue(r)).length);
     list.replaceChildren();
     $('reminder-count').textContent = `${selected.length} 项 · ${items().filter(r => !r.completed).length} 项待完成`;
     if (!selected.length) {
       const empty = document.createElement('li');
       empty.className = 'reminder-empty';
-      empty.textContent = filter === 'completed' ? '还没有已完成的提醒事项。' : filter === 'all' ? '添加第一件要记住的事。' : '当前没有待完成的提醒事项。';
+      empty.textContent = query ? '没有找到匹配的提醒，试试其他关键词。' : filter === 'completed' ? '还没有已完成的提醒事项。' : filter === 'all' ? '添加第一件要记住的事。' : '当前没有待完成的提醒事项。';
       list.append(empty);
     }
     for (const item of selected) {
       const row = document.createElement('li');
       row.className = 'reminder-row';
       row.dataset.completed = String(item.completed);
+      row.dataset.editing = String(item.id===editingId);
       row.dataset.overdue = String(Core.overdue(item));
       const check = document.createElement('input');
       check.type = 'checkbox'; check.checked = item.completed;
@@ -86,7 +95,7 @@
       time.textContent = new Date(item.remindAt).toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}) + (Core.overdue(item) ? ' · 已超时' : item.completed ? ' · 已完成' : '');
       content.append(title, time);
       const edit = document.createElement('button'), remove = document.createElement('button');
-      edit.type = remove.type = 'button'; edit.className = remove.className = 'secondary';
+      edit.type = remove.type = 'button'; edit.className = 'secondary reminder-edit'; remove.className = 'secondary reminder-delete';
       edit.textContent = '编辑'; remove.textContent = '删除';
       edit.setAttribute('aria-label', '编辑：' + item.title); remove.setAttribute('aria-label', '删除：' + item.title);
       edit.onclick = () => open(item.id);
@@ -123,6 +132,7 @@
   document.querySelectorAll('[data-reminder-filter]').forEach(button => {
     button.onclick = () => { filter = button.dataset.reminderFilter; updateFilter(); };
   });
+  $('reminder-search').oninput=renderList;
   $('task-mode-tasks').onclick = () => show('tasks');
   $('task-mode-reminders').onclick = () => show('reminders');
   $('reminder-cancel').onclick = reset;

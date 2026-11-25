@@ -40,7 +40,7 @@
       function state(){action.textContent=check.checked?'移除':'＋ 添加';action.dataset.added=String(check.checked);action.setAttribute('aria-label',(check.checked?'移除':'添加')+definition.title);badge.textContent=check.checked?'✓ 已在桌面':'可添加';row.dataset.added=String(check.checked);}
       const change=()=>{
         const previous=prefs.widgets.find(w=>w.id===definition.id),next=Core.preferences({version:1,widgets:prefs.widgets.map(w=>w.id===definition.id?{...w,enabled:check.checked,size:select.value}:w)});
-        try{localStorage.setItem(KEY,JSON.stringify(next));prefs=next;$('home-widgets-error').textContent='';$('widget-library-message').textContent=definition.title+(check.checked?'已添加到桌面，尺寸 '+select.value.replace('x',' × '):'已从桌面移除，内容保留');state();draw();render(true);filterLibrary();}
+        try{localStorage.setItem(KEY,JSON.stringify(next));prefs=next;window.refreshGithubDock?.();$('home-widgets-error').textContent='';$('widget-library-message').textContent=definition.title+(check.checked?'已添加到桌面，尺寸 '+select.value.replace('x',' × '):'已从桌面移除，内容保留');state();draw();render(true);filterLibrary();}
         catch{check.checked=previous.enabled;select.value=previous.size;state();draw();$('widget-library-message').textContent='保存失败，已保留原设置。请检查浏览器存储空间。';$('home-widgets-error').textContent='未能保存卡片设置。';}
       };
       check.onchange=select.onchange=change;action.onclick=()=>{check.checked=!check.checked;change();};
@@ -123,10 +123,10 @@
   $('home-widgets-customize').onclick=()=>{library.hidden=false;$('home-widgets-customize').setAttribute('aria-expanded','true');$('widget-library-message').textContent='';configure();library.showModal?.();$('home-widget-search').focus();};
   $('home-widgets-close').onclick=closeLibrary;library.addEventListener('cancel',e=>{e.preventDefault();closeLibrary();});
   $('home-widget-search').oninput=filterLibrary;
-  window.HomeWidgets={refresh:()=>render(),update(id,patch){
+  window.HomeWidgets={reload(){prefs=Core.preferences(JSON.parse(localStorage.getItem(KEY)));render(true);},refresh:()=>render(),update(id,patch){
     if(!prefs.widgets.some(w=>w.id===id))return false;
     const next=Core.preferences({version:1,widgets:prefs.widgets.map(w=>w.id===id?{...w,...patch}:w)});
-    try{localStorage.setItem(KEY,JSON.stringify(next));prefs=next;$('home-widgets-error').textContent='';render(true);return true;}catch{$('home-widgets-error').textContent='设置保存失败，已保留原设置。';return false;}
+    try{localStorage.setItem(KEY,JSON.stringify(next));prefs=next;window.refreshGithubDock?.();$('home-widgets-error').textContent='';render(true);return true;}catch{$('home-widgets-error').textContent='设置保存失败，已保留原设置。';return false;}
   }};
   window.addEventListener('workstation-app-changed',()=>render());window.addEventListener('focus',()=>render());
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')render();});

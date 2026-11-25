@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),B=require('./bookmarks-core'),S=require('./storage-core');
+const layout=(size='1x1',order=['widget:today'])=>({version:1,order,widgets:[{id:'today',size,enabled:true}]});
+const bundle=l=>({...B.defaults(),...(l?{layout:l}:{})});
+const base=bundle(layout()),local=bundle(layout('2x4')),remote=bundle(layout('4x4'));
+let plan=B.plan(local,base,base);assert.equal(B.build(plan).layout.widgets[0].size,'2x4');
+plan=B.plan(local,remote,base);assert.equal(plan.conflicts.length,1);assert.equal(plan.conflicts[0].kind,'layout');assert.throws(()=>B.build(plan));plan.conflicts[0].choice='remote';assert.equal(B.build(plan).layout.widgets[0].size,'4x4');
+assert.deepEqual(B.build(B.plan(local,bundle(),null)).layout,local.layout);
+assert.throws(()=>B.validate(bundle({version:1,order:['bad'],widgets:[]})));
+const hooks={bookmarks:B.validate};let p=S.plan({bookmarks:local},{bookmarks:remote},{bookmarks:base},['bookmarks']);assert.equal(p.rows.filter(r=>r.conflict).length,1);p.rows.find(r=>r.conflict).choice='local';assert.deepEqual(S.validate(S.build(p),hooks).bookmarks.layout,local.layout);
+assert.deepEqual(S.build(S.plan({bookmarks:local},{bookmarks:remote},null,[])).bookmarks.layout,remote.layout);
+console.log('PASS: GitHub layout roundtrip, legacy preservation, concurrent conflict selection, invalid data rejection, provider scope isolation');

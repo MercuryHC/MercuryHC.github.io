@@ -23,6 +23,14 @@
       throw Error("网址必须是有效的 HTTP / HTTPS 地址，且不能包含账号密码。");
     return u.href;
   }
+  function validateLayout(value) {
+    const ids=['today','tasks','reminders','projects','month','note','focus','countdown','quick'];
+    if(value?.version!==1 || !Array.isArray(value.order) || value.order.length>1100 || !Array.isArray(value.widgets) || value.widgets.length>9)throw Error('主页布局格式无效。');
+    const seen=new Set();
+    const order=value.order.map(id=>{if(typeof id!=='string'||id.length>120||! /^(widget|bookmark):.+$/.test(id)||seen.has(id))throw Error('主页布局顺序无效。');seen.add(id);return id;});
+    const widgets=value.widgets.map(w=>{if(!ids.includes(w.id)||seen.has('config:'+w.id)||typeof w.enabled!=='boolean'||!['1x1','1x2','1x4','2x2','2x4','4x4'].includes(w.size))throw Error('主页卡片设置无效。');seen.add('config:'+w.id);return {id:w.id,enabled:w.enabled,size:w.size};});
+    return {version:1,order,widgets};
+  }
   function validate(data) {
     if (
       !Array.isArray(data?.groups) ||
@@ -44,6 +52,7 @@
     const ids = new Set();
     return {
       groups,
+      ...(data.layout===undefined?{}:{layout:validateLayout(data.layout)}),
       items: data.items.map((b) => {
         if (
           typeof b.id !== "string" ||
@@ -151,18 +160,24 @@
         return l === b ? r : r === b ? l : l || r;
       },
     );
+    if(local.layout!==undefined || remote.layout!==undefined){
+      const l=local.layout,r=remote.layout,b=base?.layout;
+      const choice=equal(l,r)?'local':r===undefined?'local':l===undefined?'remote':base&&equal(l,b)?'remote':base&&equal(r,b)?'local':null;
+      rows.push({id:'homepage-layout',kind:'layout',local:l,remote:r,choice});
+    }
     return { rows, groups, conflicts: rows.filter((r) => !r.choice) };
   }
   function build(plan) {
     if (plan.rows.some((r) => !r.choice))
       throw Error("请先选择所有冲突的保留版本。");
-    const items = plan.rows
+    const layoutRow=plan.rows.find(r=>r.kind==='layout'),layout=layoutRow?.[layoutRow.choice];
+    const items = plan.rows.filter(r=>r.kind!=='layout')
         .map((r) => (r.choice === "local" ? r.local : r.remote))
         .filter(Boolean),
       groups = [...plan.groups];
     for (const b of items) if (!groups.includes(b.group)) groups.push(b.group);
-    return validate({ groups, items });
+    return validate({ groups, items, ...(layout===undefined?{}:{layout}) });
   }
-  root.BookmarksCore = { icons, url, validate, defaults, plan, build };
+  root.BookmarksCore = { icons, url, validate, validateLayout, defaults, plan, build };
   if (typeof module !== "undefined") module.exports = root.BookmarksCore;
 })(typeof window !== "undefined" ? window : globalThis);

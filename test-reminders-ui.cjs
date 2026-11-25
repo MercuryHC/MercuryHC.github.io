@@ -8,6 +8,8 @@ vm.createContext(c);vm.runInContext(fs.readFileSync(__dirname+'/reminders.js','u
 const submit=()=> $('reminder-form').onsubmit({preventDefault(){}});
 $('task-mode-reminders').onclick();assert.equal($('task-main').hidden,true);assert.equal($('reminder-workspace').hidden,false);
 $('reminder-title').value='<img src=x onerror=alert(1)>'; $('reminder-time').value='2020-01-01T09:30';submit();
+assert.equal($('reminder-pending-total').textContent,'1');assert.equal($('reminder-overdue-total').textContent,'1');
+$('reminder-search').value='not found';$('reminder-search').oninput();assert($('reminder-list').querySelector('.reminder-empty'));assert.equal($('reminder-pending-total').textContent,'1');$('reminder-search').value='';$('reminder-search').oninput();
 assert.equal(c.db.reminders.length,1);assert.equal(dirty,1);assert.equal(dock,1);
 assert.equal($('reminder-list').querySelector('img'),null,'titles must render as text');
 assert.equal($('reminder-list').querySelector('.reminder-name').textContent,'<img src=x onerror=alert(1)>');
