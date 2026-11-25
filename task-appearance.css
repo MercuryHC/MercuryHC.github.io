@@ -1,0 +1,75 @@
+/* Shared visual language for task and reminder surfaces. */
+#task-main .hero,#reminder-workspace .hero{margin-bottom:26px}
+#task-main .hero h1,#reminder-workspace h1{font-weight:650;letter-spacing:-.8px}
+#task-main .hero p,#reminder-workspace .hero p{font-size:13px;line-height:1.7;color:var(--muted)}
+#task-section{border:1px solid var(--line,#e5e8ef);border-radius:18px;box-shadow:0 4px 24px #17253a04;overflow:hidden}
+#task-section .tools{padding:18px 20px;gap:14px;background:var(--dark-panel,#fff);border-bottom:1px solid var(--line,#e5e8ef)}
+#task-section .tabs,.reminder-toolbar .tabs{background:var(--dark-hover,#edf0f5);border-radius:10px;padding:3px;gap:2px}
+#task-section .tab,.reminder-toolbar .tab{border:0;border-radius:7px;padding:7px 13px;font-size:12px;color:var(--muted)}
+#task-section .tab.active,.reminder-toolbar .tab.active{background:var(--dark-panel,#fff);color:var(--ink,#273243);box-shadow:0 1px 4px #17253a12}
+#task-section select{border:1px solid var(--line,#e5e8ef);border-radius:9px;padding:8px 10px;background:var(--dark-panel,#fff);color:inherit;font-size:12px}
+.task-list-table thead{background:var(--dark-hover,#f7f9fc)}
+.task-list-table th{padding:14px 18px;font-size:11px;font-weight:550;letter-spacing:.3px;color:var(--muted)}
+.task-list-table td{padding:19px 18px;border-bottom:1px solid var(--line,#edf0f5);font-size:12px;transition:background .15s}
+.task-list-table tbody tr:hover td{background:var(--dark-hover,#f8faff)}
+.task-list-table tbody tr td:first-child{border-left:3px solid var(--task-accent,#8290a5)}
+.task-list-table tbody tr:last-child td{border-bottom:0}
+.task-list-table .task-title{font-size:13px;line-height:1.6;font-weight:550;color:var(--ink,#273243)}
+.task-list-table tr[data-completed=true] .task-title{color:var(--muted);font-weight:400}
+.task-list-table .task-project-content{gap:7px;background:var(--dark-hover,#f1f4f8);border-radius:6px;padding:5px 7px;width:fit-content;max-width:100%;box-sizing:border-box}
+.task-list-table .tag{border-radius:6px;padding:5px 8px;font-size:11px;font-weight:500}
+.task-list-table .task-date{font-size:11px;font-variant-numeric:tabular-nums}
+.task-list-table .task-clock{font-size:10px;background:var(--dark-hover,#f1f4f8);border-radius:5px;padding:3px 6px;line-height:1.3;font-variant-numeric:tabular-nums}
+.task-list-table tr[data-overdue=true] td:last-child .task-clock{background:#df554e12;color:#c94d46}
+#task-section .footer{padding:14px 20px;background:var(--dark-hover,#fafbfc);font-size:11px;border-top:1px solid var(--line,#e5e8ef)}
+#task-content .board{gap:16px;padding:18px;background:var(--dark-panel,#fff)}
+#task-content .column{background:var(--dark-hover,#f5f7fa);border:1px solid var(--line,#e9edf3);border-radius:13px;padding:14px;min-width:0}
+#task-content .column>.row{font-size:12px;font-weight:550;margin:0 2px 16px}
+#task-content .column>.row>.sub{display:grid;place-items:center;min-width:22px;height:22px;border-radius:7px;background:var(--dark-panel,#fff);font-size:11px}
+#task-content .task-card{position:relative;background:var(--dark-panel,#fff);border:1px solid var(--line,#e7ebf1);border-left:3px solid var(--task-accent,#8290a5);border-radius:11px;padding:16px 13px;box-shadow:0 2px 8px #17253a04;transition:transform .15s,box-shadow .15s}
+#task-content .task-card:hover{transform:translateY(-2px);box-shadow:0 5px 14px #17253a0a}
+.task-card-title{font-size:13px;line-height:1.7;font-weight:550;overflow-wrap:anywhere}
+.task-card-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.task-card-badges .tag,.task-late-badge{font-size:10px;border-radius:5px;padding:4px 6px}
+.task-late-badge{background:#df554e12;color:#c94d46}
+.task-card[data-completed=true] .task-card-title{color:var(--muted);text-decoration:line-through}
+#task-content .task-card .row.sub{font-size:10px;flex-wrap:wrap;gap:7px;line-height:1.6}
+#task-content .empty{padding:58px 20px;font-size:13px;color:var(--muted)}
+/* Circular completion controls retain native checkbox semantics. */
+#task-content .check,.reminder-row input[type=checkbox]{appearance:none;-webkit-appearance:none;display:grid;place-content:center;box-sizing:border-box;border:1.5px solid var(--task-accent,#d7865d);border-radius:50%;width:21px;height:21px;min-width:21px;margin:0;background:var(--dark-panel,#fff);cursor:pointer;flex-shrink:0}
+#task-content .check:checked,.reminder-row input[type=checkbox]:checked{background:var(--task-accent,#d7865d);border-color:var(--task-accent,#d7865d)}
+#task-content .check:checked:after,.reminder-row input[type=checkbox]:checked:after{content:'✓';color:white;font-size:13px;font-weight:650;line-height:1}
+#task-content .check:focus-visible,.reminder-row input[type=checkbox]:focus-visible{outline:2px solid #536ded;outline-offset:4px}
+.reminder-form{padding:22px;border:1px solid var(--line,#e5e8ef);border-radius:16px;background:var(--dark-panel,#fff);box-shadow:0 4px 24px #17253a04;gap:14px}
+.reminder-form label{font-size:11px;color:var(--muted);letter-spacing:.2px}
+.reminder-form input{height:44px;font-size:13px;background:var(--dark-hover,#f8f9fc);border-radius:10px;color:var(--ink,#273243)}
+.reminder-form input:focus{outline:2px solid #d7865d50;outline-offset:1px;border-color:#d7865d}
+.reminder-form .primary{background:#c9774f;border-color:#c9774f;box-shadow:none;border-radius:10px;font-size:12px;padding:11px 17px}
+.reminder-form .secondary{border-radius:10px;font-size:12px}
+#reminder-error:empty{min-height:0;margin:0}
+.reminder-toolbar{margin:24px 0 16px}
+#reminder-count{font-size:11px;background:var(--dark-panel,#fff);border:1px solid var(--line,#e5e8ef);border-radius:20px;padding:6px 10px}
+#reminder-list{display:flex;flex-direction:column;gap:10px}
+.reminder-row{padding:18px 20px;border:1px solid var(--line,#e5e8ef);border-radius:13px;background:var(--dark-panel,#fff);gap:15px;box-shadow:0 2px 10px #17253a03;transition:box-shadow .15s,border-color .15s}
+.reminder-row:hover{box-shadow:0 5px 18px #17253a08;border-color:#d7865d55}
+.reminder-name{font-size:14px;font-weight:550;line-height:1.6}
+.reminder-content time{font-size:11px;line-height:1.5;font-variant-numeric:tabular-nums}
+.reminder-row[data-overdue=true]{border-left:3px solid #d7865d}
+.reminder-row[data-overdue=true] time{color:#bf6547;font-weight:500}
+.reminder-row[data-completed=true]{box-shadow:none;background:var(--dark-hover,#fafbfc)}
+.reminder-row[data-completed=true] time{color:var(--muted)}
+.reminder-row .secondary{padding:6px 9px;border-radius:7px;font-size:11px;background:transparent;box-shadow:none;border:1px solid var(--line,#e5e8ef);color:var(--muted)}
+.reminder-row .secondary:hover{background:var(--dark-hover,#f5f7fa);color:var(--ink)}
+.reminder-empty{border:1px dashed var(--line,#dce2ec);border-radius:14px;background:var(--dark-panel,#fff);padding:55px 20px;font-size:13px;line-height:1.8}
+html[data-theme=dark] .task-late-badge,html[data-theme=dark] .task-list-table tr[data-overdue=true] td:last-child .task-clock,html[data-theme=dark] .reminder-row[data-overdue=true] time{color:#ffb09b}
+@media(max-width:600px){
+ #task-main .hero h1,#reminder-workspace h1{font-size:26px}
+ #task-section .tools{padding:14px 12px}.task-list-table td{padding:15px 12px}
+ .reminder-form{padding:17px;gap:14px}.reminder-form label{flex-basis:100%}
+ .reminder-form .primary{flex:1}.reminder-row{padding:15px;gap:10px}.reminder-name{font-size:13px}
+ .reminder-row .reminder-content{flex-basis:calc(100% - 40px)}.reminder-row button:first-of-type{margin-left:31px}
+ .reminder-toolbar{gap:10px}.reminder-toolbar .tab{padding:7px 10px;font-size:11px}
+ #task-content .board{padding:12px;gap:12px}#task-content .column{min-width:220px}
+}
+@media(forced-colors:active){#task-content .check,.reminder-row input[type=checkbox]{appearance:auto;-webkit-appearance:auto}#task-content .check:after,.reminder-row input[type=checkbox]:after{display:none}}
+@media(prefers-reduced-motion:reduce){#task-content .task-card,.reminder-row,.task-list-table td{transition:none}#task-content .task-card:hover{transform:none}}
