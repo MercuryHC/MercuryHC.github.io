@@ -2068,13 +2068,14 @@
     <link rel="stylesheet" href="./settings.css?v=serverchan-3" />
     <link rel="stylesheet" href="./task-todos.css?v=timestamp-pill-2" />
     <link rel="stylesheet" href="./responsive.css?v=1" />
-      <link rel="stylesheet" href="./reminders.css?v=2">
+      <link rel="stylesheet" href="./reminders.css?v=3">
     <link rel="stylesheet" href="./task-calendar.css?v=complete-1">
     <link rel="stylesheet" href="./task-appearance.css?v=1">
     <link rel="stylesheet" href="./home-widgets.css?v=2">
     <link rel="stylesheet" href="./modern-ui.css?v=ios-3">
     <link rel="stylesheet" href="./home-desktop.css?v=12">
     <link rel="stylesheet" href="./widget-library.css?v=8">
+      <link rel="stylesheet" href="./task-refresh.css?v=1">
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2433,8 +2434,8 @@
         <div id="task-main" hidden>
         <div class="hero">
           <div>
-            <h1 id="heading">让每一件事，有序发生。</h1>
-            <p id="subtitle">聚焦当下，从容推进每一个目标。</p>
+            <h1 id="heading">我的任务</h1>
+            <p id="subtitle">查看进度，安排下一步。</p>
           </div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap">
             <button class="secondary" id="recurring-open">↻ 循环计划</button
@@ -2505,26 +2506,27 @@
         </p>
         </div>
         <section id="reminder-workspace" hidden aria-labelledby="reminder-heading">
-          <div class="hero"><div><h1 id="reminder-heading">提醒事项</h1><p>记下一件事，在合适的时间提醒自己。</p></div></div>
+          <div class="hero"><div><span class="reminder-eyebrow">我的清单</span><h1 id="reminder-heading">提醒事项</h1></div><button type="button" id="reminder-new" aria-controls="reminder-compose">＋ 新提醒</button></div>
           <div class="reminder-overview" aria-label="提醒概览">
             <div class="reminder-stat"><span>待完成</span><strong id="reminder-pending-total">0</strong><small>留给接下来的自己</small></div>
             <div class="reminder-stat" data-tone="today"><span>今天</span><strong id="reminder-today-total">0</strong><small>今天需要记住的事</small></div>
             <div class="reminder-stat" data-tone="overdue"><span>已超时</span><strong id="reminder-overdue-total">0</strong><small>值得优先关注</small></div>
           </div>
-          <div class="reminder-compose">
-          <h2 id="reminder-form-heading">＋ 新提醒</h2>
+
+          <div class="reminder-toolbar"><div class="tabs" role="group" aria-label="筛选提醒事项">
+            <button type="button" class="tab active" data-reminder-filter="pending" aria-pressed="true">待完成</button>
+            <button type="button" class="tab" data-reminder-filter="completed" aria-pressed="false">已完成</button>
+            <button type="button" class="tab" data-reminder-filter="all" aria-pressed="false">全部</button>
+          </div><input id="reminder-search" type="search" placeholder="搜索提醒事项" aria-label="搜索提醒事项"><span id="reminder-count" role="status" aria-live="polite"></span></div>
+          <details class="reminder-compose" id="reminder-compose">
+          <summary id="reminder-form-heading">新提醒</summary>
           <form id="reminder-form" class="reminder-form">
             <label>事项名称<input id="reminder-title" required maxlength="500" placeholder="输入新的提醒事项…" autocomplete="off"></label>
             <label>提醒时间<input id="reminder-time" type="datetime-local" required></label>
             <button type="submit" class="primary" id="reminder-submit">添加提醒事项</button>
             <button type="button" class="secondary" id="reminder-cancel" hidden>取消编辑</button>
           </form>
-          <p id="reminder-error" role="alert"></p></div>
-          <div class="reminder-toolbar"><div class="tabs" role="group" aria-label="筛选提醒事项">
-            <button type="button" class="tab active" data-reminder-filter="pending" aria-pressed="true">待完成</button>
-            <button type="button" class="tab" data-reminder-filter="completed" aria-pressed="false">已完成</button>
-            <button type="button" class="tab" data-reminder-filter="all" aria-pressed="false">全部</button>
-          </div><input id="reminder-search" type="search" placeholder="搜索提醒事项" aria-label="搜索提醒事项"><span id="reminder-count" role="status" aria-live="polite"></span></div>
+          <p id="reminder-error" role="alert"></p></details>
           <ul id="reminder-list" aria-label="提醒事项清单"></ul>
           <p class="reminder-hint">按本机时区显示。到时会出现在顶部提醒栏；关闭网页后的微信提醒需在设置中连接并启用后台。</p>
         </section>
@@ -3360,20 +3362,20 @@
     </dialog>
     <dialog id="task-dialog">
       <form id="task-form">
-        <div class="row">
+        <div class="row task-editor-header">
           <h2 id="dialog-title">新建任务</h2>
-          <button type="button" onclick="this.closest('dialog').close()">
+          <button type="button" aria-label="关闭任务编辑" onclick="this.closest('dialog').close()">
             ✕
           </button>
         </div>
-        <label>任务名称</label
+        <label for="task-title-input" class="task-title-label">任务名称</label
         ><input
-          name="title"
+          id="task-title-input" name="title"
           required
           maxlength="120"
           placeholder="准备完成什么？"
-        /><label>所属项目</label
-        ><select name="project"></select>
+        /><label for="task-project-input">所属项目</label
+        ><select id="task-project-input" name="project"></select>
         <div class="task-datetime-grid">
           <div class="datetime-field">
             <label for="task-start-date">开始日期</label
@@ -3392,12 +3394,13 @@
             ><input id="task-due-time" name="dueTime" type="time" />
           </div>
         </div>
-        <p class="datetime-hint">
+        <details class="task-time-help"><summary>时间与提醒规则</summary>        <p class="datetime-hint">
           按本机时区计算；开始时间留空按 00:00，截止时间留空按 23:59。
         </p>
         <p class="datetime-hint">
           加急⚡未完成即红色提醒，不受开始或截止时间限制；高优先级任务仍按时间分级：跨天长任务从截止前一天12:00起绿色预告，不足6小时黄色，不足1小时红色。
         </p>
+</details>
         <div class="row">
           <div style="flex: 1">
             <label>状态</label
@@ -3417,7 +3420,7 @@
             </select>
           </div>
         </div>
-        <section class="repeat-settings">
+        <details class="task-editor-disclosure" id="task-repeat-panel"><summary>重复计划<span>按天、周或月循环</span></summary><section class="repeat-settings">
           <label for="repeat-frequency">重复计划</label
           ><select id="repeat-frequency">
             <option value="none">不重复</option>
@@ -3483,7 +3486,7 @@
             GitHub 才会同步。
           </p>
         </section>
-        <section class="notes-section task-todos-section" aria-labelledby="task-todo-heading">
+        </details><details class="task-editor-disclosure" id="task-todos-panel"><summary>任务分解<span>拆成可勾选的小步骤</span></summary><section class="notes-section task-todos-section" aria-labelledby="task-todo-heading">
           <div class="row"><h3 id="task-todo-heading">TODO 任务分解</h3><button id="task-todo-add" type="button" class="secondary">＋ 添加 TODO</button></div>
           <p id="task-todo-progress" class="sub" role="status"></p>
           <div id="task-todo-list"></div><p id="task-todo-empty" class="sub">还没有分解事项；没有 TODO 的任务需要手动完成。</p>
@@ -3491,7 +3494,7 @@
           <p id="task-todo-hint" class="sub"></p>
           <details id="task-todo-archive" hidden><summary>查看旧版备注迁移留档</summary><pre id="task-todo-source"></pre></details>
         </section>
-        <section class="notes-section">
+        </details><details class="task-editor-disclosure" id="task-notes-panel"><summary>过程记录<span>备注与 Markdown</span></summary><section class="notes-section">
           <div class="row">
             <label for="task-note" style="margin: 0"
               >任务过程记录 · Markdown</label
@@ -3576,7 +3579,7 @@
             记录任务完成过程，支持 Markdown；修改后点击保存任务。
           </p>
         </section>
-        <div class="dialog-actions">
+        </details><div class="dialog-actions">
           <button id="delete-task" type="button" style="color: #d86d72">
             删除任务</button
           ><button class="primary">保存任务</button>
@@ -4147,7 +4150,7 @@
         };
         $("#breadcrumb").textContent = names[n];
         $("#heading").textContent =
-          n === "overview" ? "让每一件事，有序发生。" : names[n];
+          n === "overview" ? "我的任务" : names[n];
         $("#stats").style.display = n === "overview" ? "grid" : "none";
         $("#project-section").style.display = ["overview", "projects"].includes(
           n,
@@ -4203,6 +4206,9 @@
         $("#delete-task").style.visibility = id ? "visible" : "hidden";
         window.loadTaskRecurrence?.(t);
         window.loadTaskNotes?.(t);
+        document.getElementById('task-notes-panel').open=!!t.note;
+        document.getElementById('task-todos-panel').open=!!t.todos?.length;
+        document.getElementById('task-repeat-panel').open=!!t.scheduleId;
         $("#task-dialog").showModal();
       }
       $("#task-form").onsubmit = (e) => {
@@ -4381,7 +4387,7 @@
     <script src="./browser-bookmarks-store.js?v=storage-1"></script>
     <script src="./browser-bookmarks.js?v=layout-2"></script>
     <script src="./backgrounds.js?v=settings-1"></script>
-    <script src="./reminders.js?v=design-2"></script>
+    <script src="./reminders.js?v=design-3"></script>
     <script src="./calendar-core.js?v=daily-1"></script>
     <script src="./task-calendar.js?v=complete-1"></script>
     <script src="./home-widgets-core.js?v=detail-4"></script>

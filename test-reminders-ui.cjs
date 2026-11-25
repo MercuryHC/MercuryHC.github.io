@@ -27,3 +27,5 @@ c.window.RemindersWorkspace.render();accept=false;$('reminder-list').querySelect
 accept=true;$('reminder-list').querySelectorAll('button')[1].onclick();assert.equal(c.db.reminders.length,0);assert.equal(JSON.parse(storage.get('taskspace-pages-v1')).reminders.length,0);
 $('task-mode-tasks').onclick();assert.equal($('task-main').hidden,false);assert.equal($('reminder-workspace').hidden,true);
 console.log('PASS: real HTML navigation, add/edit/complete/restore/delete/filter, overdue, safe text rendering, persistence, quota failure and stale editor protection.');
+
+$('reminder-new').onclick();assert.equal($('reminder-compose').open,true);assert.equal($('reminder-cancel').hidden,false);$('reminder-cancel').onclick();assert.equal($('reminder-compose').open,false);c.window.RemindersWorkspace.createAt('2026-12-01T10:30');assert.equal($('reminder-compose').open,true);

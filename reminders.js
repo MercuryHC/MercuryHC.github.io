@@ -3,7 +3,7 @@
   const Core = window.ReminderCore, $ = id => document.getElementById(id);
   let filter = 'pending', editingId = null, editingSnapshot = null;
   const items = () => db.reminders || [];
-  function error(message = '') { $('reminder-error').textContent = message; }
+  function error(message = '') { $('reminder-error').textContent = message;if(message)$('reminder-compose').open=true; }
   function show(mode) {
     const reminders = mode === 'reminders';
     $('task-main').hidden = mode !== 'tasks';
@@ -24,7 +24,8 @@
     $('reminder-form').reset();
     $('reminder-submit').textContent = '添加提醒事项';
     $('reminder-cancel').hidden = true;
-    $('reminder-form-heading').textContent = '＋ 新提醒';
+    $('reminder-form-heading').textContent = '新提醒';
+    $('reminder-compose').open=false;
     renderList();
     error();
   }
@@ -55,7 +56,9 @@
     $('reminder-time').value = Core.toLocal(item.remindAt);
     $('reminder-submit').textContent = '保存修改';
     $('reminder-cancel').hidden = false;
+    $('reminder-cancel').textContent='取消编辑';
     $('reminder-form-heading').textContent = '编辑提醒';
+    $('reminder-compose').open=true;
     renderList();
     error();
     $('reminder-title').focus();
@@ -119,7 +122,7 @@
         commit([...items(), Core.create(title, remindAt, 'reminder-' + crypto.randomUUID())]);
         filter = 'pending'; updateFilter();
       }
-      reset(); $('reminder-title').focus();
+      reset(); $('reminder-new').focus();
     });
   };
   function updateFilter() {
@@ -132,11 +135,12 @@
   document.querySelectorAll('[data-reminder-filter]').forEach(button => {
     button.onclick = () => { filter = button.dataset.reminderFilter; updateFilter(); };
   });
+  $('reminder-new').onclick=()=>{reset();$('reminder-cancel').hidden=false;$('reminder-cancel').textContent='取消';$('reminder-compose').open=true;$('reminder-title').focus();};
   $('reminder-search').oninput=renderList;
   $('task-mode-tasks').onclick = () => show('tasks');
   $('task-mode-reminders').onclick = () => show('reminders');
   $('reminder-cancel').onclick = reset;
-  window.RemindersWorkspace = {render:renderList, show, open, toggle(id) {const item=items().find(r=>r.id===id);if(item)commit(items().map(r=>r.id===id?Core.complete(r,!r.completed):r));}, createAt(value) {reset();show('reminders');$('reminder-time').value=value;$('reminder-title').focus();}};
+  window.RemindersWorkspace = {render:renderList, show, open, toggle(id) {const item=items().find(r=>r.id===id);if(item)commit(items().map(r=>r.id===id?Core.complete(r,!r.completed):r));}, createAt(value) {reset();show('reminders');$('reminder-compose').open=true;$('reminder-time').value=value;$('reminder-title').focus();}};
   renderList();
   setInterval(() => { if (!$('reminder-workspace').hidden) renderList(); }, 15000);
   window.addEventListener('focus', renderList);
