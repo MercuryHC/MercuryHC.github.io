@@ -110,6 +110,15 @@
           depth,
           false,
         );
+        if (f.preview !== undefined) {
+          b.textContent = '';
+          const title = document.createElement('strong'), preview = document.createElement('span'), date = document.createElement('small');
+          title.textContent = f.label || f.path;
+          preview.textContent = f.preview || '没有附加文本';
+          date.textContent = f.date || '';
+          b.append(title, preview, date);
+          b.classList.add('note-summary-row');
+        }
         b.onclick = () => onFile(f);
         container.append(b);
       }

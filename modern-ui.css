@@ -17,3 +17,28 @@ html body dialog{border:1px solid var(--line);border-radius:24px;background:var(
 @container(max-width:555px){.home-widget[data-size="1x4"] .home-widget-body{display:block}}
 @media(max-width:700px){.bookmark-clock{font-size:60px}.bookmark-hero{padding:20px 0}.bookmark-hero h1{font-size:12px}.calendar-header h1,.hero h1{font-size:28px}.calendar-filters{gap:5px}.calendar-filters label{font-size:11px}.home-widget,.home-widget[data-size]{padding:10px;border-radius:20px}.settings-header h2{font-size:22px}}
 @media(prefers-reduced-motion:reduce){button{transition:none}button:active{transform:none}}
+
+/* Notes: warm paper, grouped summaries and restrained amber controls. */
+body[data-workspace="notion"]{--blue:#b8860b;--ios-tint:rgba(229,177,46,.14)}
+#notes-sidebar{background:var(--app-hover);padding:24px 16px}
+#notes-sidebar .brand{font-size:26px;letter-spacing:-.8px;margin-bottom:24px}
+#notes-sidebar .brand b{background:#e7b52e;color:#fff;border-radius:10px}
+#nb-search{border:0;border-radius:11px;background:var(--app-surface);padding:12px;width:100%;box-sizing:border-box}
+#nb-list{margin-top:16px;border-radius:14px;overflow:hidden}
+#nb-list .note-summary-row{display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:14px!important;background:var(--app-surface);border:0;border-bottom:1px solid var(--line);border-radius:0;text-align:left;white-space:normal}
+#nb-list .note-summary-row.active{background:var(--ios-tint);box-shadow:inset 3px 0 #d6a21d}
+#nb-list .note-summary-row strong{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#nb-list .note-summary-row span{font-size:12px;color:var(--muted);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.5}
+#nb-list .note-summary-row small{font-size:10px;color:var(--muted)}
+#notebook-workspace .notebook-heading{padding:8px 4px 20px}
+#notebook-workspace .notebook-layout{border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(80,65,20,.04)}
+#notebook-workspace .notebook-paper{background:var(--app-surface);padding:28px 36px}
+#notebook-workspace #nb-title{font-size:30px;font-weight:750;letter-spacing:-.6px;border:0;background:transparent;padding-left:0}
+#notebook-workspace .notebook-document-bar{border-bottom:1px solid var(--line);padding-bottom:14px}
+#notebook-workspace .notebook-toolbar{background:transparent;border:0;border-bottom:1px solid var(--line);padding:12px 0;gap:8px;flex-wrap:wrap}
+#notebook-workspace .notebook-toolbar button{border:0;border-radius:8px;color:var(--blue);background:var(--ios-tint)}
+#notebook-workspace #nb-body{background:transparent;border:0;font-family:inherit;font-size:16px;line-height:1.9;padding:22px 0;min-height:52vh;resize:vertical}
+#notebook-workspace #nb-preview{font-size:16px;line-height:1.9}
+.extra-note textarea{background:transparent!important;border:0!important;line-height:1.7}
+.extra-note>button{color:#b8860b;background:rgba(229,177,46,.12);border:0;border-radius:8px;padding:6px 10px;font-size:11px;align-self:flex-start}
+@media(max-width:700px){#notebook-workspace .notebook-paper{padding:18px}#notebook-workspace #nb-title{font-size:25px}#notebook-workspace .notebook-document-bar{flex-wrap:wrap;gap:10px}}

@@ -13,7 +13,21 @@
       if(size==='1x1'){body.append(button(String(now.getDate()),()=>{task();window.TaskCalendar.openToday();}),node('small',now.toLocaleDateString('zh-CN',{weekday:'long'})));}
       else{const grid=node('div',undefined,'extra-month-grid');for(const d of ['一','二','三','四','五','六','日'])grid.append(node('small',d));for(const d of C.days(day).filter(d=>d.slice(0,7)===day.slice(0,7))){if(d.endsWith('01'))for(let i=0;i<(C.date(d).getDay()+6)%7;i++)grid.append(node('span'));const b=button(String(Number(d.slice(-2))),()=>{task();window.TaskCalendar.openDay?.(d);});if(d===day)b.setAttribute('aria-current','date');grid.append(b);}body.append(grid);}
     }
-    if(id==='note'){const input=node('textarea');input.value=typeof state.note==='string'?state.note:'';input.placeholder='记下此刻的想法…';input.maxLength=5000;input.setAttribute('aria-label','快速便签');const status=node('small','自动保存在本机');input.oninput=()=>{status.textContent=save({...state,note:input.value})?'已保存':'保存失败，内容仍保留在输入框';};body.append(input,status);}
+    if(id==='note'){
+      const api=window.NotesWorkspace?.quickNote,input=node('textarea'),status=node('small');
+      // Only retire the legacy draft after the shared notebook has persisted it.
+      if(api && typeof state.note==='string' && state.note){
+        const current=api.read(),legacy=state.note;
+        if(current===legacy || current.endsWith('\n\n'+legacy) || api.write(current?current+'\n\n'+legacy:legacy)){
+          const next={...state};delete next.note;save(next);
+        }
+      }
+      input.value=api?api.read():(state.note||'');input.placeholder='记下此刻的想法…';
+      input.setAttribute('aria-label','快速便签');input.disabled=!api;
+      status.textContent=api?'关联笔记 · 自动保存到本机':'笔记暂不可用';
+      input.oninput=()=>{status.textContent=api.write(input.value)?'已保存到笔记':'保存失败，请保留当前内容后重试';};
+      body.append(input,status,button('在笔记中打开 ↗',()=>api?.open()));
+    }
     if(id==='focus'){
       const clock=node('strong','','extra-timer');clock.dataset.focusClock='true';const actions=node('div',undefined,'extra-actions');
       const start=button('',()=>{const t=state.timer||{};if(t.end>Date.now())save({...state,timer:{remaining:t.end-Date.now(),mode:t.mode}});else save({...state,timer:{end:Date.now()+(t.remaining||(t.mode==='rest'?300000:1500000)),mode:t.mode||'focus'}});tick();});start.dataset.focusStart='true';

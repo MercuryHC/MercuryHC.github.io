@@ -8,7 +8,7 @@
     selected = null,
     working = false,
     conflict = null,
-    view = "split",
+    view = "edit",
     folders = [],
     currentFolder = "";
   const storageKey = () => "workstation-notes-v1:" + context.key;
@@ -83,6 +83,9 @@
         path: n.id,
         label: (n.title || "未命名笔记") + (dirty(n) ? " · ●" : ""),
         search: n.body,
+        preview: n.body.replace(/[#*`>\[\]]/g, '').replace(/\s+/g,' ').slice(0,90),
+        date: n.updatedAt ? new Date(n.updatedAt).toLocaleDateString('zh-CN') : '',
+
       })),
       folders,
       current: currentFolder,
@@ -376,6 +379,23 @@
     applyCollapse(name);
   };
   window.NotesWorkspace = {
+    quickNote: {
+      read: () => notes.find(n => n.id === 'quick-note.md')?.body || '',
+      write(body) {
+        if (working) return false;
+        const old = notes, existing = notes.find(n => n.id === 'quick-note.md');
+        const next = {...(existing || {id:'quick-note.md',title:'快速便签',sha:null,base:null}), body, updatedAt:new Date().toISOString()};
+        notes = existing ? notes.map(n => n === existing ? next : n) : [next, ...notes];
+        if (!persist()) { notes = old; return false; }
+        draw();
+        return true;
+      },
+      open() {
+        if (!notes.some(n => n.id === 'quick-note.md') && !this.write('')) return;
+        selected = 'quick-note.md'; currentFolder = ''; persist(); draw(); app('notion');
+        $('nb-body').focus();
+      },
+    },
     storageExport: () => ({ notes: notes.map(({id,title,body}) => ({id,title,body})), folders: [...folders] }),
     storageImport(value) {
       if (working) throw Error("笔记正在同步，请稍后重试。");
@@ -564,6 +584,8 @@
     }
   });
   load();
+  document.querySelector('.notebook-editor').dataset.mode = view;
+  document.querySelectorAll('[data-note-view]').forEach(b => b.classList.toggle('active', b.dataset.noteView === view));
   draw();
   localStorage.setItem("workstation-sidebar:bookmarks", localStorage.getItem("workstation-home-sidebar-default") === "expanded" ? "false" : "true");
   app("bookmarks");

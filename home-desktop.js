@@ -9,11 +9,21 @@
 
   function tiles(){return [...host.querySelectorAll('.home-widget, #bm-grid .bookmark-card[data-bookmark-id]')];}
   function key(n){return n.dataset.widget?'widget:'+n.dataset.widget:'bookmark:'+n.dataset.bookmarkId;}
+  function measureTiles(){
+    const grid=$('home-widgets-grid'),width=grid.clientWidth;if(!width)return;
+    const gap=12,columns=width>=520?4:2,unit=(width-gap*(columns-1))/columns;
+    grid.style.gridTemplateColumns=`repeat(${columns},minmax(0,1fr))`;
+    for(const tile of grid.querySelectorAll('.home-widget')){
+      const [rows,cols]=tile.dataset.size.split('x').map(Number),span=Math.min(cols,columns),tileWidth=unit*span+gap*(span-1),height=tileWidth*rows/cols;
+      tile.style.setProperty('--tile-height',height+'px');tile.style.gridColumn='span '+span;tile.style.gridRow='span '+Math.ceil(height+gap);
+    }
+  }
   function refresh(){
     const all=tiles();for(const n of all){const id=key(n);n.dataset.desktopId=id;if(!order.includes(id))order.push(id);n.style.order=String(order.indexOf(id));n.draggable=false;
       if(!n.querySelector('.desktop-handle')){const h=document.createElement('button');h.type='button';h.className='desktop-handle';h.textContent='⠿';h.setAttribute('aria-label','移动 '+(n.querySelector('h3,strong')?.textContent||'项目'));h.onpointerdown=e=>begin(e,n,h);h.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const list=tiles().filter(t=>Boolean(t.dataset.widget)===Boolean(n.dataset.widget)).sort((a,b)=>order.indexOf(key(a))-order.indexOf(key(b))),i=list.indexOf(n),target=list[i+(['ArrowLeft','ArrowUp'].includes(e.key)?-1:1)];if(target)move(key(n),key(target),['ArrowRight','ArrowDown'].includes(e.key));};n.append(h);}n.querySelector('.desktop-handle').hidden=!editing;
       if(n.dataset.widget&&!n.querySelector('.desktop-options')){const b=document.createElement('button');b.type='button';b.className='desktop-options';b.textContent='•••';b.setAttribute('aria-label','组件操作');b.onclick=()=>window.HomeContext?.open(n,b.getBoundingClientRect().left,b.getBoundingClientRect().bottom);n.append(b);}if(n.querySelector('.desktop-options'))n.querySelector('.desktop-options').hidden=!editing;
     }
+    measureTiles();
   }
   function move(from,to,after){if(from===to||from.split(':')[0]!==to.split(':')[0])return;const next=order.filter(x=>x!==from),i=next.indexOf(to);if(i<0)return;next.splice(i+(after?1:0),0,from);try{localStorage.setItem(KEY,JSON.stringify(next));order=next;$('home-widgets-error').textContent='';refresh();}catch{$('home-widgets-error').textContent='布局保存失败，已保留原位置。';}}
   function clear(){for(const n of tiles()){delete n.dataset.drop;delete n.dataset.dragging;}drag=null;}
@@ -25,5 +35,6 @@
   host.addEventListener('click',e=>{if(editing&&e.target.closest('[data-desktop-id]')&&!e.target.closest('.desktop-handle, .desktop-options')){e.preventDefault();e.stopPropagation();}},true);
   host.addEventListener('dragstart',e=>{if(e.target.closest('[data-desktop-id]'))e.preventDefault();},true);
   window.addEventListener('storage',e=>{if(e.key!==KEY)return;try{const value=JSON.parse(e.newValue);order=Array.isArray(value)?[...new Set(value.filter(x=>typeof x==='string'))]:[];clear();refresh();}catch{}});
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(measureTiles).observe($('home-widgets-grid'));
   window.HomeDesktop={refresh,shift(id,delta){const list=tiles().filter(n=>key(n).split(':')[0]===id.split(':')[0]).sort((a,b)=>order.indexOf(key(a))-order.indexOf(key(b))),i=list.findIndex(n=>key(n)===id),target=list[i+delta];if(target)move(id,key(target),delta>0);}};refresh();
 })();
