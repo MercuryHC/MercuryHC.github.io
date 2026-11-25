@@ -120,7 +120,7 @@
   $('calendar-today').onclick=()=>{selected=C.key(new Date());render();};
   document.querySelectorAll('[data-calendar-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.calendarMode;render();});
   for(const id of ['calendar-tasks','calendar-reminders','calendar-completed'])$(id).onchange=render;
-  window.TaskCalendar={render,openToday(){selected=C.key(new Date());window.RemindersWorkspace.show('calendar');}};
+  window.TaskCalendar={render,openDay(day){selected=day;window.RemindersWorkspace.show('calendar');},openToday(){selected=C.key(new Date());window.RemindersWorkspace.show('calendar');}};
   window.RemindersWorkspace.show('calendar');
   window.addEventListener('focus',render);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')render();});

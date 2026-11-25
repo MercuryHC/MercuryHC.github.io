@@ -2072,6 +2072,9 @@
     <link rel="stylesheet" href="./task-calendar.css?v=complete-1">
     <link rel="stylesheet" href="./task-appearance.css?v=1">
     <link rel="stylesheet" href="./home-widgets.css?v=2">
+    <link rel="stylesheet" href="./modern-ui.css?v=ios-2">
+    <link rel="stylesheet" href="./home-desktop.css?v=1">
+    <link rel="stylesheet" href="./widget-library.css?v=1">
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2847,11 +2850,18 @@
           </form>
         </div>
         <section class="home-widgets" aria-label="主页卡片">
-          <div class="home-widgets-toolbar"><div><span class="home-widgets-eyebrow">MY DAY</span><h2>我的一天</h2></div><button id="home-widgets-customize" type="button" aria-expanded="false" aria-controls="home-widget-settings">自定义卡片</button></div>
-          <div id="home-widget-settings" class="home-widget-settings" hidden>
-            <div class="home-widget-settings-heading"><div><h3>让主页更适合你</h3><p>按行 × 列选择尺寸，设置自动保存在本机。</p></div><button id="home-widgets-close" type="button">完成</button></div>
-            <div id="home-widget-options"></div>
-          </div>
+          <div class="home-widgets-toolbar"><div><span class="home-widgets-eyebrow">MY DAY</span><h2>我的桌面</h2></div><button id="home-widgets-customize" type="button" aria-expanded="false" aria-controls="home-widget-settings">＋ 组件库</button></div>
+          <dialog id="home-widget-settings" class="home-widget-settings" aria-labelledby="widget-library-title" hidden>
+            <div class="library-shell">
+              <nav class="library-sidebar" aria-label="组件分类"><div class="library-brand">组件库<small>为桌面添一点可能</small></div><div id="widget-library-categories"></div><p>本机保存 · 随时调整<br>移除组件不会清空内容</p></nav>
+              <div class="library-main"><header class="library-header"><div><h2 id="widget-library-title">发现小组件</h2><p>挑选常用工具，放在触手可及的地方。</p></div><button id="home-widgets-close" type="button" aria-label="关闭组件库">×</button></header>
+                <div class="library-search"><input id="home-widget-search" type="search" placeholder="搜索日历、便签、专注…" aria-label="搜索小组件"><span id="widget-library-count" role="status"></span></div>
+                <div id="widget-library-message" role="status" aria-live="polite"></div>
+                <div id="home-widget-options"></div><p id="widget-library-empty" hidden>没有找到匹配组件，试试其他关键词。</p>
+                <footer class="library-footer">尺寸按行 × 列计算 · 示例仅用于预览，添加后展示你的数据</footer>
+              </div>
+            </div>
+          </dialog>
           <p id="home-widgets-error" role="alert"></p>
           <div id="home-widgets-grid"></div>
         </section>
@@ -4368,7 +4378,9 @@
     <script src="./calendar-core.js?v=daily-1"></script>
     <script src="./task-calendar.js?v=complete-1"></script>
     <script src="./home-widgets-core.js?v=2"></script>
-    <script src="./home-widgets.js?v=2"></script>
+    <script src="./home-extras.js?v=1"></script>
+    <script src="./home-widgets.js?v=5"></script>
+    <script src="./home-desktop.js?v=2"></script>
     <script src="./deadline-dock.js?v=reminders-1"></script>
     <script src="./recurring-tasks.js?v=todos-3"></script>
     <script src="./task-notes.js?v=completion-log-4"></script>

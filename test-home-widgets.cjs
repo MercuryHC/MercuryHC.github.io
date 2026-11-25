@@ -12,7 +12,7 @@ assert.equal($('home-widgets-grid').children.length,2);assert.equal($('home-widg
 $('home-widgets-grid').querySelector('.home-widget-link').onclick();assert.deepEqual(opened,['today']);
 const circles=$('home-widgets-grid').querySelectorAll('.home-widget-check');$('home-widgets-grid').querySelector('[aria-label="完成：Reminder"]').onclick();assert.equal(db.reminders[0].completed,true);context.window.HomeWidgets.refresh();
 $('home-widgets-customize').onclick();assert.equal($('home-widget-settings').hidden,false);
-function change(id,enabled,size){const check=document.querySelector('[data-widget="'+id+'"] input')||document.querySelector('input[data-widget="'+id+'"]');const select=document.querySelector('select[data-size="'+id+'"]');Object.defineProperty(select,'value',{value:size,configurable:true});check.checked=enabled;check.onchange();}
+function change(id,enabled,size){const check=document.querySelector('[data-widget="'+id+'"] input')||document.querySelector('input[data-widget="'+id+'"]');const select=document.querySelector('select[data-size="'+id+'"]');Object.defineProperty(select,'value',{value:size,configurable:true,writable:true});check.checked=enabled;check.onchange();}
 change('projects',true,'2x2');assert.equal(document.querySelector('section[data-widget="projects"]').dataset.size,'2x2');assert.equal(JSON.parse(storage.get('workstation-home-widgets-v1')).widgets[3].enabled,true);
 fail=true;change('today',false,'1x1');assert(document.querySelector('section[data-widget="today"]'));assert($('home-widgets-error').textContent);fail=false;
 for(const id of ['today','tasks','reminders','projects'])change(id,false,'1x2');assert($('home-widgets-grid').querySelector('.home-widgets-empty'));
@@ -21,3 +21,16 @@ console.log('PASS: date projections, project totals, safe rendering, completion,
 
 for(const size of ['1x1','1x2','1x4','2x2'])assert.equal(Core.preferences({version:1,widgets:[{id:'today',size}]}).widgets[0].size,size);
 assert.equal(Core.preferences({version:1,widgets:[{id:'today',size:'large'}]}).widgets[0].size,'2x2');
+$('home-widgets-close').onclick();$('home-widgets-customize').onclick();
+change('today',true,'1x2');
+context.db.tasks=Array.from({length:10},(_,i)=>({...db.tasks[0],id:'dense-'+i,title:'日程 '+i}));context.window.HomeWidgets.refresh();
+assert.equal(document.querySelector('section[data-widget="today"]').querySelectorAll('.home-schedule-row').length,11,'all agenda entries remain accessible inside the scrollable card');
+assert.equal(document.querySelector('section[data-widget="today"] .home-widget-body').getAttribute('aria-label'),'今日日程内容，可滚动查看');
+change('tasks',true,'1x1');assert.match(document.querySelector('section[data-widget="tasks"] .home-widget-summary-detail').textContent,/进行中.*超时/);
+$('home-widgets-close').onclick();$('home-widgets-customize').onclick();
+$('home-widget-search').value='不存在的组件';$('home-widget-search').oninput();assert.equal($('widget-library-empty').hidden,false);
+$('home-widget-search').value='';$('home-widget-search').oninput();document.querySelector('[data-category="tools"]').onclick();assert.equal([...$('home-widget-options').children].filter(r=>!r.hidden).length,3);
+context.window.HomeExtras={render:id=>id==='note'};
+const noteCard=document.querySelector('[data-library-id="note"]');noteCard.querySelector('.library-add').onclick();assert.equal(noteCard.dataset.added,'true');assert(document.querySelector('section[data-widget="note"]'));
+noteCard.querySelector('.library-add').onclick();assert.equal(noteCard.dataset.added,'false');
+console.log('PASS: library search empty state, category filtering and explicit add/remove controls');

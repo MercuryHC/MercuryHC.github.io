@@ -5,6 +5,11 @@
     {id:'tasks',title:'任务概览',description:'查看待完成、进行中和超时任务。',icon:'☷'},
     {id:'reminders',title:'近期提醒',description:'未来七天及已超时的待办提醒。',icon:'◉'},
     {id:'projects',title:'项目进度',description:'按一级项目汇总任务完成进度。',icon:'▥'}
+    ,{id:'month',title:'迷你月历',description:'查看本月日期，打开今日日历。',icon:'▦'},
+    {id:'note',title:'快速便签',description:'随手记录，自动保存在本机。',icon:'▤'},
+    {id:'focus',title:'番茄钟',description:'25 分钟专注与 5 分钟休息。',icon:'◴'},
+    {id:'countdown',title:'倒数日',description:'记录一个重要日期。',icon:'◷'},
+    {id:'quick',title:'快速添加',description:'直接新建任务、提醒或笔记。',icon:'＋'}
   ];
   const defaults=()=>({version:1,widgets:catalog.map(({id})=>({id,enabled:id==='today'||id==='tasks',size:id==='today'?'1x2':'1x1'}))});
   function preferences(value){

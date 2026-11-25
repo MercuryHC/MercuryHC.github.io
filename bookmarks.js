@@ -136,6 +136,7 @@
     add.textContent = "＋ 添加网站";
     add.onclick = () => open();
     $("bm-grid").append(add);
+    window.HomeDesktop?.refresh();
   }
   let dropTarget = null;
   function clearDrag() {
