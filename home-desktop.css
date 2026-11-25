@@ -91,3 +91,41 @@ html body[data-workspace=bookmarks] .desktop-sites #bm-grid .bookmark-card>a{dis
 @container(max-width:150px){.home-schedule-detail{grid-template-columns:minmax(0,1fr)}.home-schedule-time{grid-column:1;grid-row:auto}.home-widget-icon{display:none!important}}
 .desktop-grid #home-widgets-grid .home-extra .extra-compact{padding:0;background:transparent;border:0;border-radius:0;color:inherit;text-align:left}
 .desktop-grid #home-widgets-grid .extra-focus .extra-compact strong{font-size:clamp(12px,26cqw,22px);letter-spacing:-.8px;white-space:nowrap}
+/* Progressive detail: only 1x1 is a summary. Wider tiles retain real content. */
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="1x2"],[data-size="1x4"]) .home-widget-body{display:block;overflow:auto;scrollbar-width:none}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="1x2"],[data-size="1x4"]) .home-schedule-row{padding:2px 0;gap:5px;min-height:29px}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="1x2"],[data-size="1x4"]) .home-schedule-detail{grid-template-columns:minmax(0,1fr)}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="1x2"],[data-size="1x4"]) .home-schedule-detail strong{font-size:10px;line-height:1.2}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="1x2"],[data-size="1x4"]) .home-schedule-detail small{display:none}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="1x2"],[data-size="1x4"]) .home-schedule-time{grid-column:1;grid-row:2;font-size:9px;line-height:1.2}
+.desktop-grid #home-widgets-grid .home-widget[data-size="1x4"]:is([data-widget="today"],[data-widget="reminders"],[data-widget="projects"]) .home-widget-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="1x2"] .home-widget-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.desktop-grid #home-widgets-grid .home-widget[data-size="1x2"] .home-widget-stat{flex-direction:row;justify-content:center;padding:2px;gap:3px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="1x2"] .home-widget-stat strong{font-size:12px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="1x2"] .home-widget-stat span{font-size:8px}
+.desktop-grid #home-widgets-grid .home-widget[data-size^="1x"] .home-widget-note{display:none}
+.desktop-grid #home-widgets-grid .home-widget[data-size="1x4"] .home-widget-stat{padding:2px;gap:1px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="1x4"] .home-widget-stat strong{font-size:17px}
+.widget-insights{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted);padding:0 0 8px;border-bottom:1px solid var(--line);margin-bottom:3px;flex-shrink:0}
+.widget-section-label{font-size:10px;font-weight:600;color:var(--muted);margin:12px 0 4px}
+.project-detail{display:block;color:var(--muted);font-size:10px;margin-top:6px}.project-task-preview{display:block;font-size:11px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:7px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .home-widget-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .home-widget-stat{padding:7px 2px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .home-schedule-detail strong{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="1x2"],[data-size="1x4"]) .extra-short-detail{display:flex;flex-direction:row;align-items:center;gap:5px}
+.extra-short-detail .extra-compact{flex:1;min-width:0}.extra-short-detail .extra-compact span{font-size:9px}
+.extra-short-detail>button:not(.extra-compact){border:0;border-radius:7px;padding:5px;font-size:10px;background:var(--ios-tint);color:var(--blue);flex-shrink:0}
+.extra-short-detail.extra-note .extra-compact span{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:10px;line-height:1.5}
+.extra-week{display:flex;gap:3px}.extra-week button{padding:2px;border:0;background:transparent;font-size:10px;color:var(--ink)}.extra-week button[aria-current]{color:var(--blue);font-weight:700}
+.extra-related{border-top:1px solid var(--line);padding-top:8px;margin-top:8px;display:flex;flex-direction:column;gap:5px;flex-shrink:0}.extra-related>small{font-size:10px;color:var(--muted)}.extra-related>button{text-align:left;padding:5px 0;border:0;background:transparent;color:var(--ink);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .extra-timer{font-size:32px;margin:6px 0}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .countdown-value{font-size:30px;margin:14px 0}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .extra-month-grid{flex:0 0 150px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x4"] .extra-month-grid{flex:0 0 90px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .extra-note textarea{flex:1 0 100px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x4"][data-widget="tasks"] .home-widget-stat{flex-direction:row;padding:4px 2px;gap:3px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x4"][data-widget="tasks"] .home-widget-stat strong{font-size:16px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x4"][data-widget="tasks"] .home-widget-stat span{font-size:8px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x4"][data-widget="tasks"] .home-widget-note{display:none}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x4"] .widget-section-label{margin:5px 0 0;font-size:9px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x4"] .home-schedule-row{padding:5px 0}

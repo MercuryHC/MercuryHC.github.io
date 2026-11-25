@@ -40,3 +40,7 @@ fail=true;assert.equal(context.window.HomeWidgets.update('today',{size:'1x1'}),f
 console.log('PASS: menu resize API persists and rolls back on quota failure');
 
 for(const size of ['2x4','4x4']){assert.equal(context.window.HomeWidgets.update('today',{size}),true);assert.equal(document.querySelector('section[data-widget="today"]').dataset.size,size);assert.equal(JSON.parse(storage.get('workstation-home-widgets-v1')).widgets[0].size,size);}
+change('today',true,'1x1');assert(document.querySelector('section[data-widget="today"] .home-widget-summary'));
+change('today',true,'1x2');assert(document.querySelector('section[data-widget="today"] .home-schedule-row'));assert.equal(document.querySelector('section[data-widget="today"] .home-widget-summary'),null);
+change('tasks',true,'2x4');assert(document.querySelector('section[data-widget="tasks"] .widget-section-label'));assert(document.querySelector('section[data-widget="tasks"] .home-schedule-row'));
+change('today',true,'4x4');assert(document.querySelector('section[data-widget="today"] .widget-insights'));

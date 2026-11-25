@@ -58,9 +58,9 @@
       const heading=el('div','home-widget-heading'),name=el('h3','',def.title);name.id='home-widget-title-'+config.id;
       const icon=el('span','home-widget-icon',def.icon);icon.setAttribute('aria-hidden','true');const text=el('div');text.append(name);
       const count=el('span','home-widget-count');heading.append(icon,text,count);card.append(heading);
-      const body=el('div','home-widget-body'),limit=Infinity;
-      if(window.HomeExtras?.render(config.id,body,config.size)){card.append(body);host.append(card);continue;}
-      if(config.size.startsWith('1x')){
+      const body=el('div','home-widget-body'),limit=Infinity,large=['2x4','4x4'].includes(config.size);
+      if(window.HomeExtras?.render(config.id,body,config.size,data)){card.append(body);host.append(card);continue;}
+      if(config.size==='1x1'){
         const values={today:[data.today.filter(e=>!e.done).length,'项待办',todayCalendar],tasks:[data.counts.pending,'项待完成',()=>{taskApp();openTaskStat('all');}],reminders:[data.reminders.length,'项近期提醒',()=>{taskApp();window.RemindersWorkspace.show('reminders');}],projects:[data.projects.length,'个项目',()=>{taskApp();setNav('projects');}]};
         const [number,label,action]=values[config.id],button=el('button','home-widget-summary');button.type='button';button.append(el('strong','',String(number)),el('span','',label+' ↗'));button.onclick=action;
         const nextEvent=(config.id==='today'?data.today:data.reminders).find(e=>!e.done);
@@ -71,6 +71,7 @@
       }
       if(config.id==='today'||config.id==='reminders'){
         const items=config.id==='today'?data.today:data.reminders;count.textContent=items.length+' 项';
+        if(large){const info=el('div','widget-insights');info.append(el('span','',items.filter(e=>!e.done).length+' 待完成'),el('span','',items.filter(e=>e.done).length+' 已完成'),el('span','',items.filter(e=>!e.done&&(e.kind==='reminder'?e.start:e.end)<now).length+' 超时'));card.append(info);}
         text.append(el('p','',config.id==='today'?new Date(now).toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'}):'未来七天 · 含超时未完成'));
         if(!items.length)body.append(el('p','home-widget-empty',config.id==='today'?'今天没有安排，给自己留一点空间。':'暂时没有近期提醒。'));
         for(const item of items.slice(0,limit)){
@@ -86,14 +87,16 @@
         for(const [key,label,filter] of [['total','全部任务','all'],['progress','进行中','progress'],['overdue','已超时','overdue'],['done','已完成','done']]){
           const stat=el('button','home-widget-stat');stat.type='button';stat.dataset.kind=key;stat.append(el('strong','',String(data.counts[key])),el('span','',label));stat.onclick=()=>{taskApp();openTaskStat(filter);};stats.append(stat);
         }
-        body.append(stats,el('p','home-widget-note',`${data.counts.pending} 项待完成 · 完成率 ${data.counts.total?Math.round(data.counts.done/data.counts.total*100):0}%`));card.append(body);
+        body.append(stats,el('p','home-widget-note',`${data.counts.pending} 项待完成 · 完成率 ${data.counts.total?Math.round(data.counts.done/data.counts.total*100):0}%`));
+        if(large){body.append(el('div','widget-section-label','待完成 · 按截止时间'));for(const item of data.pendingTasks)body.append(record(item,data.day,now));if(!data.pendingTasks.length)body.append(el('p','home-widget-empty','所有任务已完成'));}
+        card.append(body);
       }else{
         text.append(el('p','','一级项目 · 含子项目任务'));count.textContent=data.projects.length+' 个';
         if(!data.projects.length)body.append(el('p','home-widget-empty','还没有项目，创建后将在这里显示进度。'));
         for(const project of data.projects.slice(0,limit)){
           const percent=project.total?Math.round(project.done/project.total*100):0,row=el('button','home-project-row');row.type='button';row.style.setProperty('--widget-accent',project.color);
           const label=el('span','home-project-label');label.append(el('strong','',project.title),el('small','',`${project.done}/${project.total} · ${percent}%`));
-          const progress=el('span','home-project-progress'),bar=el('i');bar.style.width=percent+'%';progress.append(bar);row.append(label,progress);row.onclick=()=>{taskApp();filterProject(project.id);};body.append(row);
+          const progress=el('span','home-project-progress'),bar=el('i');bar.style.width=percent+'%';progress.append(bar);row.append(label,progress);if(large){row.append(el('small','project-detail',`${project.total-project.done} 项待完成 · ${project.done} 项已完成`));}if(config.size==='4x4'){const ids=new Set([project.id,...(db.projects||[]).filter(p=>p.parentId===project.id).map(p=>p.id)]);for(const task of data.pendingTasks.filter(e=>ids.has(e.record.project)).slice(0,3))row.append(el('span','project-task-preview','○ '+task.title));}row.onclick=()=>{taskApp();filterProject(project.id);};body.append(row);
         }
         const action=el('button','home-widget-link','查看全部项目 →');action.type='button';action.onclick=()=>{taskApp();setNav('projects');};card.append(body,action);
       }

@@ -26,7 +26,7 @@
       const ids=new Set([p.id,...(db.projects||[]).filter(c=>c.parentId===p.id).map(c=>c.id)]),items=tasks.filter(t=>ids.has(t.project));
       return {id:p.id,title:p.title,color:/^#[0-9a-f]{6}$/i.test(p.color)?p.color:'#8290a5',total:items.length,done:items.filter(t=>t.status==='已完成').length};
     });
-    return {day,today,reminders,projects,counts:{total:tasks.length,pending:pending.length,progress:tasks.filter(t=>t.status==='进行中').length,done:tasks.filter(t=>t.status==='已完成').length,overdue}};
+    return {day,today,reminders,projects,pendingTasks:all.filter(e=>e.kind==='task'&&!e.done).sort((a,b)=>a.end-b.end),counts:{total:tasks.length,pending:pending.length,progress:tasks.filter(t=>t.status==='进行中').length,done:tasks.filter(t=>t.status==='已完成').length,overdue}};
   }
   const api={catalog,defaults,preferences,summary};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.HomeWidgetsCore=api;
 })(typeof window!=='undefined'?window:globalThis);
