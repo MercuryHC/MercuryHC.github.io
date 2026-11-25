@@ -35,7 +35,7 @@
         catch{check.checked=previous.enabled;select.value=previous.size;state();draw();$('widget-library-message').textContent='保存失败，已保留原设置。请检查浏览器存储空间。';$('home-widgets-error').textContent='未能保存卡片设置。';}
       };
       check.onchange=select.onchange=change;action.onclick=()=>{check.checked=!check.checked;change();};
-      const footer=el('div','library-card-footer'),sizeLabel=el('label','', '尺寸 ');sizeLabel.append(select);footer.append(sizeLabel,action);row.append(head,preview,badge,footer,check);list.append(row);draw();state();
+      const footer=el('div','library-card-footer'),sizeLabel=el('label','', '尺寸 ');sizeLabel.append(select);footer.append(sizeLabel,action);row.append(preview,head,badge,footer,check);list.append(row);draw();state();
     }
     filterLibrary();
   }
@@ -110,7 +110,11 @@
   $('home-widgets-customize').onclick=()=>{library.hidden=false;$('home-widgets-customize').setAttribute('aria-expanded','true');$('widget-library-message').textContent='';configure();library.showModal?.();$('home-widget-search').focus();};
   $('home-widgets-close').onclick=closeLibrary;library.addEventListener('cancel',e=>{e.preventDefault();closeLibrary();});
   $('home-widget-search').oninput=filterLibrary;
-  window.HomeWidgets={refresh:()=>render()};
+  window.HomeWidgets={refresh:()=>render(),update(id,patch){
+    if(!prefs.widgets.some(w=>w.id===id))return false;
+    const next=Core.preferences({version:1,widgets:prefs.widgets.map(w=>w.id===id?{...w,...patch}:w)});
+    try{localStorage.setItem(KEY,JSON.stringify(next));prefs=next;$('home-widgets-error').textContent='';render(true);return true;}catch{$('home-widgets-error').textContent='设置保存失败，已保留原设置。';return false;}
+  }};
   window.addEventListener('workstation-app-changed',()=>render());window.addEventListener('focus',()=>render());
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')render();});
   window.addEventListener('storage',event=>{if(event.key===KEY){try{prefs=Core.preferences(JSON.parse(event.newValue));}catch{prefs=Core.defaults();}configure();render(true);}});

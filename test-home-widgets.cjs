@@ -34,3 +34,7 @@ context.window.HomeExtras={render:id=>id==='note'};
 const noteCard=document.querySelector('[data-library-id="note"]');noteCard.querySelector('.library-add').onclick();assert.equal(noteCard.dataset.added,'true');assert(document.querySelector('section[data-widget="note"]'));
 noteCard.querySelector('.library-add').onclick();assert.equal(noteCard.dataset.added,'false');
 console.log('PASS: library search empty state, category filtering and explicit add/remove controls');
+assert.equal(document.querySelector('.home-inline-size'),null);
+assert.equal(context.window.HomeWidgets.update('today',{size:'1x4'}),true);assert.equal(document.querySelector('section[data-widget="today"]').dataset.size,'1x4');
+fail=true;assert.equal(context.window.HomeWidgets.update('today',{size:'1x1'}),false);assert.equal(document.querySelector('section[data-widget="today"]').dataset.size,'1x4');fail=false;
+console.log('PASS: menu resize API persists and rolls back on quota failure');
