@@ -1,0 +1,77 @@
+/* Shared flat surfaces. Keep widget geometry and workspace-specific interactions. */
+html body[data-workspace=bookmarks]:not([data-background-active=true]){background:var(--bg)}
+html body .station-dock{background:var(--app-surface);backdrop-filter:none;-webkit-backdrop-filter:none}
+.station-app{border-radius:10px}
+.station-icon{background:#007aff;box-shadow:none}
+.station-app[data-app=task] .station-icon{background:#28b36c}
+.station-app[data-app=notion] .station-icon{background:#e7b52e}
+.station-app[data-app=obsidian] .station-icon{background:#8051d4}
+.station-app[data-app=notion-cloud] .station-icon{background:#424247}
+.station-app[data-app=browser-bookmarks] .station-icon{background:#f28a25}
+html body .primary,html body .secondary{border-radius:9px}
+html body :is(.workspace,.project,.stat,.notebook-layout,.calendar-month,.calendar-agenda-panel){border-radius:12px;box-shadow:none}
+.hero h1,.calendar-header h1,.notebook-heading h1{font-size:28px;letter-spacing:-.7px}
+html body .bookmark-search{border-radius:14px;box-shadow:none}
+.home-widgets-toolbar>button{border-radius:8px}
+html body .home-widget,html body .home-widget[data-size]{border-radius:14px;box-shadow:none}
+#bm-grid .bookmark-icon{box-shadow:none}
+.home-widget-settings{box-shadow:none;border:1px solid var(--line);border-radius:12px}
+#task-workspace>.reminder-switch{margin-bottom:18px;border-radius:9px}
+#task-workspace>.reminder-switch .tab{border-radius:6px}
+#task-workspace>.reminder-switch .tab.active{box-shadow:none}
+.calendar-header{margin:8px 0 16px;gap:12px}
+.calendar-header p{margin-top:6px}
+.calendar-filters{gap:12px;margin-bottom:14px}
+.calendar-filters label{background:transparent;border-radius:6px;padding:4px 0}
+.calendar-layout{gap:16px}
+html body .calendar-controls>.secondary{border-radius:8px}
+#task-content .column{border-radius:10px}
+#task-content .task-card{border-radius:10px;box-shadow:none;border:1px solid var(--line)}
+/* Notes: bring the document closer to its heading and tools. */
+body[data-workspace=notion] #notebook-workspace .notebook-heading{padding:0;margin:0 0 12px}
+body[data-workspace=notion] .notebook-heading h1{margin-bottom:6px}
+#notebook-workspace .notebook-status-line{margin-bottom:12px}
+#notebook-workspace .notebook-layout{border-radius:12px;box-shadow:none}
+#notebook-workspace .notebook-paper{padding:22px 26px}
+#notebook-workspace #nb-title{font-size:26px;margin-bottom:8px;padding-top:0;padding-bottom:8px}
+#notebook-workspace .notebook-document-bar{padding-bottom:10px;gap:8px}
+#notebook-workspace .notebook-toolbar{padding:8px 0;gap:5px}
+#notebook-workspace .notebook-toolbar button{background:transparent}
+#notebook-workspace .notebook-toolbar button:hover{background:var(--ios-tint)}
+#notes-sidebar .brand{margin-bottom:16px}
+#nb-list{border-radius:10px}
+/* Connected workspaces and browser library share compact, readable summaries. */
+.extension-workspace .notebook-heading{margin-bottom:14px}
+.extension-workspace .notebook-heading h1{font-size:28px;margin-bottom:6px}
+.extension-status{margin-bottom:12px}
+.extension-paper{border-radius:12px;padding:24px}
+.extension-paper:has(.extension-empty:not([hidden])){min-height:0}
+.extension-empty{padding:36px 20px}
+.extension-empty h2{margin:18px 0 10px}
+.extension-empty p{max-width:480px;margin:0 auto 20px}
+.br-overview{grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:18px 0;background:var(--app-surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.br-overview>div{padding:14px 18px;border:0;border-right:1px solid var(--line);border-radius:0;background:transparent}
+.br-overview>div:last-child{border-right:0}
+.br-overview strong{font-size:23px;margin-bottom:4px}
+.br-empty{padding:32px 18px}
+/* Settings: separate sections with rules instead of nested cards. */
+html body #settings-dialog{border-radius:16px;background:var(--app-surface)}
+.settings-nav{background:var(--app-hover)}
+.settings-header{padding:20px 26px;border-bottom:1px solid var(--line)}
+.settings-header h2{font-size:24px}
+.settings-main{padding:20px 26px}
+.settings-intro{margin-bottom:18px}
+.settings-group{background:transparent;border:0;border-radius:0;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+.settings-group:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.settings-group h3{margin-bottom:14px}
+html body dialog{border-radius:16px}
+@media(max-width:700px){
+ .hero h1,.calendar-header h1,.notebook-heading h1,.extension-workspace .notebook-heading h1{font-size:25px}
+ .calendar-layout{gap:12px}
+ #notebook-workspace .notebook-paper,.extension-paper{padding:16px}
+ .br-overview{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .br-overview>div:nth-child(2){border-right:0}
+ .br-overview>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+ .settings-header,.settings-main{padding:16px 18px}
+ .settings-group{padding:0 0 18px}
+}

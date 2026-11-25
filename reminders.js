@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const Core = window.ReminderCore, $ = id => document.getElementById(id);
-  let filter = 'pending', editingId = null, editingSnapshot = null;
+  let smart = '', filter = 'pending', editingId = null, editingSnapshot = null;
   const items = () => db.reminders || [];
   function error(message = '') { $('reminder-error').textContent = message;if(message)$('reminder-compose').open=true; }
   function show(mode) {
@@ -64,9 +64,12 @@
     $('reminder-title').focus();
   }
   function renderList() {
-    const list = $('reminder-list'), query=$('reminder-search').value.trim().toLowerCase(), selected = Core.select(items(), filter).filter(item=>item.title.toLowerCase().includes(query));
+    const list = $('reminder-list'), query=$('reminder-search').value.trim().toLowerCase(), selected = Core.select(items(), filter).filter(item=>item.title.toLowerCase().includes(query)).filter(item=>!smart||smart==='all'||smart==='today'&&new Date(item.remindAt).toDateString()===new Date().toDateString()||smart==='scheduled'&&new Date(item.remindAt)>=new Date()||smart==='overdue'&&Core.overdue(item));
     const pending=items().filter(r=>!r.completed),today=new Date().toDateString();
     $('reminder-pending-total').textContent=String(pending.length);
+    $('reminder-all-total').textContent=String(items().length);
+    $('reminder-scheduled-total').textContent=String(pending.filter(r=>new Date(r.remindAt)>=new Date()).length);
+    $('reminder-heading').textContent=smart?({today:'今天',scheduled:'计划',all:'全部',overdue:'已超时'}[smart]):filter==='completed'?'已完成':filter==='all'?'全部事项':'提醒事项';
     $('reminder-today-total').textContent=String(pending.filter(r=>new Date(r.remindAt).toDateString()===today).length);
     $('reminder-overdue-total').textContent=String(pending.filter(r=>Core.overdue(r)).length);
     list.replaceChildren();
@@ -120,21 +123,23 @@
         commit(items().map(r => r.id === editingId ? Core.edit(current, title, remindAt) : r));
       } else {
         commit([...items(), Core.create(title, remindAt, 'reminder-' + crypto.randomUUID())]);
-        filter = 'pending'; updateFilter();
+        smart='';filter = 'pending'; updateFilter();
       }
       reset(); $('reminder-new').focus();
     });
   };
   function updateFilter() {
     document.querySelectorAll('[data-reminder-filter]').forEach(button => {
-      const active = button.dataset.reminderFilter === filter;
+      const active = !smart && button.dataset.reminderFilter === filter;
       button.classList.toggle('active', active); button.setAttribute('aria-pressed', String(active));
     });
+    document.querySelectorAll('[data-reminder-smart]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.reminderSmart===smart)));
     renderList();
   }
   document.querySelectorAll('[data-reminder-filter]').forEach(button => {
-    button.onclick = () => { filter = button.dataset.reminderFilter; updateFilter(); };
+    button.onclick = () => { smart=''; filter = button.dataset.reminderFilter; updateFilter(); };
   });
+  document.querySelectorAll('[data-reminder-smart]').forEach(b=>b.onclick=()=>{smart=b.dataset.reminderSmart;filter=smart==='all'?'all':'pending';updateFilter();});
   $('reminder-new').onclick=()=>{reset();$('reminder-cancel').hidden=false;$('reminder-cancel').textContent='取消';$('reminder-compose').open=true;$('reminder-title').focus();};
   $('reminder-search').oninput=renderList;
   $('task-mode-tasks').onclick = () => show('tasks');

@@ -2076,6 +2076,8 @@
     <link rel="stylesheet" href="./home-desktop.css?v=12">
     <link rel="stylesheet" href="./widget-library.css?v=8">
       <link rel="stylesheet" href="./task-refresh.css?v=1">
+      <link rel="stylesheet" href="./reminders-flat.css?v=1">
+      <link rel="stylesheet" href="./site-flat.css?v=1">
   </head>
   <body data-workspace="bookmarks" class="sidebar-collapsed">
     <nav class="station-dock" aria-label="工作站应用">
@@ -2506,18 +2508,22 @@
         </p>
         </div>
         <section id="reminder-workspace" hidden aria-labelledby="reminder-heading">
+          <aside class="reminder-navigation" aria-label="提醒分类">
+            <input id="reminder-search" type="search" placeholder="搜索" aria-label="搜索提醒事项">
+            <div class="reminder-smart-grid">
+              <button type="button" data-reminder-smart="today"><span class="smart-icon">▦</span><strong id="reminder-today-total">0</strong><span>今天</span></button>
+              <button type="button" data-reminder-smart="scheduled"><span class="smart-icon">◷</span><strong id="reminder-scheduled-total">0</strong><span>计划</span></button>
+              <button type="button" data-reminder-smart="all"><span class="smart-icon">▤</span><strong id="reminder-all-total">0</strong><span>全部</span></button>
+              <button type="button" data-reminder-smart="overdue"><span class="smart-icon">!</span><strong id="reminder-overdue-total">0</strong><span>已超时</span></button>
+            </div>
+            <h2>我的列表</h2>
+            <button type="button" class="reminder-nav-item" data-reminder-filter="pending" aria-pressed="true"><span>☷</span> 提醒事项 <strong id="reminder-pending-total">0</strong></button>
+            <button type="button" class="reminder-nav-item" data-reminder-filter="completed" aria-pressed="false"><span>✓</span> 已完成</button>
+            <button type="button" class="reminder-nav-item" data-reminder-filter="all" aria-pressed="false"><span>▤</span> 全部事项</button>
+          </aside>
+          <div class="reminder-sheet">
           <div class="hero"><div><span class="reminder-eyebrow">我的清单</span><h1 id="reminder-heading">提醒事项</h1></div><button type="button" id="reminder-new" aria-controls="reminder-compose">＋ 新提醒</button></div>
-          <div class="reminder-overview" aria-label="提醒概览">
-            <div class="reminder-stat"><span>待完成</span><strong id="reminder-pending-total">0</strong><small>留给接下来的自己</small></div>
-            <div class="reminder-stat" data-tone="today"><span>今天</span><strong id="reminder-today-total">0</strong><small>今天需要记住的事</small></div>
-            <div class="reminder-stat" data-tone="overdue"><span>已超时</span><strong id="reminder-overdue-total">0</strong><small>值得优先关注</small></div>
-          </div>
-
-          <div class="reminder-toolbar"><div class="tabs" role="group" aria-label="筛选提醒事项">
-            <button type="button" class="tab active" data-reminder-filter="pending" aria-pressed="true">待完成</button>
-            <button type="button" class="tab" data-reminder-filter="completed" aria-pressed="false">已完成</button>
-            <button type="button" class="tab" data-reminder-filter="all" aria-pressed="false">全部</button>
-          </div><input id="reminder-search" type="search" placeholder="搜索提醒事项" aria-label="搜索提醒事项"><span id="reminder-count" role="status" aria-live="polite"></span></div>
+          <div class="reminder-toolbar"><span id="reminder-count" role="status" aria-live="polite"></span></div>
           <details class="reminder-compose" id="reminder-compose">
           <summary id="reminder-form-heading">新提醒</summary>
           <form id="reminder-form" class="reminder-form">
@@ -2529,6 +2535,7 @@
           <p id="reminder-error" role="alert"></p></details>
           <ul id="reminder-list" aria-label="提醒事项清单"></ul>
           <p class="reminder-hint">按本机时区显示。到时会出现在顶部提醒栏；关闭网页后的微信提醒需在设置中连接并启用后台。</p>
+          </div>
         </section>
         <section id="calendar-workspace" aria-label="任务与提醒日历">
           <div class="calendar-header"><div><h1 id="calendar-period" aria-live="polite"></h1><p>任务与提醒，一眼掌握。</p></div>
@@ -4387,7 +4394,7 @@
     <script src="./browser-bookmarks-store.js?v=storage-1"></script>
     <script src="./browser-bookmarks.js?v=layout-2"></script>
     <script src="./backgrounds.js?v=settings-1"></script>
-    <script src="./reminders.js?v=design-3"></script>
+    <script src="./reminders.js?v=flat-4"></script>
     <script src="./calendar-core.js?v=daily-1"></script>
     <script src="./task-calendar.js?v=complete-1"></script>
     <script src="./home-widgets-core.js?v=detail-4"></script>
