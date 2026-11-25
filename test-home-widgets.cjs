@@ -7,6 +7,7 @@ let data=Core.summary(db,now,C);assert.equal(data.today.length,2);assert.equal(d
 assert.equal(Core.summary({},now,C).today.length,0);
 const {document}=parseHTML(fs.readFileSync('index.html','utf8'));const $=id=>document.getElementById(id),storage=new Map([['workstation-home-widgets-v1',JSON.stringify({version:1,widgets:[{id:'today',enabled:true,size:'2x2'}]})]]);let fail=false,opened=[];
 const context={document,db,Date,JSON,setInterval(){},localStorage:{getItem:k=>storage.get(k)||null,setItem(k,v){if(fail)throw Error('quota');storage.set(k,v)}},window:{HomeWidgetsCore:Core,CalendarCore:C,addEventListener(){},TaskCalendar:{openToday:()=>opened.push('today')},RemindersWorkspace:{toggle(id){db.reminders.find(r=>r.id===id).completed=!db.reminders.find(r=>r.id===id).completed},open:id=>opened.push(id),show:id=>opened.push(id)}},toggle:id=>opened.push('toggle:'+id),openTask:id=>opened.push(id),openTaskStat:id=>opened.push(id),filterProject:id=>opened.push(id),setNav:id=>opened.push(id)};
+context.window.HomeExtras={render:id=>['note','month','focus','countdown','quick'].includes(id)};
 vm.createContext(context);vm.runInContext(fs.readFileSync('home-widgets.js','utf8'),context);
 assert.equal($('home-widgets-grid').children.length,2);assert.equal($('home-widgets-grid').querySelector('img'),null);
 $('home-widgets-grid').querySelector('.home-widget-link').onclick();assert.deepEqual(opened,['today']);
@@ -30,7 +31,7 @@ change('tasks',true,'1x1');assert.match(document.querySelector('section[data-wid
 $('home-widgets-close').onclick();$('home-widgets-customize').onclick();
 $('home-widget-search').value='不存在的组件';$('home-widget-search').oninput();assert.equal($('widget-library-empty').hidden,false);
 $('home-widget-search').value='';$('home-widget-search').oninput();document.querySelector('[data-category="tools"]').onclick();assert.equal([...$('home-widget-options').children].filter(r=>!r.hidden).length,3);
-context.window.HomeExtras={render:id=>id==='note'};
+context.window.HomeExtras={render:id=>['note','month','focus','countdown','quick'].includes(id)};
 const noteCard=document.querySelector('[data-library-id="note"]');noteCard.querySelector('.library-add').onclick();assert.equal(noteCard.dataset.added,'true');assert(document.querySelector('section[data-widget="note"]'));
 noteCard.querySelector('.library-add').onclick();assert.equal(noteCard.dataset.added,'false');
 console.log('PASS: library search empty state, category filtering and explicit add/remove controls');
@@ -44,3 +45,5 @@ change('today',true,'1x1');assert(document.querySelector('section[data-widget="t
 change('today',true,'1x2');assert(document.querySelector('section[data-widget="today"] .home-schedule-row'));assert.equal(document.querySelector('section[data-widget="today"] .home-widget-summary'),null);
 change('tasks',true,'2x4');assert(document.querySelector('section[data-widget="tasks"] .widget-section-label'));assert(document.querySelector('section[data-widget="tasks"] .home-schedule-row'));
 change('today',true,'4x4');assert(document.querySelector('section[data-widget="today"] .widget-insights'));
+
+$('home-widgets-customize').onclick();change('today',true,'1x2');let preview=document.querySelector('.widget-preview-grid[data-kind="today"]');assert.equal(preview.querySelector('.home-widget').dataset.size,'1x2');assert(preview.querySelector('.home-schedule-row'));assert.equal(preview.querySelector('[id]'),null);assert(preview.hasAttribute('inert'));assert.equal(preview.querySelectorAll('.home-schedule-row').length,$('home-widgets-grid').querySelector('section[data-widget="today"]').querySelectorAll('.home-schedule-row').length);change('today',true,'4x4');assert(document.querySelector('.widget-preview-grid[data-kind="today"] .widget-insights'));

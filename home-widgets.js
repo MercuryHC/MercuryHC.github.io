@@ -8,7 +8,7 @@
   function todayCalendar(){taskApp();window.TaskCalendar.openToday();}
   let category='all';
   const groups={today:'schedule',tasks:'work',reminders:'schedule',projects:'work',month:'schedule',note:'tools',focus:'tools',countdown:'schedule',quick:'tools'};
-  const samples={today:['09:00  整理今日计划','14:30  项目讨论','17:00  阅读与回顾'],tasks:['12  待完成','3  进行中    8  已完成'],reminders:['◯  记得喝水','◯  整理周报','◯  预约会议'],projects:['设计项目   ━━━━━  75%','学习计划   ━━━  40%'],month:['一  二  三  四  五  六  日',' 1   2   3   4   5   6   7',' 8   9  10  11  12  13  14'],note:['灵感备忘','把值得记住的小事','留在桌面上。'],focus:['25:00','专注当下  ·  开始'],countdown:['距离下一次旅行','30 天'],quick:['＋ 新建任务','＋ 添加提醒','＋ 记录笔记']};
+
   function filterLibrary(){
     const q=$('home-widget-search').value.trim().toLowerCase();let visible=0;
     for(const row of $('home-widget-options').children){const id=row.dataset.libraryId,def=Core.catalog.find(d=>d.id===id),config=prefs.widgets.find(w=>w.id===id);row.hidden=!((category==='all'||category==='added'&&config.enabled||groups[id]===category)&&(!q||(def.title+def.description).toLowerCase().includes(q)));if(!row.hidden)visible++;}
@@ -23,10 +23,19 @@
       const config=prefs.widgets.find(w=>w.id===definition.id),row=el('article','home-widget-option');row.dataset.libraryId=definition.id;
       const head=el('div','library-card-heading'),icon=el('span','library-icon',definition.icon),words=el('div');words.append(el('h3','',definition.title),el('p','',definition.description));head.append(icon,words);
       const check=el('input');check.type='checkbox';check.checked=config.enabled;check.dataset.widget=definition.id;check.hidden=true;
-      const preview=el('div','library-stage'),tile=el('div','library-preview-tile');tile.dataset.kind=definition.id;tile.setAttribute('aria-hidden','true');preview.append(tile);
+      const preview=el('div','library-stage home-widgets desktop-grid'),tile=el('div','widget-preview-grid');tile.dataset.kind=definition.id;tile.setAttribute('aria-hidden','true');tile.setAttribute('inert','');preview.append(tile);
       const select=el('select');select.dataset.size=definition.id;select.setAttribute('aria-label',definition.title+'卡片大小');
       for(const value of ['1x1','1x2','1x4','2x2','2x4','4x4']){const option=el('option','',value.replace('x',' × '));option.value=value;option.selected=config.size===value;select.append(option);}
-      function draw(){tile.dataset.size=select.value||config.size;tile.replaceChildren();tile.append(el('b','',definition.title));for(const line of samples[definition.id]||[])tile.append(el('span','',line));}
+      function draw(){
+        const size=select.value||config.size;tile.dataset.size=size;tile.replaceChildren();
+        const card=render(true,{id:definition.id,size,enabled:true});
+        card.removeAttribute('aria-labelledby');for(const n of card.querySelectorAll('[id]'))n.removeAttribute('id');
+        tile.append(card);
+        const gridWidth=$('home-widgets-grid').clientWidth||600,columns=gridWidth>=520?8:4,unit=(gridWidth-12*(columns-1))/columns;
+        const [rows,cols]=size.split('x').map(Number),width=unit*cols+12*(cols-1),height=width*rows/cols;
+        card.style.width=width+'px';card.style.setProperty('--tile-height',height+'px');
+        const scale=Math.min(1,170/width,112/height);tile.style.width=width*scale+'px';tile.style.height=height*scale+'px';card.style.transform='scale('+scale+')';
+      }
       const action=el('button','library-add'),badge=el('span','library-added');action.type='button';
       function state(){action.textContent=check.checked?'移除':'＋ 添加';action.dataset.added=String(check.checked);action.setAttribute('aria-label',(check.checked?'移除':'添加')+definition.title);badge.textContent=check.checked?'✓ 已在桌面':'可添加';row.dataset.added=String(check.checked);}
       const change=()=>{
@@ -48,11 +57,11 @@
     const metadata=el('small','',`${event.projectName}${event.done?' · 已完成':event.end<now?' · 已超时':''}`);metadata.dataset.overdue=String(!event.done&&event.end<now);
     link.append(title,metadata,time);link.onclick=()=>{taskApp();if(event.kind==='reminder')window.RemindersWorkspace.open(event.id);else openTask(event.id);};row.append(circle,link);return row;
   }
-  function render(force=false){
+  function render(force=false,previewConfig=null){
     const now=Date.now(),data=Core.summary(db,now,C),next=JSON.stringify([prefs,data,Math.floor(now/60000)]);
-    if(!force&&(signature===next||$('home-widgets-grid').contains(document.activeElement)))return;signature=next;
-    const host=$('home-widgets-grid');host.replaceChildren();
-    for(const config of prefs.widgets.filter(w=>w.enabled)){
+    if(!previewConfig&&!force&&(signature===next||$('home-widgets-grid').contains(document.activeElement)))return;if(!previewConfig)signature=next;
+    const host=previewConfig?el('div'):$('home-widgets-grid');host.replaceChildren();
+    for(const config of (previewConfig?[previewConfig]:prefs.widgets.filter(w=>w.enabled))){
       const def=Core.catalog.find(w=>w.id===config.id),card=el('section','home-widget');card.dataset.widget=config.id;card.dataset.size=config.size;
       card.setAttribute('aria-labelledby','home-widget-title-'+config.id);
       const heading=el('div','home-widget-heading'),name=el('h3','',def.title);name.id='home-widget-title-'+config.id;
@@ -105,6 +114,7 @@
       if(body.children.length){body.tabIndex=0;body.setAttribute('aria-label',def.title+'内容，可滚动查看');}
       host.append(card);
     }
+    if(previewConfig)return host.firstElementChild;
     window.HomeDesktop?.refresh();
     if(!prefs.widgets.some(w=>w.enabled)){const empty=el('p','home-widgets-empty','尚未显示卡片，点击“自定义卡片”选择你关心的内容。');host.append(empty);}
   }
