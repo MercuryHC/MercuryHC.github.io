@@ -47,3 +47,47 @@ html body[data-workspace=bookmarks] .desktop-sites #bm-grid .bookmark-card>a{dis
 .quick-note-actions{display:flex;gap:4px;align-items:center;flex-shrink:0}.quick-note-actions select{min-width:0;width:100%;padding:2px;border:0;background:transparent;color:inherit;font-size:10px}.quick-note-actions button{flex-shrink:0;padding:0;width:22px;height:22px;border:0;border-radius:6px;color:#b8860b;background:#e5b12e20}.extra-note textarea{flex:1;min-height:32px!important}
 
 .desktop-grid #home-widgets-grid .home-widget[data-size="2x4"]{aspect-ratio:2}.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"]{aspect-ratio:1}.context-sizes{grid-template-columns:repeat(3,minmax(0,1fr))}.context-size-icon[data-size="2x4"]{width:32px;height:16px}.context-size-icon[data-size="4x4"]{width:24px;height:24px}.home-widget:is([data-size="2x4"],[data-size="4x4"]) .extra-month-grid{flex:1;align-items:center}
+
+/* Content follows available area rather than shrinking full forms into tiny tiles. */
+.desktop-grid #home-widgets-grid .home-widget{container-type:inline-size;box-shadow:0 3px 12px #22334d08;background:var(--app-surface);border:1px solid var(--line)}
+.desktop-grid #home-widgets-grid .home-widget-heading{gap:5px;min-height:14px}
+.desktop-grid #home-widgets-grid .home-widget-icon{width:18px;height:18px;font-size:12px;border-radius:6px}
+.desktop-grid #home-widgets-grid .home-widget[data-size^="1x"] .home-widget-icon{display:none}
+.desktop-grid #home-widgets-grid .home-widget[data-size^="1x"] .home-widget-summary{position:relative;justify-content:center;gap:2px;padding:0;overflow:hidden}
+.desktop-grid #home-widgets-grid .home-widget[data-size^="1x"] .home-widget-summary strong{font-size:24px;line-height:1;font-weight:650;letter-spacing:-.7px}
+.desktop-grid #home-widgets-grid .home-widget[data-size^="1x"] .home-widget-summary span{font-size:9px;line-height:1.2}
+.desktop-grid #home-widgets-grid .home-widget[data-size^="1x"] :is(.home-widget-summary-detail,.home-widget-summary-time){display:none}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="1x2"],[data-size="1x4"]) .home-widget-summary-detail{display:block;position:absolute;left:44%;right:0;top:50%;transform:translateY(-50%);font-size:10px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.desktop-grid #home-widgets-grid .home-widget[data-size^="1x"] .home-widget-body{overflow:hidden;display:flex}
+.extra-compact{display:flex;flex:1;min-width:0;min-height:0;width:100%;flex-direction:column;justify-content:center;align-items:flex-start;gap:3px;border:0;background:transparent;padding:0;text-align:left}
+.extra-compact strong{font-size:24px;line-height:1.1;font-weight:650;letter-spacing:-.7px;color:var(--ink)}
+.extra-compact span{font-size:9px;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.extra-focus .extra-compact strong{font-size:19px;font-variant-numeric:tabular-nums;color:#8c6cbd}
+.extra-note .extra-compact strong{color:#bd941f}.extra-month .extra-compact strong{color:#da645d}.extra-countdown .extra-compact strong{color:#c17f61}
+.desktop-grid #home-widgets-grid .home-widget[data-size="1x1"] .extra-compact span{display:none}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x2"] .home-widget-stats{gap:4px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x2"] .home-widget-stat{padding:5px 2px;gap:2px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x2"] .home-widget-stat strong{font-size:18px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x2"] .home-widget-note{display:none}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x2"] .extra-month-title{font-size:9px}
+.desktop-grid #home-widgets-grid .extra-month-grid{gap:0;grid-auto-rows:minmax(0,1fr);min-height:0}
+.desktop-grid #home-widgets-grid .extra-month-grid button{min-height:0;line-height:1.2;padding:1px;font-size:9px}
+.desktop-grid #home-widgets-grid .extra-month-grid small{font-size:8px;line-height:1.2}
+.desktop-grid #home-widgets-grid .home-widget[data-size="2x2"] .extra-note>small{display:none}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="2x4"],[data-size="4x4"]){padding:14px;border-radius:18px}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="2x4"],[data-size="4x4"]) h3{font-size:12px;line-height:18px}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="2x4"],[data-size="4x4"]) .home-widget-heading{margin-bottom:8px}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="2x4"],[data-size="4x4"]) .home-schedule-row{padding:8px 0}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="2x4"],[data-size="4x4"]) .home-schedule-detail strong{font-size:12px}
+.desktop-grid #home-widgets-grid .home-widget:is([data-size="2x4"],[data-size="4x4"]) .extra-month-grid button{font-size:12px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .home-widget-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .home-widget-stat{padding:16px 6px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .extra-timer{font-size:42px;margin:auto 0 12px}
+.desktop-grid #home-widgets-grid .home-widget[data-size="4x4"] .countdown-value{font-size:36px;margin:auto 0}
+.home-extra-dialog{width:min(420px,calc(100vw - 32px));box-sizing:border-box;padding:22px;border:1px solid var(--line);border-radius:22px;background:var(--app-surface);color:var(--ink);box-shadow:0 24px 80px #17223a30}
+.home-extra-dialog::backdrop{background:#17223a40;backdrop-filter:blur(7px)}
+.extra-dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}.extra-dialog-heading h2{font-size:20px;margin:0}.extra-dialog-heading button{border:0;background:var(--ios-tint);color:var(--blue);padding:8px 14px;border-radius:10px}
+.home-extra-dialog .home-extra{display:flex;flex-direction:column;gap:12px;min-height:220px}.home-extra-dialog textarea{min-height:180px!important;width:100%;box-sizing:border-box;resize:vertical;font:inherit;color:inherit}.home-extra-dialog .extra-timer{font-size:48px;text-align:center;margin:25px 0}.home-extra-dialog .extra-actions{display:flex;gap:8px}.home-extra-dialog button{cursor:pointer}.home-extra-dialog .extra-actions button,.home-extra-dialog .extra-quick button{padding:12px;border:0;border-radius:10px;background:var(--ios-tint);color:var(--blue)}.home-extra-dialog .extra-month-grid{gap:4px}.home-extra-dialog .extra-month-grid button{padding:9px;font-size:13px}.home-extra-dialog .countdown-value{font-size:36px;margin:20px 0}.home-extra-dialog input{padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--app-hover);color:inherit}
+@container(max-width:150px){.home-schedule-detail{grid-template-columns:minmax(0,1fr)}.home-schedule-time{grid-column:1;grid-row:auto}.home-widget-icon{display:none!important}}
+.desktop-grid #home-widgets-grid .home-extra .extra-compact{padding:0;background:transparent;border:0;border-radius:0;color:inherit;text-align:left}
+.desktop-grid #home-widgets-grid .extra-focus .extra-compact strong{font-size:clamp(12px,26cqw,22px);letter-spacing:-.8px;white-space:nowrap}

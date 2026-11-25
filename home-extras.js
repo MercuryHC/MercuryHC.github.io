@@ -5,9 +5,28 @@
   function save(next){try{localStorage.setItem(KEY,JSON.stringify(next));state=next;document.getElementById('home-widgets-error').textContent='';return true;}catch{document.getElementById('home-widgets-error').textContent='保存失败，请检查浏览器存储空间。';return false;}}
   const button=(text,fn)=>{const n=node('button',text);n.type='button';n.onclick=fn;return n;};
   function task(){document.querySelector('[data-app="task"]')?.click();}
+  function expand(id){
+    let dialog=document.getElementById('home-extra-dialog');
+    if(!dialog){dialog=node('dialog',undefined,'home-extra-dialog');dialog.id='home-extra-dialog';dialog.setAttribute('aria-label','组件详情');dialog.addEventListener('close',()=>window.HomeWidgets?.refresh());document.body.append(dialog);}
+    dialog.replaceChildren();const heading=node('div',undefined,'extra-dialog-heading');
+    const title=node('h2',{month:'月历',note:'快速便签',focus:'番茄钟',countdown:'倒数日',quick:'快速添加'}[id]);
+    const close=button('完成',()=>{dialog.close();window.HomeWidgets?.refresh();});heading.append(title,close);
+    const content=node('div','');dialog.append(heading,content);render(id,content,'4x4');dialog.showModal();
+  }
   function render(id,body,size){
     if(!['month','note','focus','countdown','quick'].includes(id))return false;
     body.classList.add('home-extra',`extra-${id}`);
+    if(size.startsWith('1x')){
+      const compact=button('',()=>expand(id));compact.className='extra-compact';
+      const primary=node('strong'),secondary=node('span');
+      if(id==='month'){const now=new Date();primary.textContent=String(now.getDate());secondary.textContent=now.toLocaleDateString('zh-CN',{month:'short',weekday:'short'});}
+      if(id==='note'){primary.textContent='✎';secondary.textContent=window.NotesWorkspace?.quickNote?.read()||'记一笔';}
+      if(id==='focus'){primary.dataset.focusClock='true';secondary.textContent='专注计时';queueMicrotask(tick);}
+      if(id==='countdown'){const d=state.countdown?.date,days=d?Math.round((Date.parse(d+'T00:00:00Z')-Date.parse(C.key(new Date())+'T00:00:00Z'))/86400000):null;primary.textContent=days===null?'＋':days===0?'今天':String(Math.abs(days));secondary.textContent=days===null?'设置日期':(state.countdown.title||'重要日子')+(days===0?'':days>0?' · 天后':' · 天前');}
+      if(id==='quick'){primary.textContent='＋';secondary.textContent='任务 / 提醒 / 笔记';}
+      compact.setAttribute('aria-label','打开'+({month:'月历',note:'快速便签',focus:'番茄钟',countdown:'倒数日',quick:'快速添加'}[id]));
+      compact.append(primary,secondary);body.append(compact);return true;
+    }
     if(id==='month'){
       const now=new Date(),day=C.key(now),head=node('div',now.toLocaleDateString('zh-CN',{year:'numeric',month:'long'}),'extra-month-title');body.append(head);
       if(size==='1x1'){body.append(button(String(now.getDate()),()=>{task();window.TaskCalendar.openToday();}),node('small',now.toLocaleDateString('zh-CN',{weekday:'long'})));}

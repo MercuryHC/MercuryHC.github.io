@@ -22,7 +22,7 @@ console.log('PASS: date projections, project totals, safe rendering, completion,
 for(const size of ['1x1','1x2','1x4','2x2','2x4','4x4'])assert.equal(Core.preferences({version:1,widgets:[{id:'today',size}]}).widgets[0].size,size);
 assert.equal(Core.preferences({version:1,widgets:[{id:'today',size:'large'}]}).widgets[0].size,'2x2');
 $('home-widgets-close').onclick();$('home-widgets-customize').onclick();
-change('today',true,'1x2');
+change('today',true,'2x4');
 context.db.tasks=Array.from({length:10},(_,i)=>({...db.tasks[0],id:'dense-'+i,title:'日程 '+i}));context.window.HomeWidgets.refresh();
 assert.equal(document.querySelector('section[data-widget="today"]').querySelectorAll('.home-schedule-row').length,11,'all agenda entries remain accessible inside the scrollable card');
 assert.equal(document.querySelector('section[data-widget="today"] .home-widget-body').getAttribute('aria-label'),'今日日程内容，可滚动查看');

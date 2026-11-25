@@ -60,7 +60,7 @@
       const count=el('span','home-widget-count');heading.append(icon,text,count);card.append(heading);
       const body=el('div','home-widget-body'),limit=Infinity;
       if(window.HomeExtras?.render(config.id,body,config.size)){card.append(body);host.append(card);continue;}
-      if(config.size==='1x1'){
+      if(config.size.startsWith('1x')){
         const values={today:[data.today.filter(e=>!e.done).length,'项待办',todayCalendar],tasks:[data.counts.pending,'项待完成',()=>{taskApp();openTaskStat('all');}],reminders:[data.reminders.length,'项近期提醒',()=>{taskApp();window.RemindersWorkspace.show('reminders');}],projects:[data.projects.length,'个项目',()=>{taskApp();setNav('projects');}]};
         const [number,label,action]=values[config.id],button=el('button','home-widget-summary');button.type='button';button.append(el('strong','',String(number)),el('span','',label+' ↗'));button.onclick=action;
         const nextEvent=(config.id==='today'?data.today:data.reminders).find(e=>!e.done);
